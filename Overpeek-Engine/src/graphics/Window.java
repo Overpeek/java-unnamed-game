@@ -161,31 +161,31 @@ public class Window {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	
-	boolean shouldClose() {
+	public boolean shouldClose() {
 		return glfwWindowShouldClose(window);
 	}
 	
-	void clear() {
+	public void clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
-	void input() {
+	public void input() {
 		for (int i = 0; i < singleKeys.length; i++) singleKeys[i] = false;
 		for (int i = 0; i < singleButtons.length; i++) singleButtons[i] = false;
 		
 		glfwPollEvents();
 	}
 	
-	void update() {
+	public void update() {
 		if (debug_mode) checkGLErrors();
 		glfwSwapBuffers(window);
 	}
 	
-	float aspect() {
+	public float aspect() {
 		return (float)width / (float)height;
 	}
 	
-	void checkGLErrors() {
+	public void checkGLErrors() {
 		int err = glGetError();
 		if (err != 0) {
 			String errorText;

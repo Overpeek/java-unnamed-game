@@ -56,14 +56,14 @@ public class Renderer {
 		}
 	}
 
-	VertexArray vertexArray;
-	Buffer buffer;
+	private VertexArray vertexArray;
+	private Buffer buffer;
 
-	ByteBuffer buffermap;
-	boolean m_buffer_mapped;
-	int buffer_current;
-	int vertex_count;
-	float buffer_data[] = new float[1000];
+	private ByteBuffer buffermap;
+	private boolean m_buffer_mapped;
+	private int buffer_current;
+	private int vertex_count;
+	private float buffer_data[] = new float[1000];
 
 	public Renderer() {
 		m_buffer_mapped = false;
@@ -84,18 +84,18 @@ public class Renderer {
 
 	}
 
-	void beginRendering() {
+	public void beginRendering() {
 		buffermap = buffer.mapBuffer();
 		m_buffer_mapped = true;
 	}
 
-	void stopRendering() {
+	public void stopRendering() {
 		if (m_buffer_mapped)
 			buffer.unmapBuffer();
 		m_buffer_mapped = false;
 	}
 
-	void submitVertex(VertexData data) {
+	public void submitVertex(VertexData data) {
 		if (!m_buffer_mapped)
 			beginRendering();
 
@@ -115,7 +115,7 @@ public class Renderer {
 		vertex_count++;
 	}
 
-	void submitQuad(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {
+	public void submitQuad(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {
 		submitVertex(new VertexData(_pos.x, _pos.y, _pos.z, 0.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
 		submitVertex(new VertexData(_pos.x, _pos.y + _size.y, _pos.z, 0.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
 		submitVertex(new VertexData(_pos.x + _size.x, _pos.y + _size.y, _pos.z, 1.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
@@ -125,7 +125,7 @@ public class Renderer {
 		submitVertex(new VertexData(_pos.x + _size.x, _pos.y, _pos.z, 1.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
 	}
 
-	void draw(int texture, int textureType) {
+	public void draw(int texture, int textureType) {
 		if (vertex_count == 0)
 			return;
 

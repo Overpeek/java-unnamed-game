@@ -16,7 +16,7 @@ public class Shader {
 	
 	private int shaderProgram;
 
-	int loadShader(int shadertype, String shaderText) {
+	private int loadShader(int shadertype, String shaderText) {
 		int shaderId;
 		shaderId = GL20.glCreateShader(shadertype);
 		GL20.glShaderSource(shaderId, shaderText);
@@ -27,7 +27,7 @@ public class Shader {
 		return shaderId;
 	}
 
-	int loadShaderFile(int shadertype, String path) {
+	private int loadShaderFile(int shadertype, String path) {
 		//Load and compile
 		StringBuilder shaderSource = new StringBuilder();
 		try {
@@ -46,7 +46,7 @@ public class Shader {
 		return loadShader(shadertype, shaderSource.toString());
 	}
 
-	void shaderLog(String text, int shaderId, int type) {
+	private void shaderLog(String text, int shaderId, int type) {
 		int success[] = new int[1];
 		ByteBuffer infoLogBuffer = ByteBuffer.allocate(512);
 		GL20.glGetShaderiv(shaderId, type, success);
@@ -62,7 +62,7 @@ public class Shader {
 		}
 	}
 
-	void programLog(String text, int program, int type) {
+	private void programLog(String text, int program, int type) {
 		int success[] = new int[1];
 		ByteBuffer infoLogBuffer = ByteBuffer.allocate(512);
 		GL20.glGetProgramiv(program, type, success);
@@ -168,7 +168,7 @@ public class Shader {
 		GL20.glDeleteShader(fragmentShader);
 	}
 
-	Shader(String vertexPath, String fragmentPath, String geometryPath) {
+	public Shader(String vertexPath, String fragmentPath, String geometryPath) {
 
 		//Vertex shader
 		int vertexShader = loadShaderFile(GL20.GL_VERTEX_SHADER, vertexPath);
@@ -196,20 +196,20 @@ public class Shader {
 	}
 
 
-	void enable() { GL20.glUseProgram(shaderProgram); }
-	void disable() { GL20.glUseProgram(0); }
+	public void enable() { GL20.glUseProgram(shaderProgram); }
+	public void disable() { GL20.glUseProgram(0); }
 	
-	int getUniformLocation(String name) { return GL20.glGetUniformLocation(shaderProgram, name); }
+	public int getUniformLocation(String name) { return GL20.glGetUniformLocation(shaderProgram, name); }
 	
-	void setUniform1f(String name, float value) { enable(); GL20.glUniform1f(getUniformLocation(name), value); }
-	void setUniform2f(String name, Vector2f value) { enable(); GL20.glUniform2f(getUniformLocation(name), value.x, value.y); }
-	void setUniform3f(String name, Vector3f value) { enable(); GL20.glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
-	void setUniform4f(String name, Vector4f value) { enable(); GL20.glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
-	void setUniform1i(String name, int value) { enable(); GL20.glUniform1i(getUniformLocation(name), value); }
-	void setUniform2i(String name, Vector2i value) { enable(); GL20.glUniform2i(getUniformLocation(name), value.x, value.y); }
-	void setUniform3i(String name, Vector3i value) { enable(); GL20.glUniform3i(getUniformLocation(name), value.x, value.y, value.z); }
-	void setUniform4i(String name, Vector4i value) { enable(); GL20.glUniform4i(getUniformLocation(name), value.x, value.y, value.z, value.w); }
-	void SetUniformMat4(String name, Matrix4f value) { enable();
+	public void setUniform1f(String name, float value) { enable(); GL20.glUniform1f(getUniformLocation(name), value); }
+	public void setUniform2f(String name, Vector2f value) { enable(); GL20.glUniform2f(getUniformLocation(name), value.x, value.y); }
+	public void setUniform3f(String name, Vector3f value) { enable(); GL20.glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
+	public void setUniform4f(String name, Vector4f value) { enable(); GL20.glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
+	public void setUniform1i(String name, int value) { enable(); GL20.glUniform1i(getUniformLocation(name), value); }
+	public void setUniform2i(String name, Vector2i value) { enable(); GL20.glUniform2i(getUniformLocation(name), value.x, value.y); }
+	public void setUniform3i(String name, Vector3i value) { enable(); GL20.glUniform3i(getUniformLocation(name), value.x, value.y, value.z); }
+	public void setUniform4i(String name, Vector4i value) { enable(); GL20.glUniform4i(getUniformLocation(name), value.x, value.y, value.z, value.w); }
+	public void SetUniformMat4(String name, Matrix4f value) { enable();
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			FloatBuffer fb = value.get(stack.mallocFloat(16));
 			GL20.glUniformMatrix4fv(getUniformLocation(name), false, fb); 
