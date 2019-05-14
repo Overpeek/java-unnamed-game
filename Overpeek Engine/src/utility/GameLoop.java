@@ -6,15 +6,12 @@ public class GameLoop implements Runnable {
 	private int ups_cap;
 	
 	private int ups, fps;
-	private Runnable init, update, render, cleanup;
+	private Application app;
 	
 	
-	public GameLoop(int ups, Runnable init, Runnable update, Runnable render, Runnable cleanup) {
+	public GameLoop(int ups, Application application) {
 		this.ups_cap = ups;
-		this.init = init;
-		this.update = update;
-		this.render = render;
-		this.cleanup = cleanup;
+		this.app = application;
 	}
 	
 	public int getUps() {
@@ -25,8 +22,9 @@ public class GameLoop implements Runnable {
 		return fps;
 	}
 	
+	@Override
 	public void run() {
-		init.run();
+		app.init();
 	    long lastTime = System.nanoTime();
 	    double delta = 0.0;
 	    double ns = 1000000000.0 / ups_cap;
@@ -39,11 +37,11 @@ public class GameLoop implements Runnable {
 	        delta += (now - lastTime) / ns;
 	        lastTime = now;
 	        if (delta >= 1.0) {
-	            update.run();
+	            app.update();
 	            updates++;
 	            delta--;
 	        }
-	        render.run();
+	        app.render();
 	        frames++;
 	        if (System.currentTimeMillis() - timer > 1000) {
 	            timer += 1000;
@@ -55,7 +53,7 @@ public class GameLoop implements Runnable {
 	        }
 	    }
 
-	    cleanup.run();
+	    app.cleanup();
 	}
 	
 	public void stop() {

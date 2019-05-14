@@ -1,5 +1,6 @@
 package graphics;
 
+import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -13,10 +14,14 @@ import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.stb.STBImage;
+
+import utility.Logger;
+import utility.Logger.type;
 
 
 public class Window {
@@ -46,45 +51,71 @@ public class Window {
 	
 	private boolean debug_mode = true;
 
+	
 	private boolean keys[] = new boolean[512];
 	private boolean buttons[] = new boolean[128];
 	private boolean singleKeys[] = new boolean[512];
 	private boolean singleButtons[] = new boolean[128];
 	
-	private double mouseX, mouseY;
+	private float mouseX, mouseY;
+	private float scroll_total;
+	private float scroll_delta;
 	
 	
 	GLFWKeyCallback key = new GLFWKeyCallback() {
+		@Override
 		public void invoke(long window, int key, int scancode, int action, int mods)
 	    {
+			if (key >= keys.length || key < 0) {
+				Logger.out("Unknown key: " + key, type.WARNING);
+				return;
+			}
 			if (action == GLFW_PRESS) { keys[key] = true; singleKeys[key] = true; }
 			if (action == GLFW_RELEASE) { keys[key] = false; }
 	    }
 	};
 	
 	GLFWMouseButtonCallback button = new GLFWMouseButtonCallback() {
+		@Override
 		public void invoke(long window, int button, int action, int mods)
 	    {
+			if (button >= buttons.length || button < 0) {
+				Logger.out("Unknown button: " + button, type.WARNING);
+				return;
+			}
 			if (action == GLFW_PRESS) { buttons[button] = true; singleButtons[button] = true; }
 			if (action == GLFW_RELEASE) { buttons[button] = false; }
 	    }
 	};
 	
 	GLFWCursorPosCallback cursor = new GLFWCursorPosCallback() {
+		@Override
 		public void invoke(long window, double xpos, double ypos)
 	    {
-			mouseX = xpos;
-			mouseY = ypos;
+			mouseX = (float) xpos;
+			mouseY = (float) ypos;
 	    }
 	};
 	
 	GLFWFramebufferSizeCallback resize = new GLFWFramebufferSizeCallback() {
+		
+		@Override
 		public void invoke(long window, int _width, int _height)
 	    {
 			width = _width;
 			height = _height;
 			System.out.println("Width: " + width + ", Height: " + height);
 	    }
+	};
+	
+	GLFWScrollCallback scroll = new GLFWScrollCallback() {
+
+		@Override
+		public void invoke(long window, double xd, double yd) {
+			scroll_total += yd;
+			scroll_delta += yd;
+		}
+		
 	};
 	
 	public Window(int width, int height, String title, int mods) {
@@ -152,6 +183,8 @@ public class Window {
 		glfwSetMouseButtonCallback(window, button);
 		glfwSetFramebufferSizeCallback(window, resize);
 		glfwSetCursorPosCallback(window, cursor);
+		glfwSetScrollCallback(window, scroll);
+		
 		
 		//OpenGL
 		GL.createCapabilities();
@@ -172,6 +205,7 @@ public class Window {
 	public void input() {
 		for (int i = 0; i < singleKeys.length; i++) singleKeys[i] = false;
 		for (int i = 0; i < singleButtons.length; i++) singleButtons[i] = false;
+		scroll_delta = 0.0f;
 		
 		glfwPollEvents();
 	}
@@ -221,17 +255,21 @@ public class Window {
 		glClearColor(c.x, c.y, c.z, c.w);
 	}
 	
-	public void clearColor(float r, float g, float b, float a) {
+	public void setClearColor(float r, float g, float b, float a) {
 		glClearColor(r, g, b, a);
 	}
 	
-	public void swapInterval(int interval) {
+	public void setSwapInterval(int interval) {
 		glfwSwapInterval(interval);
 	}
 	
 	public void setBackFaceCulling(boolean on) {
 		if (on) GL11.glEnable(GL11.GL_CULL_FACE);
 		else GL11.glDisable(GL11.GL_CULL_FACE);
+	}
+	
+	public void setLineWidth(float w) {
+		GL11.glLineWidth(w);
 	}
 
 	public void setIcon(String path) {
@@ -261,13 +299,28 @@ public class Window {
 		return singleButtons[button];
 	}
 	
-	public double getMouseX() {
+	public float getMouseX() {
 		return mouseX;
 	}
 	
-	public double getMouseY() {
+	public float getMouseY() {
 		return mouseY;
 	}
 	
+	public float getScrollTotal() {
+		return scroll_total;
+	}
+	
+	public float getScrollDelta() {
+		return scroll_delta;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public int getWidth() {
+		return width;
+	}
 	
 }

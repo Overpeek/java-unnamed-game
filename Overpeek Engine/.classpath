@@ -2,14 +2,9 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/ibxm.jar"/>
-	<classpathentry kind="lib" path="lib/jogg-0.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/joml-1.9.14-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/joml-1.9.14-sources.jar"/>
 	<classpathentry kind="lib" path="lib/joml-1.9.14.jar"/>
-	<classpathentry kind="lib" path="lib/jorbis-0.0.15.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl_util_applet.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-natives-windows.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl-assimp-sources.jar"/>
@@ -153,7 +148,6 @@
 	<classpathentry kind="lib" path="lib/lwjgl-zstd.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl.jar"/>
 	<classpathentry kind="lib" path="lib/natives-windows.jar"/>
-	<classpathentry kind="lib" path="lib/slick-util.jar"/>
 	<classpathentry kind="lib" path="lib/steamworks4j-1.8.0-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/steamworks4j-1.8.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/steamworks4j-1.8.0.jar"/>

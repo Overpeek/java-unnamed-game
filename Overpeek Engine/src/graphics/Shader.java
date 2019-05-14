@@ -137,7 +137,7 @@ public class Shader {
 		//Default projection matrix
 		Matrix4f pr = new Matrix4f().ortho2D(-1.0f, 1.0f, 1.0f, -1.0f);
 		enable();
-		SetUniformMat4("pr_matrix", pr);
+		setUniformMat4("pr_matrix", pr);
 
 		//Free up data
 		GL20.glDeleteShader(vertexShader);
@@ -209,7 +209,7 @@ public class Shader {
 	public void setUniform2i(String name, Vector2i value) { enable(); GL20.glUniform2i(getUniformLocation(name), value.x, value.y); }
 	public void setUniform3i(String name, Vector3i value) { enable(); GL20.glUniform3i(getUniformLocation(name), value.x, value.y, value.z); }
 	public void setUniform4i(String name, Vector4i value) { enable(); GL20.glUniform4i(getUniformLocation(name), value.x, value.y, value.z, value.w); }
-	public void SetUniformMat4(String name, Matrix4f value) { enable();
+	public void setUniformMat4(String name, Matrix4f value) { enable();
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			FloatBuffer fb = value.get(stack.mallocFloat(16));
 			GL20.glUniformMatrix4fv(getUniformLocation(name), false, fb); 

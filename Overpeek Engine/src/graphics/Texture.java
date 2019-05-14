@@ -1,13 +1,21 @@
-package utility;
+package graphics;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL42;
 
 public class Texture {
 	
@@ -15,7 +23,15 @@ public class Texture {
     private int type;
     
     
-    private Texture() {}
+    public Texture() {}
+    
+    public void setId(int id) {
+    	texture = id;
+    }
+    
+    public void setType(int _type) {
+    	type = _type;
+    }
     
     public int getId() {
     	return texture;
@@ -32,6 +48,23 @@ public class Texture {
     public static void unbind() {
 		GL11.glBindTexture(GL30.GL_TEXTURE_2D, 0);
     }
+    
+    public static Texture empty(int width, int height) {
+    	Texture returned = new Texture();
+    	returned.type = GL30.GL_TEXTURE_2D;
+    	returned.texture = GL11.glGenTextures();
+		GL11.glBindTexture(GL30.GL_TEXTURE_2D, returned.texture);
+
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, width, height, 0, GL11.GL_RGB, GL11.GL_FLOAT, (ByteBuffer)null);
+		return returned;
+    }
+    
+    
     
     public static Texture loadTextureSingle(String path) {
     	Texture returned = new Texture();
