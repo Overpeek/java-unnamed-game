@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,8 +91,7 @@ public class GlyphTexture {
     	returned.maxHeight = imageHeight;
 
     	//4 (r, g, b, a) times pixels times 224 (glyph count)
-    	//int r = 32;
-    	float data[] = new float[4 * imageWidth * imageHeight * 225];
+    	ByteBuffer data = ByteBuffer.allocateDirect(4 * imageWidth * imageHeight * 225);
     	index = 0;
     	for (int i = 32; i < 256; i++) {
     		index++;
@@ -106,17 +106,16 @@ public class GlyphTexture {
         	    		color = new Color(ch.getRGB(x, y));
     	    		}
     	    		
-					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0] = color.getRed();
-					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1] = color.getGreen();
-					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2] = color.getBlue();
-					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3] = color.getAlpha();
-					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0] = 1.0f;
-					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1] = 1.0f;
-					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2] = 1.0f;
-					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3] = color.getRed();
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0, (byte)color.getRed());
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1, (byte)color.getGreen());
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2, (byte)color.getBlue());
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3, (byte)color.getAlpha());
 				}
 			}
+    	    ch.flush();
     	}
+		
+		data.flip();
     	
     	returned.texture.bind();
 
@@ -127,8 +126,9 @@ public class GlyphTexture {
 
 		//GL12.glTexImage2D(GL30.GL_TEXTURE_2D_ARRAY, 1, GL11.GL_RGBA8, r, r, 225, 0, GL11.GL_RGBA8, GL11.GL_FLOAT, data);
 		GL42.glTexStorage3D(GL30.GL_TEXTURE_2D_ARRAY, 1, GL11.GL_RGBA8, imageWidth, imageHeight, 225);
-		System.err.println(imageWidth +", " +imageHeight);
-		GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, imageWidth, imageHeight, 225, GL11.GL_RGBA, GL11.GL_FLOAT, data);
+		GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, imageWidth, imageHeight, 225, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
+		
+		data.clear();
 		
 		return returned;
     }
@@ -154,6 +154,7 @@ public class GlyphTexture {
         }
 
         /* Create image for holding the char */
+        image.flush();
         image = new BufferedImage(charWidth, charHeight, BufferedImage.TYPE_INT_ARGB);
         g = image.createGraphics();
         if (antiAlias) {

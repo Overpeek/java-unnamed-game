@@ -77,7 +77,7 @@ public class Game extends Application {
 		//framebuffer1.bind();
 		window.clear();
 		
-		Logger.out("FPS: " + gameloop.getFps(), Logger.type.INFO);
+		//Logger.out("FPS: " + gameloop.getFps(), Logger.type.INFO);
 		
 		post_shader.enable();
 		renderer.submitQuad(new Vector3f(-1.0f, 0.0f, 0.0f), new Vector2f(0.07f * label.getFrameBuffer().aspect() / window.aspect(), -0.07f), 0, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
@@ -145,17 +145,21 @@ public class Game extends Application {
 		//Texture
 		texture = Texture.loadTextureAtlas(16, 16, 16, "res/texture/atlas.png");
 		glyphs = GlyphTexture.loadFont("res/font/arial.ttf", 256);
+		Logger.out("Font and textures loaded!");
 		
 		//Audio
+		Logger.out("Loading audio");
 		audioHit = Audio.loadAudio("res/audio/hit.ogg");
 		audioSwing = Audio.loadAudio("res/audio/swing.ogg");
 		audioCollect = Audio.loadAudio("res/audio/collect.ogg");
 		
 		//Framebuffers
+		Logger.out("Creating framebuffers");
 		framebuffer1 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
 		framebuffer2 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
 		
 		//Baked text
+		Logger.out("Baking text");
 		TextLabelTexture.initialize();
 		label = TextLabelTexture.bakeTextToTexture("This is one really long example. TRARNSUJOFABNFOIAUWFHUOWAHFHWAOFHOWAUFOUWHFOUFSNAKLFANWIO!" + gameloop.getFps(), glyphs);
 		

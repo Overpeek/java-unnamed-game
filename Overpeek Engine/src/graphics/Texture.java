@@ -1,10 +1,6 @@
 package graphics;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -73,18 +69,20 @@ public class Texture {
     	//Load image
 		try {
 			BufferedImage img = ImageIO.read(new File(path));
-			float data[] = new float[img.getWidth() * img.getHeight() * 4];
+	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
 			for (int x = 0; x < img.getWidth(); x++) {
 				for (int y = 0; y < img.getHeight(); y++) {
 					
 					Color c = new Color(img.getRGB(x, y), true);
 					
-					data[4 * (x + y * img.getWidth()) + 0] = c.getRed() / 255.0f;
-					data[4 * (x + y * img.getWidth()) + 1] = c.getGreen() / 255.0f;
-					data[4 * (x + y * img.getWidth()) + 2] = c.getBlue() / 255.0f;
-					data[4 * (x + y * img.getWidth()) + 3] = c.getAlpha() / 255.0f;
+					data.put(4 * (x + y * img.getWidth()) + 0, (byte)c.getRed());
+					data.put(4 * (x + y * img.getWidth()) + 1, (byte)c.getGreen());
+					data.put(4 * (x + y * img.getWidth()) + 2, (byte)c.getBlue());
+					data.put(4 * (x + y * img.getWidth()) + 3, (byte)c.getAlpha());
 				}
 			}
+			img.flush();
+			data.flip();
 	    	
 			//Opengl
 	    	returned.texture = GL11.glGenTextures();
@@ -95,6 +93,8 @@ public class Texture {
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_FLOAT, data);
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+
+			data.clear();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -139,6 +139,10 @@ public class Texture {
 
 			GL42.glTexStorage3D(GL30.GL_TEXTURE_2D_ARRAY, 1, GL11.GL_RGBA8, r, r, 256);
 			GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, r, r, 256, GL11.GL_RGBA, GL11.GL_FLOAT, data);
+			
+			data = new float[0];
+			
+			img.getClass();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
