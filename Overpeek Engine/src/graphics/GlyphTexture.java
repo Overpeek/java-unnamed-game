@@ -19,25 +19,22 @@ import org.lwjgl.opengl.GL42;
 
 public class GlyphTexture {
 
-	public class Glyph {
+	public static class Glyph {
 
 	    public final int width;
 	    public final int height;
-	    public final int x;
-	    public final int y;
-	    public final float advance;
+	    public final int textureId;
 
-	    public Glyph(int width, int height, int x, int y, float advance) {
+	    public Glyph(int width, int height, int id) {
 	        this.width = width;
 	        this.height = height;
-	        this.x = x;
-	        this.y = y;
-	        this.advance = advance;
+	        textureId = id;
 	    }
 
 	}
     private Map<Character, Glyph> glyphs = new HashMap<>();
-
+    private int maxHeight;
+    private int resolution;
 	private Texture texture;
 	
 	private GlyphTexture() {}
@@ -46,11 +43,25 @@ public class GlyphTexture {
     	return texture;
     }
     
+    public int getHeight() {
+    	return maxHeight;
+    }
+    
+    public Glyph getGlyphData(Character c) {
+		return glyphs.get(c);
+    }
+    
+    public int getResolution() {
+    	return resolution;
+    }
+    
     public static GlyphTexture loadFont(String path, int resolution) {
     	GlyphTexture returned = new GlyphTexture();
+    	returned.glyphs = new HashMap<>();
     	returned.texture = new Texture();
     	returned.texture.setType(GL30.GL_TEXTURE_2D_ARRAY);
     	returned.texture.setId(GL11.glGenTextures());;
+    	returned.resolution = resolution;
     	
     	Font font = null;
     	try {
@@ -63,18 +74,25 @@ public class GlyphTexture {
     	int imageWidth = 0;
     	int imageHeight = 0;
 
+    	int index = 0;
     	for (int i = 32; i < 256; i++) {
+    		index++;
     	    if (i == 127) continue;
     	    char c = (char) i;
     	    BufferedImage ch = createCharImage(font, c, true);
     	    imageWidth = Math.max(imageWidth, ch.getWidth());
     	    imageHeight = Math.max(imageHeight, ch.getHeight());
+    	    
+    	    /* Create glyph and draw char on image */
+            Glyph gly = new Glyph(ch.getWidth(), ch.getHeight(), index);
+            returned.glyphs.put(c, gly);
     	}
+    	returned.maxHeight = imageHeight;
 
     	//4 (r, g, b, a) times pixels times 224 (glyph count)
     	//int r = 32;
     	float data[] = new float[4 * imageWidth * imageHeight * 225];
-    	int index = 0;
+    	index = 0;
     	for (int i = 32; i < 256; i++) {
     		index++;
     	    if (i == 127) continue;
@@ -92,6 +110,10 @@ public class GlyphTexture {
 					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1] = color.getGreen();
 					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2] = color.getBlue();
 					data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3] = color.getAlpha();
+					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0] = 1.0f;
+					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1] = 1.0f;
+					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2] = 1.0f;
+					//data[4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3] = color.getRed();
 				}
 			}
     	}

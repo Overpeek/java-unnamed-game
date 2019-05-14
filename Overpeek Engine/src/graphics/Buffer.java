@@ -1,8 +1,10 @@
 package graphics;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 
 public class Buffer {
 
@@ -14,6 +16,30 @@ public class Buffer {
 	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
 	*/
 	Buffer(float _data[], int _componentCount, int _usage) {
+		componentCount = _componentCount;
+		
+		id = GL20.glGenBuffers();
+		bind();
+		GL15.glBufferData(GL20.GL_ARRAY_BUFFER, _data, _usage);
+	}
+
+	/*
+	- "componentCount" is amount of components per vertex
+	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
+	*/
+	Buffer(FloatBuffer _data, int _componentCount, int _usage) {
+		componentCount = _componentCount;
+		
+		id = GL20.glGenBuffers();
+		bind();
+		GL15.glBufferData(GL20.GL_ARRAY_BUFFER, _data, _usage);
+	}
+
+	/*
+	- "componentCount" is amount of components per vertex
+	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
+	*/
+	Buffer(ByteBuffer _data, int _componentCount, int _usage) {
 		componentCount = _componentCount;
 		
 		id = GL20.glGenBuffers();

@@ -11,15 +11,23 @@ public class Framebuffer {
 
 	private int framebuffer_id;
 	private Texture texture;
+	private int width;
+	private int height;
 	
 	private Framebuffer() {
 		
+	}
+	
+	public float aspect() {
+		return (float)width / (float)height;
 	}
 	
 	public static Framebuffer createFramebuffer(int width, int height) {
 		Framebuffer returned = new Framebuffer();
 		returned.framebuffer_id = GL30.glGenFramebuffers();
 		returned.bind();
+		returned.width = width;
+		returned.height = height;
 		
 		
 		returned.texture = Texture.empty(width, height); 

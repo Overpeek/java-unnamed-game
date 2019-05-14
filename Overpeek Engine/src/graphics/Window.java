@@ -1,6 +1,5 @@
 package graphics;
 
-import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -9,6 +8,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import java.nio.ByteBuffer;
 
 import org.joml.Vector4f;
+import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -17,6 +17,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.stb.STBImage;
 
@@ -49,7 +50,7 @@ public class Window {
 	private int fullscreen; 
 	private int multisample;
 	
-	private boolean debug_mode = true;
+	private boolean debug_mode = false;
 
 	
 	private boolean keys[] = new boolean[512];
@@ -192,6 +193,8 @@ public class Window {
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
 	}
 	
 	public boolean shouldClose() {
@@ -208,6 +211,10 @@ public class Window {
 		scroll_delta = 0.0f;
 		
 		glfwPollEvents();
+	}
+	
+	public void viewport() {
+		GL30.glViewport(0, 0, width, height);
 	}
 	
 	public void update() {
@@ -281,6 +288,14 @@ public class Window {
 		gb.put(0, iconGI);
 		
 		glfwSetWindowIcon(window, gb);
+	}
+	
+	public String getRenderer() {
+		return glGetString(GL_RENDERER);
+	}
+	
+	public String getLWJGL() {
+		return Version.getVersion();
 	}
 
 	public boolean key(int key) {

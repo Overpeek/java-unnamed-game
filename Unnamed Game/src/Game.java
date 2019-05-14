@@ -2,19 +2,16 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.Version;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL20;
 
 import audio.Audio;
 import graphics.Framebuffer;
 import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
+import graphics.TextLabelTexture;
 import graphics.Texture;
 import graphics.Window;
 import utility.Application;
-import utility.GameLoop;
 import utility.Keys;
 import utility.Logger;
 
@@ -27,13 +24,15 @@ public class Game extends Application {
 	public final String APP_NAME = "Unnamed Game - " + APP_VERSION + " (Java Port)";
 	public final float DEBUG_ZOOM = 1.0f;
 
-	private Shader shader;
+	private Shader multi_texture_shader;
+	private Shader single_texture_shader;
 	private Shader point_shader;
 	private Shader post_shader;
 	
 	private Framebuffer framebuffer1;
 	private Framebuffer framebuffer2;
 	
+	private TextLabelTexture label;
 	private Renderer renderer;
 	private GlyphTexture glyphs;
 	private Texture texture;
@@ -41,10 +40,6 @@ public class Game extends Application {
 	private Audio audioHit;
 	private Audio audioSwing;
 	private Audio audioCollect;
-	private GameLoop gameloop;
-	
-	private int n = 0;
-	private int counter = 0;
 	
 
 	//Main update loop
@@ -64,19 +59,15 @@ public class Game extends Application {
 		window.input();
 
 		//Input
-		if (window.keyPress(GLFW.GLFW_KEY_UP)) {
+		if (window.keyPress(Keys.KEY_UP)) {
 			audioHit.play();
 		}
-		if (window.keyPress(GLFW.GLFW_KEY_DOWN)) {
+		if (window.keyPress(Keys.KEY_DOWN)) {
 			audioSwing.play();
 		}
-		if (window.keyPress(GLFW.GLFW_KEY_RIGHT)) {
+		if (window.keyPress(Keys.KEY_RIGHT)) {
 			audioCollect.play();
 		}
-		shader.setUniform1f("brightness", window.getScrollTotal());
-		//System.out.println(window.getScrollTotal());
-		shader.setUniform2f("mouse", new Vector2f(window.getMouseX(), INITIAL_WINDOW_HEIGHT - window.getMouseY()));
-		//System.out.println(window.getMouseX() + ", " + window.getMouseY());
 		
 		
 		//Rendering
@@ -85,39 +76,13 @@ public class Game extends Application {
 		//Render framebuffer
 		//framebuffer1.bind();
 		window.clear();
-		shader.enable();
 		
-		counter++;
-		if (counter > 200) {
-			counter = 0;
-			n = (n + 1) % 224;
-		}
-		//System.out.println(n);
+		Logger.out("FPS: " + gameloop.getFps(), Logger.type.INFO);
 		
-		framebuffer1.bind();
-		framebuffer1.clear();
-		renderer.submitQuad(new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(1.0f, 1.0f), n, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-		renderer.draw(glyphs.getTexture().getId(), glyphs.getTexture().getType());
+		post_shader.enable();
+		renderer.submitQuad(new Vector3f(-1.0f, 0.0f, 0.0f), new Vector2f(0.07f * label.getFrameBuffer().aspect() / window.aspect(), -0.07f), 0, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+		renderer.draw(label.getFrameBuffer().getTexture().getId(), label.getFrameBuffer().getTexture().getType());
 		
-		//for (int i = 0; i < 0; i++) {
-		//	framebuffer2.bind();
-		//	window.clear();
-		//	post_shader.setUniform1i("unif_effect", 1);
-		//	renderer.submitQuad(new Vector3f(-1.0f, 1.0f, 0.0f), new Vector2f(2.0f, -2.0f), 0, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-		//	renderer.draw(framebuffer1.getTexture().getId(), framebuffer1.getTexture().getType());
-        //
-		//	framebuffer1.bind();
-		//	window.clear();
-		//	post_shader.setUniform1i("unif_effect", 2);
-		//	renderer.submitQuad(new Vector3f(-1.0f, 1.0f, 0.0f), new Vector2f(2.0f, -2.0f), 0, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-		//	renderer.draw(framebuffer2.getTexture().getId(), framebuffer2.getTexture().getType());
-		//}
-		
-		Framebuffer.unbind();
-		window.clear();
-		post_shader.setUniform1i("unif_effect", 3);
-		renderer.submitQuad(new Vector3f(-1.0f, 1.0f, 0.0f), new Vector2f(2.0f, -2.0f), 0, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-		renderer.draw(framebuffer1.getTexture().getId(), framebuffer1.getTexture().getType());
 		
 		window.update();
 	}
@@ -168,19 +133,18 @@ public class Game extends Application {
 		//Shaders
 		Logger.out("Creating all the shaders");
 		post_shader = new Shader("res/shader/postprocess.vert.glsl", "res/shader/postprocess.frag.glsl");
-		shader = new Shader("res/shader/texture.vert.glsl", "res/shader/texture.frag.glsl");
+		multi_texture_shader = new Shader("res/shader/texture.vert.glsl", "res/shader/texture.frag.glsl");
+		single_texture_shader = new Shader("res/shader/texture-single.vert.glsl", "res/shader/texture-single.frag.glsl");
 		//post_shader = new Shader("res/shader/texture.vert.glsl", "res/shader/texture.frag.glsl");
 		point_shader = new Shader("res/shader/geometrytexture.vert.glsl", "res/shader/geometrytexture.frag.glsl", "res/shader/geometrytexture.geom.glsl");
 		Logger.out("All shaders created successfully!");
-
-		resize(window.getWidth(), window.getHeight());
 		
 		//Renderer
 		renderer = new Renderer();
 		
 		//Texture
 		texture = Texture.loadTextureAtlas(16, 16, 16, "res/texture/atlas.png");
-		glyphs = GlyphTexture.loadFont("res/font/arial.ttf", 23);
+		glyphs = GlyphTexture.loadFont("res/font/arial.ttf", 256);
 		
 		//Audio
 		audioHit = Audio.loadAudio("res/audio/hit.ogg");
@@ -191,10 +155,16 @@ public class Game extends Application {
 		framebuffer1 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
 		framebuffer2 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
 		
-		//System and software info
-		System.out.println("LWJGL " + Version.getVersion());
-		System.out.println("Renderer " + GL20.glGetString(GL20.GL_RENDERER));
+		//Baked text
+		TextLabelTexture.initialize();
+		label = TextLabelTexture.bakeTextToTexture("This is one really long example. TRARNSUJOFABNFOIAUWFHUOWAHFHWAOFHOWAUFOUWHFOUFSNAKLFANWIO!" + gameloop.getFps(), glyphs);
 		
+		//System and software info
+		System.out.println("LWJGL " + window.getLWJGL());
+		System.out.println("Renderer " + window.getRenderer());
+
+
+		resize(window.getWidth(), window.getHeight());
 	}
 
 	
@@ -226,10 +196,12 @@ public class Game extends Application {
 	@Override
 	public void resize(int width, int height) {
 		// TODO Auto-generated method stub
-
+		window.viewport();
+		
 		//Matrices
 		Matrix4f projection = new Matrix4f().ortho(-window.aspect() * DEBUG_ZOOM, window.aspect() * DEBUG_ZOOM, DEBUG_ZOOM, -DEBUG_ZOOM, 0.0f, 10000.0f);
-		shader.setUniformMat4("pr_matrix", projection);
+		multi_texture_shader.setUniformMat4("pr_matrix", projection);
+		single_texture_shader.setUniformMat4("pr_matrix", projection);
 		point_shader.setUniformMat4("pr_matrix", projection);
 		projection = new Matrix4f().ortho(-1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f);
 		post_shader.setUniformMat4("pr_matrix", projection);
