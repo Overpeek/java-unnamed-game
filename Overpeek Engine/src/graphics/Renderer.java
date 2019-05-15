@@ -18,7 +18,7 @@ public class Renderer {
 		float i;
 		float r, g, b, a;
 
-		VertexData(float _x, float _y, float _z, float _u, float _v, float _i, float _r, float _g, float _b, float _a) {
+		public VertexData(float _x, float _y, float _z, float _u, float _v, float _i, float _r, float _g, float _b, float _a) {
 			x = _x;
 			y = _y;
 			z = _z;
@@ -29,6 +29,10 @@ public class Renderer {
 			g = _g;
 			b = _b;
 			a = _a;
+		}
+
+		public VertexData(Vector3f pos, Vector2f size, float i, Vector4f color) {
+			this(pos.x, pos.y, pos.z, size.x, size.y, i, color.x, color.y, color.z, color.w);
 		}
 
 		static int sizeof() {
@@ -114,6 +118,11 @@ public class Renderer {
 
 		vertex_count++;
 	}
+	
+	public void submitBakedText(Vector3f _pos, Vector2f _size, TextLabelTexture label, Vector4f _color) {
+		submitQuad(_pos, new Vector2f(_size.x * label.getFrameBuffer().aspect(), _size.y), 0, _color);
+		draw(label.getFrameBuffer().getTexture().getId(), label.getFrameBuffer().getTexture().getType());
+	}
 
 	public void submitQuad(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {
 		submitVertex(new VertexData(_pos.x, _pos.y, _pos.z, 0.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
@@ -131,8 +140,6 @@ public class Renderer {
 
 		stopRendering();
 
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-
 		// Binding
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(textureType, texture);
@@ -141,7 +148,5 @@ public class Renderer {
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertex_count);
 		buffer_current = 0;
 		vertex_count = 0;
-
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
 	}
 }

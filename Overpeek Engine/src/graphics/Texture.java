@@ -45,22 +45,41 @@ public class Texture {
 		GL11.glBindTexture(GL30.GL_TEXTURE_2D, 0);
     }
     
-    public static Texture empty(int width, int height) {
+    public static Texture empty2d(int width, int height, int type) {
     	Texture returned = new Texture();
-    	returned.type = GL30.GL_TEXTURE_2D;
+    	returned.type = type;
     	returned.texture = GL11.glGenTextures();
-		GL11.glBindTexture(GL30.GL_TEXTURE_2D, returned.texture);
+		GL11.glBindTexture(type, returned.texture);
 
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, width, height, 0, GL11.GL_RGB, GL11.GL_FLOAT, (ByteBuffer)null);
+		GL11.glTexImage2D(type, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
 		return returned;
     }
     
+    public static Texture empty3d(int width, int height, int depth, int type) {
+    	Texture returned = new Texture();
+    	returned.type = type;
+    	returned.texture = GL11.glGenTextures();
+		GL11.glBindTexture(type, returned.texture);
+
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+
+		GL42.glTexStorage3D(type, 1, GL11.GL_RGBA8, width, height, depth);
+		//GL12.glTexSubImage3D(type, 0, 0, 0, 0, width, height, depth, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
+		//GL30.glTexImage3D(type, 1, GL11.GL_RGB, width, height, depth, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
+		return returned;
+    }
     
+    public void delete() {
+    	GL11.glDeleteTextures(texture);
+    }
     
     public static Texture loadTextureSingle(String path) {
     	Texture returned = new Texture();
@@ -81,7 +100,6 @@ public class Texture {
 					data.put(4 * (x + y * img.getWidth()) + 3, (byte)c.getAlpha());
 				}
 			}
-			img.flush();
 			data.flip();
 	    	
 			//Opengl
@@ -91,7 +109,7 @@ public class Texture {
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_FLOAT, data);
+			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
 
 			data.clear();
@@ -112,7 +130,7 @@ public class Texture {
 			BufferedImage img = ImageIO.read(new File(path));
 			
 			int dataSize = 4 * r * r * 256;
-			float data[] = new float[dataSize];
+			ByteBuffer data = ByteBuffer.allocateDirect(dataSize);
 			for (int i = 0; i < 256; i++) {
 				for (int y = 0; y < r; y++) {
 					for (int x = 0; x < r; x++) {
@@ -121,13 +139,14 @@ public class Texture {
 
 						Color c = new Color(img.getRGB(xInInput, yInInput), true);
 						
-						data[4 * (x + y * r + i * r * r) + 0] = c.getRed() / 255.0f;
-						data[4 * (x + y * r + i * r * r) + 1] = c.getGreen() / 255.0f;
-						data[4 * (x + y * r + i * r * r) + 2] = c.getBlue() / 255.0f;
-						data[4 * (x + y * r + i * r * r) + 3] = c.getAlpha() / 255.0f;
+						data.put(4 * (x + y * r + i * r * r) + 0, (byte)c.getRed());
+						data.put(4 * (x + y * r + i * r * r) + 1, (byte)c.getGreen());
+						data.put(4 * (x + y * r + i * r * r) + 2, (byte)c.getBlue());
+						data.put(4 * (x + y * r + i * r * r) + 3, (byte)c.getAlpha());
 					}
 				}
 			}
+			data.flip();
 
 			returned.texture = GL11.glGenTextures();
 			GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, returned.texture);
@@ -138,9 +157,9 @@ public class Texture {
 			GL11.glTexParameteri(GL30.GL_TEXTURE_2D_ARRAY, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
 			GL42.glTexStorage3D(GL30.GL_TEXTURE_2D_ARRAY, 1, GL11.GL_RGBA8, r, r, 256);
-			GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, r, r, 256, GL11.GL_RGBA, GL11.GL_FLOAT, data);
+			GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, r, r, 256, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
 			
-			data = new float[0];
+			data.clear();
 			
 			img.getClass();
 			

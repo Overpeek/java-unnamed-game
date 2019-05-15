@@ -1,0 +1,194 @@
+{
+	"biomes": [
+		{
+			"name": "Ocean",
+			"id": 0,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 0.8,
+					"tile_id": 1,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.95,
+					"tile_id": 2,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 1.0,
+					"tile_id": 0,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		},
+		{
+			"name": "Beach",
+			"id": 1,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 1.0,
+					"tile_id": 2,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		},
+		{
+			"name": "Default",
+			"id": 2,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 0.05,
+					"tile_id": 1,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.1,
+					"tile_id": 2,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.8,
+					"tile_id": 0,
+					"grass_id": 1,
+					"grass_rarity": 0.5,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 1.00,
+					"tile_id": 4,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		},
+		{
+			"name": "Forest",
+			"id": 3,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 0.05,
+					"tile_id": 1,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.1,
+					"tile_id": 2,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.8,
+					"tile_id": 0,
+					"grass_id": 1,
+					"grass_rarity": 0.5,
+					"plant_id": 2,
+					"plant_rarity": 0.5
+				},
+				{
+					"height": 1.00,
+					"tile_id": 4,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		},
+		{
+			"name": "Forest 2",
+			"id": 4,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 0.05,
+					"tile_id": 1,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.1,
+					"tile_id": 2,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				},
+				{
+					"height": 0.8,
+					"tile_id": 0,
+					"grass_id": 1,
+					"grass_rarity": 0.5,
+					"plant_id": 3,
+					"plant_rarity": 0.5
+				},
+				{
+					"height": 1.00,
+					"tile_id": 4,
+					"grass_id": 0,
+					"grass_rarity": 0.0,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		},
+		{
+			"name": "Mountains",
+			"id": 5,
+			"temperature": 0.5,
+			"humidity": 0.5,
+			"noise_scale": 0.02,
+			"height_map": [
+				{
+					"height": 1.0,
+					"tile_id": 4,
+					"grass_id": 5,
+					"grass_rarity": 0.1,
+					"plant_id": 0,
+					"plant_rarity": 0.0
+				}
+			]
+		}
+	]
+}

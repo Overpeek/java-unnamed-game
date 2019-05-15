@@ -13,6 +13,6 @@ public abstract class Application {
 	public abstract void keyPress(int key, int action);
 	public abstract void buttonPress(int button, int action);
 	public abstract void mousePos(int x, int y);
-	//public abstract void textCallback(char character)
+	public abstract void charCallback(char character);
 	
 }

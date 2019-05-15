@@ -1,3 +1,4 @@
+import logic.Game;
 import utility.Application;
 import utility.GameLoop;
 

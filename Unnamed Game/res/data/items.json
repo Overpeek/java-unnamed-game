@@ -1,0 +1,64 @@
+{
+   	"items": [
+        {
+        	"name": "Empty",
+            "id": 0,
+            "texture": 9,
+            "stack": 99,
+            "melee": 0.0,
+            "knock": 0.0,
+            "break": 0.0,
+            "placed": 0
+        },
+        {
+	        "name": "Stone",
+	        "id": 1,
+	        "texture": 17,
+	        "stack": 99,
+	        "melee": 0.0,
+	        "knock": 0.0,
+	        "break": 0.0,
+	        "placed": 5
+        },
+        {
+	        "name": "Plant fiber",
+	        "id": 2,
+	        "texture": 18,
+	        "stack": 99,
+	        "melee": 0.0,
+	        "knock": 0.0,
+	        "break": 0.0,
+	        "placed": 0
+        },
+        {
+	        "name": "Log",
+	        "id": 3,
+	        "texture": 16,
+	        "stack": 99,
+	        "melee": 0.0,
+	        "knock": 0.0,
+	        "break": 0.0,
+	        "placed": 4
+        },
+        {
+	        "name": "Sword",
+	        "id": 4,
+	        "texture": 22,
+	        "stack": 1,
+	        "melee": 4.0,
+	        "knock": 4.0,
+	        "break": 0.0,
+	        "placed": 0
+        },
+        {
+	        "name": "Pickaxe",
+	        "id": 5,
+	        "texture": 23,
+	        "stack": 1,
+	        "melee": 2.0,
+	        "knock": 4.0,
+	        "break": 4.0,
+        	"placed": 0
+		}
+    ]
+}

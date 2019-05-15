@@ -75,6 +75,7 @@ void main()
 	}
 	else {
 		//Normal
-		color = texture(unif_texture, shader_uv);
+		color = vec4(1.0f, 0.0f, 0.5f, 1.0f);
+		//color = texture(unif_texture, shader_uv);
 	}
 }

@@ -1,0 +1,29 @@
+{
+   	"tiles": [
+   		{
+        	"name": "Soil",
+            "id": 0,
+            "texture": 0
+        },
+        {
+	        "name": "Water",
+	        "id": 1,
+	        "texture": 1
+        },
+        {
+	        "name": "Sand",
+	        "id": 2,
+	        "texture": 2
+        },
+        {
+	        "name": "Grassy soil",
+	        "id": 3,
+	        "texture": 3
+        },
+        {
+	        "name": "Gravel",
+	        "id": 4,
+	        "texture": 7
+        }
+	]
+}

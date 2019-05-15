@@ -105,11 +105,15 @@ public class GlyphTexture {
     	    		if (x < ch.getWidth() - 1 && y < ch.getHeight() - 1) {
         	    		color = new Color(ch.getRGB(x, y));
     	    		}
-    	    		
-					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0, (byte)color.getRed());
-					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1, (byte)color.getGreen());
-					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2, (byte)color.getBlue());
-					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3, (byte)color.getAlpha());
+
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0, (byte)255);
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1, (byte)255);
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2, (byte)255);
+					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3, (byte)color.getRed());
+					//data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0, (byte)color.getRed());
+					//data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 1, (byte)color.getGreen());
+					//data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 2, (byte)color.getBlue());
+					//data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3, (byte)color.getAlpha());
 				}
 			}
     	    ch.flush();

@@ -31,19 +31,19 @@ public class Logger {
 		
 		switch (output_type) {
 		case DEBUG:
-			System.out.println(ANSI_PURPLE + "[DEBUG] [" + ANSI_BLUE +  dateFormat.format(date.getTime()).toString() + ANSI_PURPLE + "] -> " + log);
+			System.out.println(ANSI_PURPLE + "[DEBUG] [" + ANSI_BLUE +  dateFormat.format(date.getTime()).toString() + ANSI_PURPLE + "]" + ANSI_WHITE + " -> " + log);
 			break;
 		case INFO:
-			System.out.println(ANSI_WHITE + "[INFO] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_WHITE + "] -> " + log);
+			System.out.println(ANSI_WHITE + "[INFO] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_WHITE + "]" + ANSI_WHITE + " -> " + log);
 			break;
 		case WARNING:
-			System.out.println(ANSI_YELLOW + "[WARNING] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_YELLOW + "] -> " + log);
+			System.out.println(ANSI_YELLOW + "[WARNING] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_YELLOW + "]" + ANSI_WHITE + " -> " + log);
 			break;
 		case CRITICAL:
-			System.out.println(ANSI_RED + "[CRITICAL] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_RED + "] -> " + log);
+			System.out.println(ANSI_RED + "[CRITICAL] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_RED + "]" + ANSI_WHITE + " -> " + log);
 			break;
 		case ERROR:
-			System.err.println(ANSI_DARKR + "[ERROR] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_DARKR + "] -> " + log);
+			System.err.println(ANSI_DARKR + "[ERROR] [" + ANSI_BLUE + dateFormat.format(date.getTime()).toString() + ANSI_DARKR + "]" + ANSI_WHITE + " -> " + log);
 			System.exit(-1);
 			break;
 

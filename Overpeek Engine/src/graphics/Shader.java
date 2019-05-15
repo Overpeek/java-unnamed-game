@@ -2,14 +2,14 @@ package graphics;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.charset.StandardCharsets;
 
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
+
+import utility.Logger;
 
 
 public class Shader {
@@ -40,7 +40,7 @@ public class Shader {
 			
 			reader.close();
 		} catch (Exception e) {
-			throw new IllegalStateException("Shader file could not be loaded! (" + path +")");
+			Logger.out("Shader file could not be loaded! (" + path +")", Logger.type.ERROR);
 		}
 		
 		return loadShader(shadertype, shaderSource.toString());
@@ -48,33 +48,21 @@ public class Shader {
 
 	private void shaderLog(String text, int shaderId, int type) {
 		int success[] = new int[1];
-		ByteBuffer infoLogBuffer = ByteBuffer.allocate(512);
 		GL20.glGetShaderiv(shaderId, type, success);
 		if (success[0] == 0)
 		{
-			int infoLogLength[] = new int[1];
-			GL20.glGetShaderiv(shaderId, GL20.GL_INFO_LOG_LENGTH, infoLogLength);
-			GL20.glGetShaderInfoLog(shaderId, infoLogLength, infoLogBuffer);
-
-			byte[] infoLogBytes = infoLogBuffer.array();
-			String infoLogString = new String( infoLogBytes, StandardCharsets.UTF_8 );
-			throw new IllegalStateException(text + infoLogString);
+			String infoLogString = GL20.glGetShaderInfoLog(shaderId);
+			Logger.out(text + "\n" + infoLogString, Logger.type.ERROR);
 		}
 	}
 
 	private void programLog(String text, int program, int type) {
 		int success[] = new int[1];
-		ByteBuffer infoLogBuffer = ByteBuffer.allocate(512);
 		GL20.glGetProgramiv(program, type, success);
 		if (success[0] == 0)
 		{
-			int infoLogLength[] = new int[1];
-			GL20.glGetProgramiv(program, GL20.GL_INFO_LOG_LENGTH, infoLogLength);;
-			GL20.glGetProgramInfoLog(program, infoLogLength, infoLogBuffer);
-
-			byte[] infoLogBytes = infoLogBuffer.array();
-			String infoLogString = new String( infoLogBytes, StandardCharsets.UTF_8 );
-			throw new IllegalStateException(text + infoLogString);
+			String infoLogString = GL20.glGetProgramInfoLog(program);
+			Logger.out(text + "\n" + infoLogString, Logger.type.ERROR);
 		}
 	}
 

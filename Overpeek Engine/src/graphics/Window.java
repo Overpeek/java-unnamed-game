@@ -5,7 +5,14 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
+import javax.imageio.ImageIO;
 
 import org.joml.Vector4f;
 import org.lwjgl.Version;
@@ -18,8 +25,8 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.stb.STBImage;
 
 import utility.Logger;
 import utility.Logger.type;
@@ -34,6 +41,7 @@ public class Window {
 	public static final int WINDOW_RESIZEABLE		= 0x000100;
 	public static final int WINDOW_TRANSPARENT		= 0x001000;
 	public static final int WINDOW_FULLSCREEN		= 0x010000;
+	public static final int WINDOW_DEBUGMODE		= 0x100000;
 
 	public static final int POLYGON_LINE			= 0;
 	public static final int POLYGON_FILL			= 1;
@@ -50,7 +58,7 @@ public class Window {
 	private int fullscreen; 
 	private int multisample;
 	
-	private boolean debug_mode = false;
+	private boolean debug_mode = true;
 
 	
 	private boolean keys[] = new boolean[512];
@@ -156,6 +164,10 @@ public class Window {
 			fullscreen = 1;
 		} else fullscreen = 0;
 		
+		if ((mods & WINDOW_DEBUGMODE) != 0) {
+			debug_mode = true;
+		} else debug_mode = false;
+		
 		init();
 	}
 	
@@ -189,12 +201,16 @@ public class Window {
 		
 		//OpenGL
 		GL.createCapabilities();
-		if (debug_mode) GLUtil.setupDebugMessageCallback();
+		if (debug_mode) {
+			GLUtil.setupDebugMessageCallback();
+			GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL43.GL_DEBUG_SEVERITY_NOTIFICATION, (IntBuffer) null, false);
+		}
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
+		glDepthMask(false);
+		glDepthFunc(GL_ALWAYS);
 	}
 	
 	public boolean shouldClose() {
@@ -254,7 +270,7 @@ public class Window {
 				errorText = "Unknown error!";
 				break;
 			}
-			throw new IllegalStateException("OpenGL: " + err + " -- " + errorText);
+			Logger.out("OpenGL: " + err + " -- " + errorText, Logger.type.ERROR);
 		}
 	}
 	
@@ -280,11 +296,29 @@ public class Window {
 	}
 
 	public void setIcon(String path) {
-		int x[] = new int[1], y[] = new int[1], nrChannels[] = new int[1];
-		ByteBuffer data = STBImage.stbi_load(path, x, y, nrChannels, 0);
+		BufferedImage img = null;
+		try {
+			img = ImageIO.read(new File(path));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
+		for (int x = 0; x < img.getWidth(); x++) {
+			for (int y = 0; y < img.getHeight(); y++) {
+				
+				Color c = new Color(img.getRGB(x, y), true);
+				
+				data.put(4 * (x + y * img.getWidth()) + 0, (byte)c.getRed());
+				data.put(4 * (x + y * img.getWidth()) + 1, (byte)c.getGreen());
+				data.put(4 * (x + y * img.getWidth()) + 2, (byte)c.getBlue());
+				data.put(4 * (x + y * img.getWidth()) + 3, (byte)c.getAlpha());
+			}
+		}
+		data.flip();
 		
 		GLFWImage.Buffer gb = GLFWImage.create(1);
-		GLFWImage iconGI = GLFWImage.create().set(x[0], y[0], data);
+		GLFWImage iconGI = GLFWImage.create().set(img.getWidth(), img.getHeight(), data);
 		gb.put(0, iconGI);
 		
 		glfwSetWindowIcon(window, gb);

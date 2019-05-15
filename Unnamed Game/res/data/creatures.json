@@ -1,0 +1,76 @@
+{
+   	"creatures": [
+   		{
+        	"name": "Player",
+            "id": 0,
+            "walkspeed": 50.0,
+            "friendly": true,
+            "ghost": false,
+            "knockback": 0.3,
+            "melee": 1.0,
+            "health": 20.0,
+            "regen": 0.005,
+            "stamina": 5.0,
+            "staminaregen": 0.005,
+            "drops": [],
+            "color.r": 1.0,
+            "color.g": 1.0,
+            "color.b": 1.0,
+            "color.a": 1.0,
+            "texture.0": 8,
+            "texture.1": 9,
+            "texture.2": 10,
+            "texture.3": 11
+        },
+        {
+        	"name": "Unnamed",
+            "id": 1,
+            "walkspeed": 50.0,
+            "friendly": false,
+            "ghost": false,
+            "knockback": 0.3,
+            "melee": 4.0,
+            "health": 20.0,
+            "regen": 0.0,
+            "stamina": 5.0,
+            "staminaregen": 5.0,
+            "drops": [
+            	{
+            		"id": 2,
+            		"min": 0,
+            		"max": 3
+            	}
+            ],
+            "color.r": 1.0,
+            "color.g": 1.0,
+            "color.b": 1.0,
+            "color.a": 1.0,
+            "texture.0": 8,
+            "texture.1": 9,
+            "texture.2": 10,
+            "texture.3": 11
+        },
+        {
+        	"name": "Item",
+            "id": 2,
+            "walkspeed": 50.0,
+            "friendly": false,
+            "ghost": false,
+            "knockback": 0.0,
+            "melee": 0.0,
+            "health": 1.0,
+            "regen": 0.0,
+            "stamina": 0.0,
+            "staminaregen": 0.0,
+            "drops": [],
+            "color.r": 1.0,
+            "color.g": 1.0,
+            "color.b": 1.0,
+            "color.a": 1.0,
+            "texture.0": 0,
+            "texture.1": 0,
+            "texture.2": 0,
+            "texture.3": 0
+        }
+	]
+}		
