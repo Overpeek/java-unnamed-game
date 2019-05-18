@@ -85,10 +85,8 @@ public class Game extends Application {
 		window.clear();
 
 		
-		for (int id = 0, x = -1; x < 2; x++) {
-			for (int y = -1; y < 2; y++) {
-				world_renderer.submitQuad(new Vector3f(-0.5f - x, -0.5f - y, 0.0f), new Vector2f(1.0f), id++, Colors.WHITE);
-			}
+		for (int x = 0; x < 10000; x++) {
+			world_renderer.submitQuad(new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(1.0f), 5, Colors.WHITE);
 		}
 		multi_texture_shader.enable();
 		world_renderer.draw(texture.getId(), texture.getType());
@@ -132,9 +130,6 @@ public class Game extends Application {
 		Vector2f size = new Vector2f(1.0f, 1.0f);
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x, pos.y, pos.z), 					new Vector2f(0.0f, 0.0f), 0, Colors.WHITE));
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x, pos.y + size.y, pos.z), 			new Vector2f(0.0f, 1.0f), 0, Colors.WHITE));
-		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y + size.y, pos.z), 	new Vector2f(1.0f, 1.0f), 0, Colors.WHITE));
-
-		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x, pos.y, pos.z), 					new Vector2f(0.0f, 0.0f), 0, Colors.WHITE));
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y + size.y, pos.z), 	new Vector2f(1.0f, 1.0f), 0, Colors.WHITE));
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y, pos.z), 			new Vector2f(1.0f, 0.0f), 0, Colors.WHITE));
 		tmpshader.enable();

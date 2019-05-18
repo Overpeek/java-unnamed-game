@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 import graphics.Renderer.VertexData;
 
@@ -42,7 +43,7 @@ public class TextLabelTexture {
 		
 		bufferMap = ByteBuffer.allocateDirect(MAX_CHARACTERS * 6 * VertexData.componentCount() * 4).asFloatBuffer();
 		textVAO = new VertexArray();
-		textBuffer = new Buffer(bufferMap, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
+		textBuffer = new Buffer(bufferMap, GL15.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
 		buffer_current = 0;
 		vertex_count = 0;
 
