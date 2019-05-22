@@ -3,27 +3,27 @@
    		{
         	"name": "Soil",
             "id": 0,
-            "texture": 0
+            "texture": "res/texture/tile/soil.png"
         },
         {
 	        "name": "Water",
 	        "id": 1,
-	        "texture": 1
+	        "texture": "res/texture/tile/water.png"
         },
         {
 	        "name": "Sand",
 	        "id": 2,
-	        "texture": 2
+	        "texture": "res/texture/tile/sand.png"
         },
         {
 	        "name": "Grassy soil",
 	        "id": 3,
-	        "texture": 3
+	        "texture": "res/texture/tile/grassy_soil.png"
         },
         {
 	        "name": "Gravel",
 	        "id": 4,
-	        "texture": 7
+	        "texture": "res/texture/tile/gravel.png"
         }
 	]
 }

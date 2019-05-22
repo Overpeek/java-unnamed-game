@@ -21,7 +21,27 @@ public class Logger {
 		INFO, WARNING, CRITICAL, ERROR, DEBUG
 	};
 	
-	public static void out (String log) {
+	public static void error(String log) {
+		out(log, type.ERROR);
+	}
+	
+	public static void crit(String log) {
+		out(log, type.CRITICAL);
+	}
+	
+	public static void debug(String log) {
+		out(log, type.DEBUG);
+	}
+	
+	public static void warn(String log) {
+		out(log, type.WARNING);
+	}
+	
+	public static void info(String log) {
+		out(log);
+	}
+	
+	public static void out(String log) {
 		out(log, type.INFO);
 	}
 	

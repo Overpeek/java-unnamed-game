@@ -147,16 +147,16 @@ public class Creature {
 			switch (heading)
 			{
 			case HEADING_UP:
-				heading_texture = getData().texture_heading_up;
+				heading_texture = getData().texture;
 				break;
 			case HEADING_DOWN:
-				heading_texture = getData().texture_heading_down;
+				heading_texture = getData().texture + 1;
 				break;
 			case HEADING_LEFT:
-				heading_texture = getData().texture_heading_left;
+				heading_texture = getData().texture + 2;
 				break;
 			case HEADING_RIGHT:
-				heading_texture = getData().texture_heading_right;
+				heading_texture = getData().texture + 3;
 				break;
 			default:
 				break;

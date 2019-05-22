@@ -88,6 +88,7 @@ public class Texture {
     	//Load image
 		try {
 			BufferedImage img = ImageIO.read(new File(path));
+			
 	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
 			for (int x = 0; x < img.getWidth(); x++) {
 				for (int y = 0; y < img.getHeight(); y++) {

@@ -1,0 +1,16 @@
+{
+	"particles": [
+		{
+			"name": "Death",
+			"id": 0,
+			"texture": "res/texture/particle/death.png",
+			"life_time": 0.0f
+		},
+		{
+			"name": "Hit",
+			"id": 1,
+			"texture": "res/texture/particle/hit.png",
+			"life_time": 0.2f
+		}
+	]
+}

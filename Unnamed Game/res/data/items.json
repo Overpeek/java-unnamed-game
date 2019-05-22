@@ -3,7 +3,7 @@
         {
         	"name": "Empty",
             "id": 0,
-            "texture": 9,
+            "texture": "null",
             "stack": 99,
             "melee": 0.0,
             "knock": 0.0,
@@ -13,7 +13,7 @@
         {
 	        "name": "Stone",
 	        "id": 1,
-	        "texture": 17,
+	        "texture": "res/texture/item/stone.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -23,7 +23,7 @@
         {
 	        "name": "Plant fiber",
 	        "id": 2,
-	        "texture": 18,
+	        "texture": "res/texture/item/plant_fiber.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -33,7 +33,7 @@
         {
 	        "name": "Log",
 	        "id": 3,
-	        "texture": 16,
+	        "texture": "res/texture/item/log.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -43,7 +43,7 @@
         {
 	        "name": "Sword",
 	        "id": 4,
-	        "texture": 22,
+	        "texture": "res/texture/item/tool.sword.png",
 	        "stack": 1,
 	        "melee": 4.0,
 	        "knock": 4.0,
@@ -53,7 +53,7 @@
         {
 	        "name": "Pickaxe",
 	        "id": 5,
-	        "texture": 23,
+	        "texture": "res/texture/item/tool.pickaxe.png",
 	        "stack": 1,
 	        "melee": 2.0,
 	        "knock": 4.0,

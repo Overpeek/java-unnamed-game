@@ -13,7 +13,6 @@ public class DataIO {
 	
 	public static byte[] readByte(String path) {
 		Path fileLocation = Paths.get(path);
-		Logger.out(fileLocation.toString());
 		byte[] data;
 		try {
 			data = Files.readAllBytes(fileLocation);

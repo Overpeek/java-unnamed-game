@@ -7,6 +7,7 @@ import org.json.*;
 
 import logic.Database.Biome_Data.BiomeTileHeight_Data;
 import logic.Database.Creature_Data.Drop;
+import logic.TextureLoader.MultitextureReturnData;
 import utility.DataIO;
 import utility.Logger;
 
@@ -27,6 +28,7 @@ public class Database {
 	public static ArrayList<Object_Data> objects;
 	public static ArrayList<Creature_Data> creatures;
 	public static ArrayList<Biome_Data> biomes;
+	public static ArrayList<Particle_Data> particles;
 	
 	public static void initialize() {
 		
@@ -39,16 +41,27 @@ public class Database {
 		JSONArray arr = obj.getJSONArray("items");
 		for (int i = 0; i < arr.length(); i++)
 		{
+			//Generic data
 		    String name = arr.getJSONObject(i).getString("name");
 		    int id = arr.getJSONObject(i).getInt("id");
-		    int texture = arr.getJSONObject(i).getInt("texture");
 		    int stack = arr.getJSONObject(i).getInt("stack");
 		    float melee_damage = arr.getJSONObject(i).getFloat("melee");
 		    float knock_mult = arr.getJSONObject(i).getFloat("knock");
 		    float break_speed = arr.getJSONObject(i).getFloat("break");
 		    int placed = arr.getJSONObject(i).getInt("placed");
 		    
-		    Item_Data object = new Item_Data(name, id, texture, stack, melee_damage, knock_mult, break_speed, placed);
+		    //Load all textures
+		    int texture = 0;
+		    int texture_last = 0;
+		    String texturePath = arr.getJSONObject(i).getString("texture");
+		    if (!texturePath.equals("null")) {
+			    MultitextureReturnData texturedata = TextureLoader.loadMultitexture(texturePath);
+			    texture = texturedata.first_index;
+			    texture_last = texturedata.last_index;
+		    }
+		    
+		    //Add new item
+		    Item_Data object = new Item_Data(name, id, texture, texture_last, stack, melee_damage, knock_mult, break_speed, placed);
 		    items.add(object);
 		}
 		
@@ -61,11 +74,22 @@ public class Database {
 		arr = obj.getJSONArray("tiles");
 		for (int i = 0; i < arr.length(); i++)
 		{
+			//Generic data
 		    String name = arr.getJSONObject(i).getString("name");
 		    int id = arr.getJSONObject(i).getInt("id");
-		    int texture = arr.getJSONObject(i).getInt("texture");
+
+		    //Load all textures
+		    int texture = 0;
+		    int texture_last = 0;
+		    String texturePath = arr.getJSONObject(i).getString("texture");
+		    if (!texturePath.equals("null")) {
+			    MultitextureReturnData texturedata = TextureLoader.loadMultitexture(texturePath);
+			    texture = texturedata.first_index;
+			    texture_last = texturedata.last_index;
+		    }
 		    
-		    Tile_Data object = new Tile_Data(name, id, texture);
+		    //Add new tile
+		    Tile_Data object = new Tile_Data(name, id, texture, texture_last);
 		    tiles.add(object);
 		}
 		
@@ -78,12 +102,10 @@ public class Database {
 		arr = obj.getJSONArray("objects");
 		for (int i = 0; i < arr.length(); i++)
 		{
+			//Generic data
 			String name = arr.getJSONObject(i).getString("name");
 		    int id = arr.getJSONObject(i).getInt("id");
-		    int texture = arr.getJSONObject(i).getInt("texture");
 		    boolean wall = arr.getJSONObject(i).getBoolean("wall");
-		    boolean multitexture = arr.getJSONObject(i).getBoolean("multitexture");
-		    boolean smooth = arr.getJSONObject(i).getBoolean("smooth");
 		    boolean destroyable = arr.getJSONObject(i).getBoolean("destroyable");
 		    float red = arr.getJSONObject(i).getFloat("color.r");
 		    float green = arr.getJSONObject(i).getFloat("color.g");
@@ -92,7 +114,18 @@ public class Database {
 		    int health = arr.getJSONObject(i).getInt("health");
 		    int drop = arr.getJSONObject(i).getInt("drop");
 		    
-		    Object_Data object = new Object_Data(name, id, texture, wall, multitexture, smooth, destroyable, new Vector4f(red, green, blue, alpha), health, drop);
+		    //Load all textures
+		    int texture = 0;
+		    int texture_last = 0;
+		    String texturePath = arr.getJSONObject(i).getString("texture");
+		    if (!texturePath.equals("null")) {
+			    MultitextureReturnData texturedata = TextureLoader.loadMultitexture(texturePath);
+			    texture = texturedata.first_index;
+			    texture_last = texturedata.last_index;
+		    }
+		    
+		    //Add new object
+		    Object_Data object = new Object_Data(name, id, texture, texture_last, wall, destroyable, new Vector4f(red, green, blue, alpha), health, drop);
 		    objects.add(object);
 		}
 		
@@ -105,6 +138,7 @@ public class Database {
 		arr = obj.getJSONArray("creatures");
 		for (int i = 0; i < arr.length(); i++)
 		{
+			//Generic data
 			String name = arr.getJSONObject(i).getString("name");
 		    int id = arr.getJSONObject(i).getInt("id");
 		    float walkspeed = arr.getJSONObject(i).getFloat("walkspeed");
@@ -116,6 +150,20 @@ public class Database {
 		    float regen = arr.getJSONObject(i).getFloat("regen");
 		    float stamina = arr.getJSONObject(i).getFloat("stamina");
 		    float staminaregen = arr.getJSONObject(i).getFloat("staminaregen");
+		    float red = arr.getJSONObject(i).getFloat("color.r");
+		    float green = arr.getJSONObject(i).getFloat("color.g");
+		    float blue = arr.getJSONObject(i).getFloat("color.b");
+		    float alpha = arr.getJSONObject(i).getFloat("color.a");
+		    
+		    //Load all textures
+		    int texture = 0;
+		    int texture_last = 0;
+		    String texturePath = arr.getJSONObject(i).getString("texture");
+		    if (!texturePath.equals("null")) {
+			    MultitextureReturnData texturedata = TextureLoader.loadMultitexture(texturePath);
+			    texture = texturedata.first_index;
+			    texture_last = texturedata.last_index;
+		    }
 
 		    //Drops
 		    ArrayList<Drop> drops = new ArrayList<Drop>();
@@ -130,16 +178,7 @@ public class Database {
 				drops.add(drop);
 			}
 		    
-		    float red = arr.getJSONObject(i).getFloat("color.r");
-		    float green = arr.getJSONObject(i).getFloat("color.g");
-		    float blue = arr.getJSONObject(i).getFloat("color.b");
-		    float alpha = arr.getJSONObject(i).getFloat("color.a");
-		    int texture0 = arr.getJSONObject(i).getInt("texture.0");
-		    int texture1 = arr.getJSONObject(i).getInt("texture.1");
-		    int texture2 = arr.getJSONObject(i).getInt("texture.2");
-		    int texture3 = arr.getJSONObject(i).getInt("texture.3");
-		    
-		    Creature_Data object = new Creature_Data(name, id, walkspeed, friendly, ghost, knockback, melee, health, regen, stamina, staminaregen, drops, new Vector4f(red, green, blue, alpha), texture0, texture1, texture2, texture3);
+		    Creature_Data object = new Creature_Data(name, id, texture, texture_last, walkspeed, friendly, ghost, knockback, melee, health, regen, stamina, staminaregen, drops, new Vector4f(red, green, blue, alpha));
 		    creatures.add(object);
 		}
 		
@@ -178,8 +217,53 @@ public class Database {
 			biomes.add(object);
 		}
 		
+		//Load all tiles
+		//--------------
+		particles = new ArrayList<Particle_Data>();
+		source = DataIO.readByte("res/data/particles.json");
+		obj = new JSONObject(new String(source));
+
+		arr = obj.getJSONArray("particles");
+		for (int i = 0; i < arr.length(); i++)
+		{
+			//Generic data
+		    String name = arr.getJSONObject(i).getString("name");
+		    int id = arr.getJSONObject(i).getInt("id");
+		    float life_time = arr.getJSONObject(i).getFloat("life_time");
+
+		    //Load all textures
+		    int texture = 0;
+		    int texture_last = 0;
+		    String texturePath = arr.getJSONObject(i).getString("texture");
+		    if (!texturePath.equals("null")) {
+			    MultitextureReturnData texturedata = TextureLoader.loadMultitexture(texturePath);
+			    texture = texturedata.first_index;
+			    texture_last = texturedata.last_index;
+		    }
+		    
+		    //Add new tile
+		    Particle_Data object = new Particle_Data(name, id, texture, texture_last, life_time);
+		    particles.add(object);
+		}
 		
-		Logger.out("Successfully loaded " + items.size() + " items, " + tiles.size() + " tiles, " + objects.size() + " objects, " + creatures.size() + " creatures and " + biomes.size() + " biomes.");
+		
+		Logger.out("Successfully loaded " + items.size() + " items, " + tiles.size() + " tiles, " + objects.size() + " objects, " + creatures.size() + " creatures, " + biomes.size() + " biomes and " + particles.size() + " particles.");
+	}
+	
+	public static class Particle_Data {
+		public String name = "null";
+		public int id = 0;
+		public int texture = 0;
+		public int texture_last = 0;
+		public float life_time = 0.0f;
+		
+		public Particle_Data(String _name, int _id, int _texture, int _texture_last, float _life_time) {
+			name = _name;
+			id = _id;
+			texture = _texture;
+			texture_last = _texture_last;
+			life_time = _life_time;
+		}
 	}
 	
 	public static class Item_Data
@@ -187,6 +271,7 @@ public class Database {
 		public String name = "null";
 		public int id = 0;
 		public int texture = 0;
+		public int texture_last = 0;
 
 		public int stack_size = 0;
 
@@ -196,10 +281,11 @@ public class Database {
 
 		public int placedAs;
 
-		public Item_Data(String _name, int _id, int _texture, int _stack, float _melee_damage, float _melee_kb, float _break_speed, int _placedAs) {
+		public Item_Data(String _name, int _id, int _texture, int _texture_last, int _stack, float _melee_damage, float _melee_kb, float _break_speed, int _placedAs) {
 			name = _name;
 			id = _id;
 			texture = _texture;
+			texture_last = _texture_last;
 			stack_size = _stack;
 			melee_damage = _melee_damage;
 			melee_kb = _melee_kb;
@@ -213,11 +299,13 @@ public class Database {
 		public String name = "null";
 		public int id = 0;
 		public int texture = 0;
+		public int texture_last = 0;
 
-		public Tile_Data(String _name, int _id, int _texture) {
+		public Tile_Data(String _name, int _id, int _texture, int _texture_last) {
 			name = _name;
 			id = _id;
 			texture = _texture;
+			texture_last = _texture_last;
 		}
 	}
 
@@ -226,22 +314,20 @@ public class Database {
 		public String name = "null";
 		public int id = 0;
 		public int texture = 0;
+		public int texture_last = 0;
 		public boolean wall = false;
-		public boolean multitexture = false;
-		public boolean smooth = false;
 		public boolean destroyable = false;
 		public Vector4f color = new Vector4f(0.0f);
 
 		public int health = 0;
 		public int dropsAs = 0;
 
-		public Object_Data(String _name, int _id, int _texture, boolean _wall, boolean _multitexture, boolean _smooth, boolean _destroyable, Vector4f _color, int _health, int _dropsAs) {
+		public Object_Data(String _name, int _id, int _texture, int _last_texture, boolean _wall, boolean _destroyable, Vector4f _color, int _health, int _dropsAs) {
 			name = _name;
 			id = _id;
 			texture = _texture;
 			wall = _wall;
-			multitexture = _multitexture;
-			smooth = _smooth;
+			texture_last = _last_texture;
 			destroyable = _destroyable;
 			color = _color;
 
@@ -250,10 +336,9 @@ public class Database {
 		}
 		
 		public int getTexture(boolean rightAir, boolean topAir, boolean leftAir, boolean bottomAir, boolean topRightAir, boolean topLeftAir, boolean bottomLeftAir, boolean bottomRightAir) {
-			if (!multitexture) return texture;
+			if (texture_last == texture) return texture;
 			
-			int index = 160;
-			if (!smooth) index += 48;
+			int index = texture;
 
 			//boolean allSidesAir = rightAir && topAir && leftAir && bottomAir;
 			//boolean allCornersAir = topRightAir && topLeftAir && bottomLeftAir && bottomRightAir;
@@ -421,10 +506,8 @@ public class Database {
 	{
 		public String name = "null";
 		public int id = 0;
-		public int texture_heading_up = 0;
-		public int texture_heading_down = 0;
-		public int texture_heading_left = 0;
-		public int texture_heading_right = 0;
+		public int texture = 0;
+		public int texture_last = 0;
 		public boolean friendly = false;
 		public boolean ghost = false;
 		public Vector4f color = new Vector4f(0.0f);
@@ -452,7 +535,7 @@ public class Database {
 			}
 		}
 
-		public Creature_Data(String _name, int _id, float _walkSpeed, boolean _friendly, boolean _ghost, float _kb, float _melee, float _hp, float _hpg, float _st, float _stg, ArrayList<Drop> _drops, Vector4f _color, int _texture_heading_up, int _texture_heading_down, int _texture_heading_left, int _texture_heading_right) {
+		public Creature_Data(String _name, int _id, int _texture, int _texture_last, float _walkSpeed, boolean _friendly, boolean _ghost, float _kb, float _melee, float _hp, float _hpg, float _st, float _stg, ArrayList<Drop> _drops, Vector4f _color) {
 			name = _name;
 			walkSpeed = _walkSpeed;
 			id = _id;
@@ -465,10 +548,8 @@ public class Database {
 			stamina = _st;
 			staminagain = _stg;
 			color = _color;
-			texture_heading_up = _texture_heading_up;
-			texture_heading_down = _texture_heading_down;
-			texture_heading_left = _texture_heading_left;
-			texture_heading_right = _texture_heading_right;
+			texture = _texture;
+			texture_last = _texture_last;
 			
 			drops = _drops;
 		}

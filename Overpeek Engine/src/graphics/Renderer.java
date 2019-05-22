@@ -1,6 +1,5 @@
 package graphics;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -13,8 +12,6 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL40;
-
-import utility.Logger;
 
 public class Renderer {
 	
@@ -91,33 +88,32 @@ public class Renderer {
 	private Buffer arrayBufferObject;
 	private Buffer indexBufferObject;
 
-	private ByteBuffer arrayBuffer;
+	private FloatBuffer arrayBuffer;
 	
 	private boolean buffer_mapped;
 
 	public Renderer() {
-		FloatBuffer arrayBufferData = BufferUtils.createFloatBuffer(MAX_VERT * VertexData.componentCount());
-		IntBuffer indexBufferData = BufferUtils.createIntBuffer(MAX_INDEX);
-		arrayBuffer = ByteBuffer.allocateDirect(arrayBufferData.capacity() * 4);
+		FloatBuffer arrayBuffer = BufferUtils.createFloatBuffer(MAX_VERT * VertexData.componentCount());
+		IntBuffer indexBuffer = BufferUtils.createIntBuffer(MAX_INDEX);
 		buffer_mapped = false;
 		
 		//TODO
 		int index_counter = 0;
 		for (int i = 0; i < MAX_QUADS; i++) {
-			indexBufferData.put(index_counter + 0);
-			indexBufferData.put(index_counter + 1);
-			indexBufferData.put(index_counter + 2);
-			indexBufferData.put(index_counter + 0);
-			indexBufferData.put(index_counter + 2);
-			indexBufferData.put(index_counter + 3);
+			indexBuffer.put(index_counter + 0);
+			indexBuffer.put(index_counter + 1);
+			indexBuffer.put(index_counter + 2);
+			indexBuffer.put(index_counter + 0);
+			indexBuffer.put(index_counter + 2);
+			indexBuffer.put(index_counter + 3);
 			
 			index_counter += 4;
 		}
-		indexBufferData.flip();
+		indexBuffer.flip();
 		
 		vertexArray = new VertexArray();
-		arrayBufferObject = new Buffer(arrayBufferData, GL20.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
-		indexBufferObject = new Buffer(indexBufferData, GL40.GL_ELEMENT_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_STATIC_DRAW);
+		arrayBufferObject = new Buffer(arrayBuffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
+		indexBufferObject = new Buffer(indexBuffer, GL40.GL_ELEMENT_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_STATIC_DRAW);
 		
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribPos());
@@ -130,14 +126,10 @@ public class Renderer {
 
 	}
 	
-	boolean justMappedDebug = false;
 	public void begin() {
-		long millis = System.currentTimeMillis();
-		arrayBufferObject.mapBuffer(arrayBuffer);
+		arrayBuffer = arrayBufferObject.mapBuffer().asFloatBuffer();
 		arrayBuffer.clear();
-		//Logger.out("Millis 0: " + (System.currentTimeMillis() - millis));
 		buffer_mapped = true;
-		justMappedDebug = false;
 	}
 	
 	public void end() {
@@ -146,27 +138,9 @@ public class Renderer {
 	}
 
 	public void submitVertex(VertexData data) {
-		justMappedDebug = false;
 		if (!buffer_mapped) begin();
 		
-		long millis = System.currentTimeMillis();
-		
-		//arrayBuffer.asFloatBuffer().put(data.get());
-		//arrayBuffer.position(arrayBuffer.position() + 4);
-		arrayBuffer.putFloat(data.x);
-		arrayBuffer.putFloat(data.y);
-		arrayBuffer.putFloat(data.z);
-		arrayBuffer.putFloat(data.u);
-		arrayBuffer.putFloat(data.v);
-		arrayBuffer.putFloat(data.i);
-		arrayBuffer.putFloat(data.r);
-		arrayBuffer.putFloat(data.g);
-		arrayBuffer.putFloat(data.b);
-		arrayBuffer.putFloat(data.a);
-		
-		if (justMappedDebug) {
-			Logger.out("Millis 1: " + (System.currentTimeMillis() - millis));
-		}
+		arrayBuffer.put(data.get());
 	}
 	
 	public void submitBakedText(Vector3f _pos, Vector2f _size, TextLabelTexture label, Vector4f _color) {
@@ -179,15 +153,10 @@ public class Renderer {
 		submitVertex(new VertexData(_pos.x, 			_pos.y + _size.y, 	_pos.z, 0.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
 		submitVertex(new VertexData(_pos.x + _size.x, 	_pos.y + _size.y, 	_pos.z, 1.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
 		submitVertex(new VertexData(_pos.x + _size.x, 	_pos.y, 			_pos.z, 1.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
-
-		//submitVertex(new VertexData(_pos.x, _pos.y, _pos.z, 0.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
-		//submitVertex(new VertexData(_pos.x + _size.x, _pos.y + _size.y, _pos.z, 1.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
-		//submitVertex(new VertexData(_pos.x + _size.x, _pos.y, _pos.z, 1.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
 	}
 
 	public void draw(int texture, int textureType) {
-		int vertex_count = arrayBuffer.position() / VertexData.componentCount() / 4;
-		Logger.out("Vert count: " + vertex_count);
+		int vertex_count = arrayBuffer.position() / VertexData.componentCount();
 		
 		//Stop submitting
 		if (buffer_mapped) end();
@@ -201,13 +170,8 @@ public class Renderer {
 		GL11.glBindTexture(textureType, texture);
 		vertexArray.bind();
 		indexBufferObject.bind();
-
-		//arrayBuffer.flip();
-		//arrayBufferObject.setBufferData(arrayBuffer, VertexData.componentCount());
-		//arrayBuffer.clear();
-
-		//GL20.glDrawElements(GL11.GL_TRIANGLES, indexBuffer);
-		GL11.nglDrawElements(GL11.GL_TRIANGLES, vertex_count / 4 * 6, GL11.GL_UNSIGNED_INT, 0);
-		//GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertex_count);
+		
+		//Actual drawing
+		GL11.nglDrawElements(GL11.GL_TRIANGLES, MAX_INDEX, GL11.GL_UNSIGNED_INT, 0);
 	}
 }

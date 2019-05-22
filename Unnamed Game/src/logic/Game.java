@@ -85,11 +85,8 @@ public class Game extends Application {
 		window.clear();
 
 		
-		for (int x = 0; x < 10000; x++) {
-			world_renderer.submitQuad(new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(1.0f), 5, Colors.WHITE);
-		}
 		multi_texture_shader.enable();
-		world_renderer.draw(texture.getId(), texture.getType());
+		world_renderer.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
 
 		single_texture_shader.enable();
 		gui_renderer.submitBakedText(new Vector3f(-window.aspect(), -1.0f, 0.0f), new Vector2f(0.2f), label, Colors.WHITE);
@@ -149,9 +146,6 @@ public class Game extends Application {
 		point_shader = new Shader("res/shader/geometrytexture.vert.glsl", "res/shader/geometrytexture.frag.glsl", "res/shader/geometrytexture.geom.glsl");
 		Logger.out("All shaders created successfully!");
 		
-		//Renderer
-		world_renderer = new Renderer();
-		
 		//Loading resources
 		Logger.out("Loading all resources");
 		texture = Texture.loadTextureAtlas(16, 16, 16, "res/texture/atlas.png");
@@ -160,9 +154,22 @@ public class Game extends Application {
 		audioSwing = Audio.loadAudio("res/audio/swing.ogg");
 		audioCollect = Audio.loadAudio("res/audio/collect.ogg");
 		TextLabelTexture.initialize();
+		TextureLoader.init(16);
 		Database.initialize();
+		TextureLoader.finish();
 		label = TextLabelTexture.bakeTextToTexture("FPS", glyphs);
 		resize(window.getWidth(), window.getHeight()); 	//Reset window
+		
+		//Renderer
+		world_renderer = new Renderer();
+		//for (int x = 0; x < 100; x++) {
+		//	for (int y = 0; y < 100; y++) {
+		//		world_renderer.submitQuad(new Vector3f(-1.0f + y / 50.0f, -1.0f + x / 50.0f, 0.0f), new Vector2f(0.02f), Database.items.get(0).texture, Colors.WHITE);				
+		//	}
+		//}
+		int texture = Database.particles.get(0).texture;
+		Logger.out("" + texture);
+		world_renderer.submitQuad(new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(1.0f), texture, Colors.WHITE);				
 		
 		//Framebuffers
 		//Logger.out("Creating framebuffers");
