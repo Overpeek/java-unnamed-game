@@ -28,7 +28,9 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLUtil;
 
+import utility.Application;
 import utility.Logger;
+import utility.Maths;
 import utility.Logger.type;
 
 
@@ -57,6 +59,7 @@ public class Window {
 	private int borders;
 	private int fullscreen; 
 	private int multisample;
+	private Application active_Application;
 	
 	private boolean debug_mode = true;
 
@@ -71,10 +74,16 @@ public class Window {
 	private float scroll_delta;
 	
 	
+	public void setCurrentApp(Application app) {
+		active_Application = app;
+	}
+	
 	GLFWKeyCallback key = new GLFWKeyCallback() {
 		@Override
 		public void invoke(long window, int key, int scancode, int action, int mods)
 	    {
+			if (active_Application != null) active_Application.keyPress(key, action);
+			
 			if (key >= keys.length || key < 0) {
 				Logger.out("Unknown key: " + key, type.WARNING);
 				return;
@@ -88,6 +97,8 @@ public class Window {
 		@Override
 		public void invoke(long window, int button, int action, int mods)
 	    {
+			if (active_Application != null) active_Application.buttonPress(button, action);
+			
 			if (button >= buttons.length || button < 0) {
 				Logger.out("Unknown button: " + button, type.WARNING);
 				return;
@@ -101,8 +112,10 @@ public class Window {
 		@Override
 		public void invoke(long window, double xpos, double ypos)
 	    {
-			mouseX = (float) xpos;
-			mouseY = (float) ypos;
+			if (active_Application != null) active_Application.mousePos((float) xpos, (float) ypos);
+			
+			mouseX = Maths.map((float) xpos, 0.0f, getWidth(), -aspect(), aspect());
+			mouseY = Maths.map((float) ypos, 0.0f, getHeight(), 1.0f, -1.0f);
 	    }
 	};
 	
@@ -111,6 +124,8 @@ public class Window {
 		@Override
 		public void invoke(long window, int _width, int _height)
 	    {
+			if (active_Application != null) active_Application.resize(_width, _height);
+			
 			width = _width;
 			height = _height;
 			System.out.println("Width: " + width + ", Height: " + height);
@@ -121,6 +136,8 @@ public class Window {
 
 		@Override
 		public void invoke(long window, double xd, double yd) {
+			if (active_Application != null) active_Application.scroll((float) xd, (float) yd);
+			
 			scroll_total += yd;
 			scroll_delta += yd;
 		}
@@ -209,8 +226,8 @@ public class Window {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
-		glDepthMask(false);
-		glDepthFunc(GL_ALWAYS);
+		glDepthMask(true);
+		glDepthFunc(GL_LEQUAL);
 	}
 	
 	public boolean shouldClose() {

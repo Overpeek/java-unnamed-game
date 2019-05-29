@@ -1,5 +1,7 @@
 package logic;
 
+import javax.naming.LinkLoopException;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -46,8 +48,14 @@ public class Game extends Application {
 	private static Map map;
 	private static Inventory inventory;
 	private static Creature player;
+	private static boolean mainMenu;
+	private static boolean paused;
+	private static boolean justPaused;
 
 	int oldfps;
+	
+	
+	
 	//Main update loop
 	@Override
 	public void update() {
@@ -59,39 +67,56 @@ public class Game extends Application {
 		oldfps = gameloop.getFps();
 	}
 
-	float rise = 0.0f;
+	
+	
 	//Main render loop
 	@Override
-	public void render() {
-		// TODO Auto-generated method stub
-		if (window.shouldClose() || window.key(Keys.KEY_ESCAPE)) gameloop.stop();
-		
-		window.input();
-
-		//Input
-		if (window.keyPress(Keys.KEY_UP)) {
-			audioHit.play();
-		}
-		if (window.keyPress(Keys.KEY_DOWN)) {
-			audioSwing.play();
-		}
-		if (window.keyPress(Keys.KEY_RIGHT)) {
-			audioCollect.play();
-		}
-		
-		
-		//Rendering
-		//---------
+	public void render(float corrector) {
+		if (window == null || window.shouldClose()) gameloop.stop();
 		window.clear();
-
-		
-		multi_texture_shader.enable();
-		world_renderer.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
-
-		single_texture_shader.enable();
-		gui_renderer.submitBakedText(new Vector3f(-window.aspect(), -1.0f, 0.0f), new Vector2f(0.2f), label, Colors.WHITE);
-		
+        
+		//World tiles
+		if (!paused || justPaused) {
+			map.submitToRenderer(world_renderer, -player.getX() - player.getVel_x() * corrector / Settings.UPDATES_PER_SECOND, -player.getY() - player.getVel_y() * corrector / Settings.UPDATES_PER_SECOND, corrector);
+        
+			//m_player->submitToRenderer(m_worldrenderer.get(), -m_player->getX() - m_player->getVelX() * corrector / Settings.UPDATES_PER_SECOND, -m_player->getY() - m_player->getVelY() * corrector / UPDATES_PER_SECOND, corrector, renderScale());
+			//m_gui->renderBlur(m_worldrenderer.get());
+			//m_inventory->render(m_worldrenderer.get());
+		}
+		//
+		////Gui
+		//m_gui->renderNoBlur(m_guirenderer.get());
+        //
+		////Flush
+		//if (!paused) {
+		//	m_worldrenderer->draw(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true);
+		//}
+		//else if (justPaused) {
+		//	m_worldrenderer->drawToFramebuffer(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true, false);
+		//	m_postshader->enable();
+		//	for (int i = 0; i < 16; i++) {
+		//		m_postshader->setUniform1i("unif_effect", 1);
+		//		m_worldrenderer->drawFramebufferToFramebuffer(m_postshader.get(), "unif_texture", true);
+		//		m_postshader->setUniform1i("unif_effect", 2);
+		//		m_worldrenderer->drawFramebufferToFramebuffer(m_postshader.get(), "unif_texture", false);
+		//	}
+		//	m_postshader->setUniform1i("unif_effect", 0);
+		//	m_worldrenderer->drawFramebuffer(m_postshader.get(), "unif_texture", false);
+		//}
+		//else if (paused) {
+		//	m_postshader->enable();
+		//	m_postshader->setUniform1i("unif_effect", 0);
+		//	m_worldrenderer->drawFramebuffer(m_postshader.get(), "unif_texture", false);
+		//}
+		//
+		//m_guirenderer->draw(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true);
+        //
+		////Other
+		//justPaused = false;
+        //
+        //
 		window.update();
+		window.input();
 	}
 
 	
@@ -130,7 +155,7 @@ public class Game extends Application {
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y + size.y, pos.z), 	new Vector2f(1.0f, 1.0f), 0, Colors.WHITE));
 		gui_renderer.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y, pos.z), 			new Vector2f(1.0f, 0.0f), 0, Colors.WHITE));
 		tmpshader.enable();
-		gui_renderer.draw(splashScreen.getId(), splashScreen.getType());
+		gui_renderer.drawAsQuads(splashScreen.getId(), splashScreen.getType());
 		window.update();
 		
 		//Audio
@@ -158,7 +183,7 @@ public class Game extends Application {
 		Database.initialize();
 		TextureLoader.finish();
 		label = TextLabelTexture.bakeTextToTexture("FPS", glyphs);
-		resize(window.getWidth(), window.getHeight()); 	//Reset window
+		TextLabelTexture.viewPortReset(Game.getWindow());
 		
 		//Renderer
 		world_renderer = new Renderer();
@@ -168,7 +193,6 @@ public class Game extends Application {
 		//	}
 		//}
 		int texture = Database.particles.get(0).texture;
-		Logger.out("" + texture);
 		world_renderer.submitQuad(new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(1.0f), texture, Colors.WHITE);				
 		
 		//Framebuffers
@@ -184,6 +208,22 @@ public class Game extends Application {
 		//System and software info
 		Logger.out("LWJGL " + window.getLWJGL());
 		Logger.out("Renderer " + window.getRenderer());
+
+		//Main menu
+		mainMenu = true;
+		MainMenu.init(gui_renderer, multi_texture_shader, single_texture_shader, point_shader, post_shader, glyphs, Game.texture);
+		window.setCurrentApp(this);
+
+		//Reset window
+		resize(window.getWidth(), window.getHeight());
+
+		//Loading world
+		//loadWorld(WORLD_NAME, true);
+		paused = false;
+		justPaused = false;
+
+		//Ready
+		Logger.out("Game ready! Running update and renderloops");
 	}
 
 	
@@ -198,14 +238,6 @@ public class Game extends Application {
 	//Mouse button press callback
 	@Override
 	public void buttonPress(int button, int action) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
-	//Mouse position callback
-	@Override
-	public void mousePos(int x, int y) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -249,6 +281,25 @@ public class Game extends Application {
 
 	public static Creature getPlayer() {
 		return player;
+	}
+
+
+	public static Window getWindow() {
+		return window;
+	}
+
+
+	@Override
+	public void mousePos(float x, float y) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void scroll(float x_delta, float y_delta) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

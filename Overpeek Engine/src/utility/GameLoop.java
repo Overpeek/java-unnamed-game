@@ -41,7 +41,7 @@ public class GameLoop implements Runnable {
 	            updates++;
 	            delta--;
 	        }
-	        app.render();
+	        app.render((float)delta);
 	        frames++;
 	        if (System.currentTimeMillis() - timer > 1000) {
 	            timer += 1000;

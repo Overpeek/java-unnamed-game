@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 import graphics.Renderer.VertexData;
 
@@ -72,6 +71,10 @@ public class TextLabelTexture {
 		obj.framebuffer = generateFramebuffer(text, glyphs);
 		bakeToFramebuffer(text, glyphs, obj.framebuffer);
 		return obj;
+	}
+	
+	public static void viewPortReset(Window window) {
+		GL11.glViewport(0, 0, window.getWidth(), window.getHeight());
 	}
 	
 	private static Framebuffer generateFramebuffer(String text, GlyphTexture glyphs) {

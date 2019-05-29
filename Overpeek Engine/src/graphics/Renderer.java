@@ -3,6 +3,8 @@ package graphics;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import javax.print.attribute.Size2DSyntax;
+
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -89,6 +91,7 @@ public class Renderer {
 	private Buffer indexBufferObject;
 
 	private FloatBuffer arrayBuffer;
+	private int vertex_count;
 	
 	private boolean buffer_mapped;
 
@@ -96,6 +99,7 @@ public class Renderer {
 		FloatBuffer arrayBuffer = BufferUtils.createFloatBuffer(MAX_VERT * VertexData.componentCount());
 		IntBuffer indexBuffer = BufferUtils.createIntBuffer(MAX_INDEX);
 		buffer_mapped = false;
+		vertex_count = 0;
 		
 		//TODO
 		int index_counter = 0;
@@ -141,11 +145,21 @@ public class Renderer {
 		if (!buffer_mapped) begin();
 		
 		arrayBuffer.put(data.get());
+		vertex_count++;
 	}
 	
 	public void submitBakedText(Vector3f _pos, Vector2f _size, TextLabelTexture label, Vector4f _color) {
-		submitQuad(_pos, new Vector2f(_size.x * label.getFrameBuffer().aspect(), _size.y), 0, _color);
-		draw(label.getFrameBuffer().getTexture().getId(), label.getFrameBuffer().getTexture().getType());
+		_size.x *= label.getFrameBuffer().aspect();
+		submitQuad(_pos, _size, 0, _color);
+		drawAsQuads(label.getFrameBuffer().getTexture().getId(), label.getFrameBuffer().getTexture().getType());
+		clear();
+	}
+	
+	public void submitBakedTextCentered(Vector3f _pos, Vector2f _size, TextLabelTexture label, Vector4f _color) {
+		_size.x *= label.getFrameBuffer().aspect();
+		submitQuad(new Vector3f(_pos.x - _size.x / 2.0f, _pos.y - _size.y / 2.0f, _pos.z), _size, 0, _color);
+		drawAsQuads(label.getFrameBuffer().getTexture().getId(), label.getFrameBuffer().getTexture().getType());
+		clear();
 	}
 
 	public void submitQuad(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {
@@ -154,10 +168,12 @@ public class Renderer {
 		submitVertex(new VertexData(_pos.x + _size.x, 	_pos.y + _size.y, 	_pos.z, 1.0f, 1.0f, _id, _color.x, _color.y, _color.z, _color.w));
 		submitVertex(new VertexData(_pos.x + _size.x, 	_pos.y, 			_pos.z, 1.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
 	}
+	
+	public void clear() {
+		vertex_count = 0;
+	}
 
-	public void draw(int texture, int textureType) {
-		int vertex_count = arrayBuffer.position() / VertexData.componentCount();
-		
+	public void drawAsQuads(int texture, int textureType) {
 		//Stop submitting
 		if (buffer_mapped) end();
 		
@@ -172,6 +188,23 @@ public class Renderer {
 		indexBufferObject.bind();
 		
 		//Actual drawing
-		GL11.nglDrawElements(GL11.GL_TRIANGLES, MAX_INDEX, GL11.GL_UNSIGNED_INT, 0);
+		GL11.nglDrawElements(GL11.GL_TRIANGLES, vertex_count / 4 * 6, GL11.GL_UNSIGNED_INT, 0);
+	}
+
+	public void drawAsPoints(int texture, int textureType) {
+		//Stop submitting
+		if (buffer_mapped) end();
+		
+		//Return if no vertices to render
+		if (vertex_count == 0)
+			return;
+
+		// Binding
+		GL13.glActiveTexture(GL13.GL_TEXTURE0);
+		GL11.glBindTexture(textureType, texture);
+		vertexArray.bind();
+		
+		//Actual drawing
+		GL11.glDrawArrays(GL11.GL_POINTS, 0, vertex_count);
 	}
 }
