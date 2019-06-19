@@ -7,8 +7,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +66,8 @@ public class GlyphTexture {
     	
     	Font font = null;
     	try {
-    		font = Font.createFont(Font.TRUETYPE_FONT, new File(path)).deriveFont(Font.PLAIN, resolution);
+    		InputStream is = Class.class.getResourceAsStream(path);
+    		font = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(Font.PLAIN, resolution);
 		} catch (FontFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

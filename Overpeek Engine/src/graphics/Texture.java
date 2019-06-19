@@ -4,12 +4,14 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
 
@@ -87,7 +89,8 @@ public class Texture {
     
     	//Load image
 		try {
-			BufferedImage img = ImageIO.read(new File(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			BufferedImage img = ImageIO.read(is);
 			
 	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
 			for (int x = 0; x < img.getWidth(); x++) {
@@ -122,13 +125,58 @@ public class Texture {
     	
     	return returned;
     }
+    
+    public static Texture loadCubeMap(int r, String paths[]) {
+    	Texture returned = new Texture();
+    	returned.type = GL13.GL_TEXTURE_CUBE_MAP;
+    	
+    	try {
+
+	    	returned.texture = GL11.glGenTextures();
+	    	GL11.glBindTexture(returned.type, returned.texture);
+	    	
+    		for (int i = 0; i < paths.length; i++) {
+    			InputStream is = Class.class.getResourceAsStream(paths[i]);
+    			BufferedImage img = ImageIO.read(is);
+    			
+    	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
+    			for (int x = 0; x < img.getWidth(); x++) {
+    				for (int y = 0; y < img.getHeight(); y++) {
+    					
+    					Color c = new Color(img.getRGB(x, y), true);
+    					
+    					data.put(4 * (x + y * img.getWidth()) + 0, (byte)c.getRed());
+    					data.put(4 * (x + y * img.getWidth()) + 1, (byte)c.getGreen());
+    					data.put(4 * (x + y * img.getWidth()) + 2, (byte)c.getBlue());
+    					data.put(4 * (x + y * img.getWidth()) + 3, (byte)c.getAlpha());
+    				}
+    			}
+    			data.flip();
+                GL11.glTexImage2D(GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                        0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
+    			data.clear();
+			}
+    		
+    		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MIN_FILTER, GL13.GL_LINEAR);
+    		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MAG_FILTER, GL13.GL_LINEAR);
+    		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);
+    		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_EDGE);
+    		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL13.GL_TEXTURE_WRAP_R, GL13.GL_CLAMP_TO_EDGE);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	
+    	return returned;
+    }
 
     public static Texture loadTextureAtlas(int r, int rows, int cols, String path) {
     	Texture returned = new Texture();
     	returned.type = GL30.GL_TEXTURE_2D_ARRAY;
     	
     	try {
-			BufferedImage img = ImageIO.read(new File(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			BufferedImage img = ImageIO.read(is);
 			
 			int dataSize = 4 * r * r * 256;
 			ByteBuffer data = ByteBuffer.allocateDirect(dataSize);

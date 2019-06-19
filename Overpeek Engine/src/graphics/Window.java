@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -36,20 +37,21 @@ import utility.Logger.type;
 
 public class Window {
 
-	public static final int WINDOW_MULTISAMPLE_X2	= 0x000020;
-	public static final int WINDOW_MULTISAMPLE_X4	= 0x000040;
-	public static final int WINDOW_MULTISAMPLE_X8	= 0x000080;
-	public static final int WINDOW_BORDERLESS		= 0x000001;
-	public static final int WINDOW_RESIZEABLE		= 0x000100;
-	public static final int WINDOW_TRANSPARENT		= 0x001000;
-	public static final int WINDOW_FULLSCREEN		= 0x010000;
-	public static final int WINDOW_DEBUGMODE		= 0x100000;
+	public static final int WINDOW_MULTISAMPLE_X2	= 0x0000020;
+	public static final int WINDOW_MULTISAMPLE_X4	= 0x0000040;
+	public static final int WINDOW_MULTISAMPLE_X8	= 0x0000080;
+	public static final int WINDOW_BORDERLESS		= 0x0000001;
+	public static final int WINDOW_RESIZEABLE		= 0x0000100;
+	public static final int WINDOW_TRANSPARENT		= 0x0001000;
+	public static final int WINDOW_FULLSCREEN		= 0x0010000;
+	public static final int WINDOW_DEBUGMODE		= 0x0100000;
 
-	public static final int POLYGON_LINE			= 0;
-	public static final int POLYGON_FILL			= 1;
-	public static final int POLYGON_POINT			= 2;
+	public static final int POLYGON_LINE			= 0x1000000;
+	public static final int POLYGON_FILL			= 0x2000000;
+	public static final int POLYGON_POINT			= 0x3000000;
 	
 
+	private int polygonmode;
 	private long window;
 	private int width;
 	private int height;
@@ -69,7 +71,7 @@ public class Window {
 	private boolean singleKeys[] = new boolean[512];
 	private boolean singleButtons[] = new boolean[128];
 	
-	private float mouseX, mouseY;
+	private float cursorX, cursorY;
 	private float scroll_total;
 	private float scroll_delta;
 	
@@ -114,8 +116,8 @@ public class Window {
 	    {
 			if (active_Application != null) active_Application.mousePos((float) xpos, (float) ypos);
 			
-			mouseX = Maths.map((float) xpos, 0.0f, getWidth(), -aspect(), aspect());
-			mouseY = Maths.map((float) ypos, 0.0f, getHeight(), 1.0f, -1.0f);
+			cursorX = Maths.map((float) xpos, 0.0f, getWidth(), -getAspect(), getAspect());
+			cursorY = Maths.map((float) ypos, 0.0f, getHeight(), 1.0f, -1.0f);
 	    }
 	};
 	
@@ -150,10 +152,6 @@ public class Window {
 		this.height = height;
 		
 		
-		
-		
-		
-		
 		//Flags
 		if ((mods & WINDOW_MULTISAMPLE_X2) != 0) {
 			multisample = 2;
@@ -185,6 +183,17 @@ public class Window {
 			debug_mode = true;
 		} else debug_mode = false;
 		
+		if ((mods & POLYGON_FILL) != 0) {
+			polygonmode = POLYGON_FILL;
+			Logger.debug("Polygonmode is now " + polygonmode);
+		} else if ((mods & POLYGON_LINE) != 0) {
+			polygonmode = POLYGON_LINE;
+			Logger.debug("Polygonmode is now " + polygonmode);
+		} else if ((mods & POLYGON_POINT) != 0) {
+			polygonmode = POLYGON_POINT;
+			Logger.debug("Polygonmode is now " + polygonmode);
+		} else polygonmode = POLYGON_FILL;
+		
 		init();
 	}
 	
@@ -215,7 +224,6 @@ public class Window {
 		glfwSetCursorPosCallback(window, cursor);
 		glfwSetScrollCallback(window, scroll);
 		
-		
 		//OpenGL
 		GL.createCapabilities();
 		if (debug_mode) {
@@ -228,6 +236,11 @@ public class Window {
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(true);
 		glDepthFunc(GL_LEQUAL);
+		
+		Logger.debug("Polygonmode: " + polygonmode);
+		if (polygonmode == POLYGON_FILL) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		else if (polygonmode == POLYGON_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 	}
 	
 	public boolean shouldClose() {
@@ -255,7 +268,7 @@ public class Window {
 		glfwSwapBuffers(window);
 	}
 	
-	public float aspect() {
+	public float getAspect() {
 		return (float)width / (float)height;
 	}
 	
@@ -315,7 +328,8 @@ public class Window {
 	public void setIcon(String path) {
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -365,12 +379,16 @@ public class Window {
 		return singleButtons[button];
 	}
 	
-	public float getMouseX() {
-		return mouseX;
+	public void setCursor(float x, float y) {
+		glfwSetCursorPos(window, x, y);
 	}
 	
-	public float getMouseY() {
-		return mouseY;
+	public float getCursorX() {
+		return cursorX;
+	}
+	
+	public float getCursorY() {
+		return cursorY;
 	}
 	
 	public float getScrollTotal() {

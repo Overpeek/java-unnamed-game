@@ -2,7 +2,7 @@
    	"objects": [
    		{
         	"name": "Air",
-            "id": 0,
+        	"data_name": "air",
             "texture": "null",
             "wall": false,
             "destroyable": false,
@@ -15,8 +15,8 @@
         },
         {
         	"name": "Grass",
-            "id": 1,
-            "texture": "res/texture/object/grass.png",
+        	"data_name": "grass",
+            "texture": "/res/texture/object/grass.png",
             "wall": false,
             "multitexture": false,
             "smooth": false,
@@ -30,8 +30,8 @@
         },
         {
         	"name": "Spruce",
-            "id": 2,
-            "texture": "res/texture/object/spruce.png",
+        	"data_name": "spruce",
+            "texture": "/res/texture/object/spruce.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -43,8 +43,8 @@
         },
         {
         	"name": "Birch",
-            "id": 3,
-            "texture": "res/texture/object/birch.png",
+        	"data_name": "birch",
+            "texture": "/res/texture/object/birch.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -56,8 +56,8 @@
         },
         {
         	"name": "Wood wall",
-            "id": 4,
-            "texture": "res/texture/object/wood_wall.png",
+        	"data_name": "woodenwall",
+            "texture": "/res/texture/object/wood_wall.png",
             "wall": true,
             "destroyable": true,
             "color.r": 0.58,
@@ -69,8 +69,8 @@
         },
         {
         	"name": "Stone wall",
-            "id": 5,
-            "texture": "res/texture/object/stone_wall.png",
+        	"data_name": "stonewall",
+            "texture": "/res/texture/object/stone_wall.png",
             "wall": true,
             "destroyable": true,
             "color.r": 0.5,
@@ -82,8 +82,8 @@
         },
         {
         	"name": "Spawner",
-            "id": 6,
-            "texture": "res/texture/object/spawner.png",
+        	"data_name": "spawner",
+            "texture": "/res/texture/object/spawner.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -95,8 +95,8 @@
         },
         {
         	"name": "Mover",
-            "id": 7,
-            "texture": "res/texture/object/mover.png",
+        	"data_name": "mover",
+            "texture": "/res/texture/object/mover.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,

@@ -1,18 +1,17 @@
 package utility;
 
 import java.util.Random;
-import utility.SimplexNoise;
 
 public class Maths {
 
 	private static Random rand;
-	private static SimplexNoise noise;
+	private static SimplexNoise_octave noise;
 	
 	
 	
 	public static void seed(float seed) {
 		rand = new Random((long) seed);
-		noise = new SimplexNoise((int) seed);
+		noise = new SimplexNoise_octave((int) seed);
 	}
 	
 	public static float random(float min, float max) {

@@ -2,8 +2,8 @@
    	"creatures": [
    		{
         	"name": "Player",
-            "id": 0,
-            "texture": "res/texture/creature/player.png",
+        	"data_name": "player",
+            "texture": "/res/texture/creature/player.png",
             "walkspeed": 50.0,
             "friendly": true,
             "ghost": false,
@@ -17,12 +17,12 @@
             "color.r": 1.0,
             "color.g": 1.0,
             "color.b": 1.0,
-            "color.a": 1.0,
+            "color.a": 1.0
         },
         {
         	"name": "Unnamed",
-            "id": 1,
-            "texture": "res/texture/creature/player.png",
+        	"data_name": "unnamed",
+            "texture": "/res/texture/creature/player.png",
             "walkspeed": 50.0,
             "friendly": false,
             "ghost": false,
@@ -34,7 +34,7 @@
             "staminaregen": 5.0,
             "drops": [
             	{
-            		"id": 2,
+            		"item": "fiber",
             		"min": 0,
             		"max": 3
             	}
@@ -42,11 +42,11 @@
             "color.r": 1.0,
             "color.g": 1.0,
             "color.b": 1.0,
-            "color.a": 1.0,
+            "color.a": 1.0
         },
         {
         	"name": "Item",
-            "id": 2,
+        	"data_name": "item",
             "texture": "null",
             "walkspeed": 50.0,
             "friendly": false,
@@ -61,7 +61,7 @@
             "color.r": 1.0,
             "color.g": 1.0,
             "color.b": 1.0,
-            "color.a": 1.0,
+            "color.a": 1.0
         }
 	]
 }		

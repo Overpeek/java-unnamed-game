@@ -12,21 +12,32 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
-import graphics.Renderer.VertexData;
+import utility.Colors;
 
 public class TextLabelTexture {
 	
 	private final static int MAX_CHARACTERS = 512;
 	
 	private Framebuffer framebuffer;
+	private String current_text;
 	
 	private static Shader shader;
+	private static Shader single_shader;
 	private static VertexArray textVAO;
 	private static Buffer textBuffer;
 	private static FloatBuffer bufferMap;
 	private static int buffer_current;
 	private static int vertex_count;
 	private static Vector4f bgcolor = new Vector4f(0.0f, 0.0f, 0.0f, 0.5f);
+	private static Window window;
+	private static GlyphTexture glyphs;
+	
+	private static Renderer label_renderer;
+	
+	
+	public String getText() {
+		return current_text;
+	}
 	
 	public static void setBGColor(Vector4f col) {
 		bgcolor = col;
@@ -36,7 +47,7 @@ public class TextLabelTexture {
 		return framebuffer;
 	}
 	
-	public static void initialize() {
+	public static void initialize(Window _window, GlyphTexture _glyphs, Shader single_texture_shader) {
 		shader = new Shader();
 		shader.setUniform1i("textured", 1);
 		
@@ -45,6 +56,9 @@ public class TextLabelTexture {
 		textBuffer = new Buffer(bufferMap, GL15.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
 		buffer_current = 0;
 		vertex_count = 0;
+		glyphs = _glyphs;
+		window = _window;
+		single_shader = single_texture_shader;
 
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribPos());
@@ -54,20 +68,58 @@ public class TextLabelTexture {
 		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribTex());
 		GL20.glEnableVertexAttribArray(3);
 		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribCol());
+		
+		
+		//Label rendering
+		label_renderer = new Renderer();
 	}
 	
 	public void delete() {
-		framebuffer.delete();
+		if (framebuffer != null) framebuffer.delete();
+	}
+	
+	public void rebake(String text) {
+		rebake(text, glyphs);
+	}
+	
+	public void draw(Vector3f pos, Vector2f size) {
+		draw(pos, size, Colors.WHITE);
+	}
+	
+	public void draw(Vector3f pos, Vector2f size, Vector4f color) {
+		size.x *= getFrameBuffer().aspect();
+		
+		single_shader.enable();
+		label_renderer.quads.submit(pos, size, 0, color);
+		label_renderer.quads.draw(getFrameBuffer().getTexture());
+	}
+	
+	public void drawCentered(Vector3f pos, Vector2f size, Vector4f color) {
+		size.x *= getFrameBuffer().aspect();
+		
+		single_shader.enable();
+		label_renderer.quads.submit(new Vector3f(pos.x - size.x / 2.0f, pos.y - size.y / 2.0f, pos.z), size, 0, color);
+		label_renderer.quads.draw(getFrameBuffer().getTexture());
 	}
 	
 	public void rebake(String text, GlyphTexture glyphs) {
+		if (text.equals(current_text)) return; //Dont want to update if text is going to be the same
+		
+		current_text = text;
 		delete();
 		framebuffer = generateFramebuffer(text, glyphs);
 		bakeToFramebuffer(text, glyphs, framebuffer);
 	}
 
+	public static TextLabelTexture bakeTextToTexture(String text) {
+		return bakeTextToTexture(text, glyphs);
+	}
+
 	public static TextLabelTexture bakeTextToTexture(String text, GlyphTexture glyphs) {
 		TextLabelTexture obj = new TextLabelTexture();
+		if (text.length() == 0) return obj;
+		
+		obj.current_text = text;
 		obj.framebuffer = generateFramebuffer(text, glyphs);
 		bakeToFramebuffer(text, glyphs, obj.framebuffer);
 		return obj;
@@ -78,6 +130,8 @@ public class TextLabelTexture {
 	}
 	
 	private static Framebuffer generateFramebuffer(String text, GlyphTexture glyphs) {
+		if (text.length() == 0) return null;
+		
 		int textLength = text.length();
 		int framebufferWidth = 0;
 		int framebufferHeight = glyphs.getHeight();
@@ -91,6 +145,8 @@ public class TextLabelTexture {
 	}
 	
 	private static void bakeToFramebuffer(String text, GlyphTexture glyphs, Framebuffer obj) {
+		if (text.length() == 0) return;
+		
 		buffer_current = 0;
 		vertex_count = 0;
 		bufferMap = textBuffer.mapBuffer().asFloatBuffer();
@@ -127,6 +183,8 @@ public class TextLabelTexture {
 		vertex_count = 0;
 		
 		Framebuffer.unbind();
+		
+		viewPortReset(window);
 	}
 
 	private static void submitQuad(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {

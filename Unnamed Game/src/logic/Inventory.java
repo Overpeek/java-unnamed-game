@@ -4,7 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import graphics.Renderer;
-import graphics.Renderer.VertexData;
+import graphics.VertexData;
 import utility.Colors;
 import utility.DataIO;
 
@@ -33,8 +33,8 @@ public class Inventory {
 	public boolean load() {
 		if (Settings.DEBUG_DISABLE_SAVING) {
 			long inventory_data_size;
-			Game.getMap();
-			char data[] = DataIO.readChar(Game.getMap().saveLocation(Settings.SAVE_PATH) + "\\inventory.data");
+			Main.game.getMap();
+			char data[] = DataIO.readChar(Main.game.getMap().saveLocation(Settings.SAVE_PATH) + "\\inventory.data");
 			if (data == null) return false;
 			
 			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
@@ -60,83 +60,71 @@ public class Inventory {
 				data[(x + Settings.INVENTORY_WIDTH * y) * 2 + 1] = (char) itemCounts[x][y];
 			}
 		}
-		DataIO.writeChar(Game.getMap().saveLocation(Settings.SAVE_PATH) + "inventory.data", data);
+		DataIO.writeChar(Main.game.getMap().saveLocation(Settings.SAVE_PATH) + "inventory.data", data);
 	}
 	
 	public void render(Renderer renderer) {
-		if (selectedSlot <= -1) selectedSlot = 4;
-		if (selectedSlot >= 5) selectedSlot = 0;
-	
-		//int selectedId = itemIds[(int)selectedSlot][0];
-	
-		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
-		{
-			if (x == (int)selectedSlot) {
-				renderOneSlot(renderer,
-					(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Game.renderScale(),
-					-1.0f,
-					Settings.INVENTORY_SCALE * Game.renderScale() * 1.2f,
-					itemIds[x][0],
-					itemCounts[x][0]
-				);
-			} else if (x > (int)selectedSlot) {
-				renderOneSlot(renderer,
-					(x - Settings.INVENTORY_WIDTH / 2.0f + 0.2f) * Settings.INVENTORY_SCALE * Game.renderScale(),
-					-1.0f,
-					Settings.INVENTORY_SCALE * Game.renderScale(),
-					itemIds[x][0],
-					itemCounts[x][0]
-				);
-			}
-			else {
-				renderOneSlot(renderer, 
-					(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Game.renderScale(),
-					-1.0f, 
-					Settings.INVENTORY_SCALE * Game.renderScale(), 
-					itemIds[x][0], 
-					itemCounts[x][0]
-				);
-			}
-		}
-		
-		if (visible) {
-			for (int y = 0; y < Settings.INVENTORY_HEIGHT; y++)
-			{
-				for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
-				{
-					
-					renderOneSlot(renderer, 
-						(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Game.renderScale(), 
-						(y - Settings.INVENTORY_HEIGHT / 2.0f) * Settings.INVENTORY_SCALE * Game.renderScale(),
-						Settings.INVENTORY_SCALE * Game.renderScale(),
-						itemIds[x][y + 1], 
-						itemCounts[x][y + 1]
-					);
-				}
-			}
-		}
+		//if (selectedSlot <= -1) selectedSlot = 4;
+		//if (selectedSlot >= 5) selectedSlot = 0;
+	    //
+		////int selectedId = itemIds[(int)selectedSlot][0];
+	    //
+		//for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+		//{
+		//	if (x == (int)selectedSlot) {
+		//		renderOneSlot(renderer,
+		//			(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//			-1.0f,
+		//			Settings.INVENTORY_SCALE * Main.game.renderScale() * 1.2f,
+		//			itemIds[x][0],
+		//			itemCounts[x][0]
+		//		);
+		//	} else if (x > (int)selectedSlot) {
+		//		renderOneSlot(renderer,
+		//			(x - Settings.INVENTORY_WIDTH / 2.0f + 0.2f) * Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//			-1.0f,
+		//			Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//			itemIds[x][0],
+		//			itemCounts[x][0]
+		//		);
+		//	}
+		//	else {
+		//		renderOneSlot(renderer, 
+		//			(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//			-1.0f, 
+		//			Settings.INVENTORY_SCALE * Main.game.renderScale(), 
+		//			itemIds[x][0], 
+		//			itemCounts[x][0]
+		//		);
+		//	}
+		//}
+		//
+		//if (visible) {
+		//	for (int y = 0; y < Settings.INVENTORY_HEIGHT; y++)
+		//	{
+		//		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+		//		{
+		//			
+		//			renderOneSlot(renderer, 
+		//				(x - Settings.INVENTORY_WIDTH / 2.0f) * Settings.INVENTORY_SCALE * Main.game.renderScale(), 
+		//				(y - Settings.INVENTORY_HEIGHT / 2.0f) * Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//				Settings.INVENTORY_SCALE * Main.game.renderScale(),
+		//				itemIds[x][y + 1], 
+		//				itemCounts[x][y + 1]
+		//			);
+		//		}
+		//	}
+		//}
 	}
 
-	private void renderOneSlot(Renderer renderer, float x, float y, float scale, int itemid, int itemcount) {
+	private void renderOneSlot(Renderer renderer, float x, float y, float scale, String item, int itemcount) {
 		//All inventory slots
-		renderer.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(0.0f, 0.0f), 80, Colors.WHITE));
-		renderer.submitVertex(new VertexData(new Vector3f(x, y + scale, 0.0f), new Vector2f(0.0f, 1.0f), 80, Colors.WHITE));
-		renderer.submitVertex(new VertexData(new Vector3f(x + scale, y + scale, 0.0f), new Vector2f(1.0f, 1.0f), 80, Colors.WHITE));
-		
-		renderer.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(0.0f, 0.0f), 80, Colors.WHITE));
-		renderer.submitVertex(new VertexData(new Vector3f(x + scale, y + scale, 0.0f), new Vector2f(1.0f, 1.0f), 80, Colors.WHITE));
-		renderer.submitVertex(new VertexData(new Vector3f(x + scale, y, 0.0f), new Vector2f(1.0f, 0.0f), 80, Colors.WHITE));
+		renderer.points.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(scale), 0, Colors.WHITE));
 	
 		//All inventory items
-		if (itemid != 0) {
-			int item_texture = Database.items.get(itemid).texture;
-			renderer.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(0.0f, 0.0f), item_texture, Colors.WHITE));
-			renderer.submitVertex(new VertexData(new Vector3f(x, y + scale, 0.0f), new Vector2f(0.0f, 1.0f), item_texture, Colors.WHITE));
-			renderer.submitVertex(new VertexData(new Vector3f(x + scale, y + scale, 0.0f), new Vector2f(1.0f, 1.0f), item_texture, Colors.WHITE));
-
-			renderer.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(0.0f, 0.0f), item_texture, Colors.WHITE));
-			renderer.submitVertex(new VertexData(new Vector3f(x + scale, y + scale, 0.0f), new Vector2f(1.0f, 1.0f), item_texture, Colors.WHITE));
-			renderer.submitVertex(new VertexData(new Vector3f(x + scale, y, 0.0f), new Vector2f(1.0f, 0.0f), item_texture, Colors.WHITE));
+		if (item.length() != 0) {
+			int item_texture = Database.getItem(item).texture;
+			renderer.points.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(scale), item_texture, Colors.WHITE));
 		}
 		//m_renderer->fontRenderer->renderText(
 		//	glm::vec3(x, y, 0.0f),
@@ -146,11 +134,11 @@ public class Inventory {
 		//);
 	}
 
-	private void update() {
+	public void update() {
 	
 	}
 	
-	private void clear() {
+	public void clear() {
 		for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
 		{
 			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
@@ -161,15 +149,15 @@ public class Inventory {
 		}
 	}
 	
-	void removeSelected(int n) {
-		itemCounts[(int)selectedSlot][0] -= n;
+	public void removeSelected(int n) {
+		itemCounts[(int)getSelectedSlot()][0] -= n;
 
 		//oe::Logger::out(m_itemCounts[int(selectedSlot)][0]);
 
-		if (itemCounts[(int)selectedSlot][0] <= 0) itemIds[(int)selectedSlot][0] = 0;
+		if (itemCounts[(int)getSelectedSlot()][0] <= 0) itemIds[(int)getSelectedSlot()][0] = 0;
 	}
 
-	boolean addItem(int id, int n) {
+	public boolean addItem(int id, int n) {
 		for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
 		{
 			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
@@ -178,9 +166,9 @@ public class Inventory {
 				if (itemIds[x][y] == 0 || itemIds[x][y] == id) {
 					itemIds[x][y] = id;
 					itemCounts[x][y] += n;
-					if (itemCounts[x][y] + n >= Database.items.get(id).stack_size) {
-						itemCounts[x][y] = Database.items.get(id).stack_size;
-						n -= Database.items.get(id).stack_size + 1 - itemCounts[x][y];
+					if (itemCounts[x][y] + n >= Database.getItem(id).stack_size) {
+						itemCounts[x][y] = Database.getItem(id).stack_size;
+						n -= Database.getItem(id).stack_size + 1 - itemCounts[x][y];
 						if (n <= 0) return true;
 					}
 					else return true;
@@ -190,11 +178,11 @@ public class Inventory {
 		return false;
 	}
 
-	void dropSelected(int n) {
+	public void dropSelected(int n) {
 		
 	}
 
-	void dropAll() {
+	public void dropAll() {
 		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
 		{
 			for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
@@ -206,11 +194,11 @@ public class Inventory {
 		}
 	}
 
-	void dropItem(int x, int y, int n) {
+	private void dropItem(int x, int y, int n) {
 		if (n == -1) {
 			for (int count = 0; count < itemCounts[x][y]; count++)
 			{
-				Game.getMap().itemDrop(Game.getPlayer().getX(), Game.getPlayer().getY(), itemIds[x][y]);
+				Main.game.getMap().itemDrop(Main.game.getPlayer().getPos().x, Main.game.getPlayer().getPos().y, itemIds[x][y]);
 			}
 			itemCounts[x][y] = 0;
 			itemIds[x][y] = 0;
@@ -218,7 +206,7 @@ public class Inventory {
 		for (int count = 0; count < n; count++)
 		{
 			if (itemCounts[x][y] > 0) {
-				Game.getMap().itemDrop(Game.getPlayer().getX(), Game.getPlayer().getY(), itemIds[x][y]);
+				Main.game.getMap().itemDrop(Main.game.getPlayer().getPos().x, Main.game.getPlayer().getPos().y, itemIds[x][y]);
 				
 				itemCounts[x][y]--;
 
@@ -230,6 +218,22 @@ public class Inventory {
 			itemIds[x][y] = 0;
 			break;
 		}
+	}
+
+	public int getSelectedSlot() {
+		return selectedSlot;
+	}
+
+	public void setSelectedSlot(int selectedSlot) {
+		this.selectedSlot = selectedSlot;
+	}
+	
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean b) {
+		visible = b;
 	}
 	
 }

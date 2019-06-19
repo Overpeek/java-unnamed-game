@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
@@ -48,6 +49,9 @@ public class TextureLoader {
 		r = wh;
 		textureBuffer = ByteBuffer.allocateDirect(0);
 		Logger.out("Max supported texture count: " + GL30.GL_MAX_ARRAY_TEXTURE_LAYERS);
+		
+		//Load empty
+		load("/res/texture/empty.png"); //Going to get index 0
 	}
 
 	static public int load(String path) {
@@ -55,7 +59,8 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,11 +95,12 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			Logger.out("Couldn't load file: " + path, Logger.type.ERROR);
+			Logger.error("Couldn't load file: " + path);
 		}
 		
 		//Texture data
@@ -103,7 +109,7 @@ public class TextureLoader {
 		int layer = current_layer;
 		current_layer += rows * columns;
 		MultitextureReturnData returnData = new MultitextureReturnData(layer, layer + rows * columns - 1);
-		
+
 		//Data processing
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {

@@ -1,10 +1,17 @@
 package graphics;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
+import org.joml.Vector4f;
+import org.joml.Vector4i;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
@@ -31,7 +38,8 @@ public class Shader {
 		//Load and compile
 		StringBuilder shaderSource = new StringBuilder();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(path));
+			InputStream is = Class.class.getResourceAsStream(path);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String line;
 			
 			while((line = reader.readLine()) != null) {

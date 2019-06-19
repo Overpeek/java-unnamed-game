@@ -1,11 +1,18 @@
 package audio;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.stb.*;
+
+import utility.DataIO;
+import utility.Logger;
 
 import static org.lwjgl.openal.ALC10.*;
 import static org.lwjgl.openal.ALC.*;
@@ -61,7 +68,13 @@ public class Audio {
 		stackPush();
 		IntBuffer sampleRateBuffer = stackMallocInt(1);
 
-		ShortBuffer rawAudioBuffer = STBVorbis.stb_vorbis_decode_filename(path, channelsBuffer, sampleRateBuffer);
+		//Read all data from inputstream to bytebuffer
+		ByteBuffer audiodatabuffer = DataIO.readResourceFile(path);
+		
+		
+		//Decode
+		ShortBuffer rawAudioBuffer = STBVorbis.stb_vorbis_decode_memory(audiodatabuffer, channelsBuffer, sampleRateBuffer);
+		//if (rawAudioBuffer == null) Logger.error("Couldn't load audiofile: " + path);
 		
 		//Retrieve the extra information that was stored in the buffers by the function
 		int channels = channelsBuffer.get();
