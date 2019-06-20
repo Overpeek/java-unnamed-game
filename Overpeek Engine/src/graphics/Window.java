@@ -30,6 +30,7 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLUtil;
 
 import utility.Application;
+import utility.Loader;
 import utility.Logger;
 import utility.Maths;
 import utility.Logger.type;
@@ -328,7 +329,7 @@ public class Window {
 	public void setIcon(String path) {
 		BufferedImage img = null;
 		try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

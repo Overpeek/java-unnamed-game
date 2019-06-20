@@ -18,6 +18,8 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
 
+import utility.Loader;
+
 public class GlyphTexture {
 
 	public static class Glyph {
@@ -66,7 +68,7 @@ public class GlyphTexture {
     	
     	Font font = null;
     	try {
-    		InputStream is = Class.class.getResourceAsStream(path);
+    		InputStream is = Loader.loadRes(path);
     		font = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(Font.PLAIN, resolution);
 		} catch (FontFormatException | IOException e) {
 			// TODO Auto-generated catch block

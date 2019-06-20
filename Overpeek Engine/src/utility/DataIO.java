@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class DataIO {
 	
 	public static ByteBuffer readResourceFile(String path) {
-		InputStream is = Class.class.getResourceAsStream(path);
+		InputStream is = Loader.loadRes(path);
 		ArrayList<Integer> allBytes = new ArrayList<Integer>();
 		try {
 			while (true) {

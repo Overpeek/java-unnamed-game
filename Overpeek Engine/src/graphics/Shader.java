@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 
+import utility.Loader;
 import utility.Logger;
 
 
@@ -38,7 +39,7 @@ public class Shader {
 		//Load and compile
 		StringBuilder shaderSource = new StringBuilder();
 		try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 			String line;
 			

@@ -58,7 +58,7 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Main.class.getResourceAsStream(path);
 			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -94,7 +94,7 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Main.class.getResourceAsStream(path);
 			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

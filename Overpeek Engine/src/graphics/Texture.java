@@ -15,6 +15,8 @@ import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
 
+import utility.Loader;
+
 public class Texture {
 	
     private int texture;
@@ -89,7 +91,7 @@ public class Texture {
     
     	//Load image
 		try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			BufferedImage img = ImageIO.read(is);
 			
 	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
@@ -136,7 +138,7 @@ public class Texture {
 	    	GL11.glBindTexture(returned.type, returned.texture);
 	    	
     		for (int i = 0; i < paths.length; i++) {
-    			InputStream is = Class.class.getResourceAsStream(paths[i]);
+    			InputStream is = Loader.loadRes(paths[i]);
     			BufferedImage img = ImageIO.read(is);
     			
     	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
@@ -175,7 +177,7 @@ public class Texture {
     	returned.type = GL30.GL_TEXTURE_2D_ARRAY;
     	
     	try {
-			InputStream is = Class.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			BufferedImage img = ImageIO.read(is);
 			
 			int dataSize = 4 * r * r * 256;
@@ -209,8 +211,6 @@ public class Texture {
 			GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, r, r, 256, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
 			
 			data.clear();
-			
-			img.getClass();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
