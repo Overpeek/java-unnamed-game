@@ -31,6 +31,7 @@ public class Inventory {
 	}
 	
 	public boolean load() {
+		/*
 		if (Settings.DEBUG_DISABLE_SAVING) {
 			long inventory_data_size;
 			Main.game.getMap();
@@ -47,10 +48,12 @@ public class Inventory {
 			}
 			return true;
 		}
+		*/
 		return false;
 	}
 	
 	public void save() {
+		/*
 		char data[] = new char[(Settings.INVENTORY_WIDTH * (Settings.INVENTORY_HEIGHT + 1)) * 2];
 		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
 		{
@@ -61,6 +64,7 @@ public class Inventory {
 			}
 		}
 		DataIO.writeChar(Main.game.getMap().saveLocation(Settings.SAVE_PATH) + "inventory.data", data);
+		*/
 	}
 	
 	public void render(Renderer renderer) {

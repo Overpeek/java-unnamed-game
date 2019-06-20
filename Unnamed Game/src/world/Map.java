@@ -51,6 +51,7 @@ public class Map {
 	
 	public Map() {
 		creatures = new ArrayList<Creature>();
+		name = "null";
 	}
 	
 	public boolean create(String _name, int seed) {
@@ -336,7 +337,7 @@ public class Map {
 
 		
 		//Load tiles
-		if (tile_data != null) {
+		if (tile_data == null) {
 			Logger.warn("Couldn't load world \"" + name + "\"");
 			return false;
 		}
@@ -440,7 +441,7 @@ public class Map {
 		for (int i = 0; i < creatures.size(); i++)
 		{
 			if (creatures.get(i) != null) {
-				creatures.get(i).setPos(creatures.get(i).getPos().round());
+				creatures.get(i).setPos(new Vector2f(Math.round(creatures.get(i).getPos().x), Math.round(creatures.get(i).getPos().y)));
 
 				//Change objects around the creature
 				for (int x = -1; x < 2; x++) {

@@ -49,7 +49,9 @@ public class DataIO {
 	}
 	
 	public static ByteBuffer readByteBuffer(String path) {
-		return ByteBuffer.wrap(readByte(path));
+		byte[] bytes = readByte(path);
+		if (bytes != null) ByteBuffer.wrap(bytes);
+		return null;
 	}
 	
 	public static void writeByte(String path, byte[] data) {

@@ -214,13 +214,14 @@ public class Database {
 	}
 	
 	private static void loadAllMods() {
-		String modsFolder = Main.game.getSavePath() + "mods/";
+		String modsFolder = Main.game.getDataPath() + "mods/";
 		
 		FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("N/A", "jar");
 		File file = new File(modsFolder);
-		if (file == null) return;
 		
-		for (File child : file.listFiles()) {
+		File files[] = file.listFiles();
+		if (files == null) return; // no mods found
+		for (File child : files) {
 		    if(extensionFilter.accept(child)) {
 		        Logger.info("Loading mod: \"" + child.getName() + "\"");
 		        Mod loadedMod = loadMod(child);
