@@ -1,8 +1,8 @@
 package graphics;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import utility.vec2;
+import utility.vec3;
+import utility.vec4;
 
 public class VertexData {
 	
@@ -24,7 +24,7 @@ public class VertexData {
 		a = _a;
 	}
 
-	public VertexData(Vector3f pos, Vector2f size, float i, Vector4f color) {
+	public VertexData(vec3 pos, vec2 size, float i, vec4 color) {
 		this(pos.x, pos.y, pos.z, size.x, size.y, i, color.x, color.y, color.z, color.w);
 	}
 	

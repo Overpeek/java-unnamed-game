@@ -1,5 +1,5 @@
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.vec2;
+import org.joml.vec3;
 
 import graphics.Renderer;
 import graphics.VertexData;
@@ -35,7 +35,7 @@ public class Main extends Mod {
 
 	@Override
 	public void draw(Renderer renderer) { //This method is called every render cycle
-		renderer.points.submitVertex(new VertexData(new Vector3f(-0.25f + (float)Math.cos(time) / 5.0f, -0.25f + (float)Math.sin(time) / 5.0f, 0.0f), new Vector2f(0.5f, 0.5f), texture, Colors.WHITE));
+		renderer.points.submitVertex(new VertexData(new vec3(-0.25f + (float)Math.cos(time) / 5.0f, -0.25f + (float)Math.sin(time) / 5.0f, 0.0f), new vec2(0.5f, 0.5f), texture, Colors.WHITE));
 	}
 
 	@Override

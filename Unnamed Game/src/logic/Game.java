@@ -1,11 +1,8 @@
 package logic;
 
-import java.io.IOException;
-import java.net.URL;
+import java.awt.Font;
 
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import audio.Audio;
 import creatures.Creature;
@@ -15,29 +12,24 @@ import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
 import graphics.Texture;
-import graphics.VertexData;
 import graphics.Window;
 import utility.Application;
 import utility.Colors;
 import utility.GameLoop;
 import utility.Keys;
 import utility.Logger;
+import utility.mat4;
+import utility.vec2;
+import utility.vec3;
 import world.Map;
 
 public class Game extends Application {
-
-	public final float INITIAL_WINDOW_ASPECT = (16.0f / 9.0f);
-	public final int INITIAL_WINDOW_WIDTH = 1280;
-	public final int INITIAL_WINDOW_HEIGHT = (int)(INITIAL_WINDOW_WIDTH / INITIAL_WINDOW_ASPECT);
-	public final String APP_VERSION = "0.4.0";
-	public final String APP_NAME = "Unnamed Game - " + APP_VERSION + " (Java Port)";
 
 	private Shader multi_texture_shader;
 	private Shader single_texture_shader;
 	private Shader point_shader;
 	private Shader post_shader;
 	
-	private TextLabelTexture label;
 	private Renderer blur_renderer;
 	private Renderer normal_renderer;
 	private Renderer gui_renderer;
@@ -54,6 +46,8 @@ public class Game extends Application {
 	private boolean paused;
 	private boolean justPaused;
 	private Gui gui;
+	private Texture splashScreen;
+	private String loadedMapName;
 	
 	public boolean advancedDebugMode;
 	public boolean debugMode;
@@ -63,17 +57,14 @@ public class Game extends Application {
 	//Main update loop
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		label.rebake("FPS: " + gameloop.getFps() + ", Biome: " + map.getBiome(player.getPos().x, player.getPos().y).name, glyphs);
-		resize(window.getWidth(), window.getHeight());
-
+		Logger.debug("FPS: " + gameloop.getFps());
 		float playerSpeed = Database.getCreature("player").walkSpeed;
 
 		if (window.key(Keys.KEY_LEFT_SHIFT)) playerSpeed *= 2;
-		if (window.key(Keys.KEY_S)) { player.setAcc(new Vector2f(player.getAcc().x, playerSpeed)); }
-		if (window.key(Keys.KEY_D)) { player.setAcc(new Vector2f(playerSpeed, player.getAcc().y)); }
-		if (window.key(Keys.KEY_W)) { player.setAcc(new Vector2f(player.getAcc().x, -playerSpeed)); }
-		if (window.key(Keys.KEY_A)) { player.setAcc(new Vector2f(-playerSpeed, player.getAcc().y)); }
+		if (window.key(Keys.KEY_S)) { player.setAcc(new vec2(player.getAcc().x, playerSpeed)); }
+		if (window.key(Keys.KEY_D)) { player.setAcc(new vec2(playerSpeed, player.getAcc().y)); }
+		if (window.key(Keys.KEY_W)) { player.setAcc(new vec2(player.getAcc().x, -playerSpeed)); }
+		if (window.key(Keys.KEY_A)) { player.setAcc(new vec2(-playerSpeed, player.getAcc().y)); }
 		player.update(0, Settings.UPDATES_PER_SECOND);
 		if (Settings.DEBUG_REGEN_WORLD) {
 			loadWorld(Settings.WORLD_NAME, true); //Debug regen world
@@ -96,7 +87,7 @@ public class Game extends Application {
 		//world_renderer.drawAsPoints(TextureLoader.getTextureId(), TextureLoader.getTextureType());
 		//
 		//single_texture_shader.enable();
-		//world_renderer.submitBakedText(new Vector3f(-1.0f, -1.0f, 0.0f), new Vector2f(0.2f, 0.2f), label, Colors.WHITE);
+		//world_renderer.submitBakedText(new vec3(-1.0f, -1.0f, 0.0f), new vec2(0.2f, 0.2f), label, Colors.WHITE);
 		
 		//World tiles
 		if (!paused || justPaused) {
@@ -113,9 +104,12 @@ public class Game extends Application {
 		point_shader.enable();
 		blur_renderer.points.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
 		normal_renderer.points.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
+		
+		single_texture_shader.setUniform1i("usetex", 1);
+		TextLabelTexture.drawQueue();
 
 		//single_texture_shader.enable();
-		//label.draw(new Vector3f(-window.getAspect(), -1.0f, 0.0f), new Vector2f(0.2f, 0.2f), Colors.WHITE);
+		//label.draw(new vec3(-window.getAspect(), -1.0f, 0.0f), new vec2(0.2f, 0.2f), Colors.WHITE);
 		
 		////Gui
 		//m_gui->renderNoBlur(m_guirenderer.get());
@@ -158,6 +152,40 @@ public class Game extends Application {
 	public void cleanup() {
 		Database.modCleanup();
 	}
+	
+	private TextLabelTexture loadDescription;
+	private void drawLoadingScreen(Renderer renderer, float state, String text) {
+		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		vec3 pos = new vec3(-0.5f, -0.5f, 0.0f);
+		vec2 size = new vec2(1.0f, 1.0f);
+		window.clear();
+		single_texture_shader.enable();
+		
+		//Back texture
+		single_texture_shader.setUniform1i("usetex", 1);
+		renderer.quads.clear();
+		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), size, 0, Colors.WHITE);
+		renderer.quads.draw(splashScreen);
+		
+		//Loading bar
+		renderer.quads.clear();
+		pos = new vec3(-0.8f, 0.8f, 0.0f);
+		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), new vec2(1.6f, 0.1f), 0, Colors.BLACK);
+		pos = new vec3(-0.79f, 0.81f, 0.0f);
+		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), new vec2(state * 1.58f, 0.08f), 0, Colors.RED);
+		single_texture_shader.setUniform1i("usetex", 0);
+		renderer.quads.draw(splashScreen);
+		
+		//Description
+		if (text != null) {
+			single_texture_shader.setUniform1i("usetex", 1);
+			loadDescription.rebake(text);
+			loadDescription.queueDraw(new vec3(-0.8f, 0.7f, 0.0f), new vec2(0.1f), Colors.WHITE);			
+		}
+		
+		window.update();
+		window.input();
+	}
 
 	
 	//Main init
@@ -167,56 +195,47 @@ public class Game extends Application {
 		justPaused = false;
 		
 		//Window
-		Logger.out("Creating window");
-		window = new Window(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, APP_NAME, Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
+		Logger.info("Creating window");
+		window = new Window(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT, Settings.WINDOW_DEFAULT_TITLE, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
 		window.setSwapInterval(0);
 		window.setIcon("/res/texture/icon.png");
-		window.setLineWidth(5.0f);
+		window.setLineWidth(2.0f);
 		window.setBackFaceCulling(false);
 		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-		//Splash screen
-		Shader tmpshader = new Shader("/res/shader/texture-single.vert.glsl", "/res/shader/texture-single.frag.glsl");
-		Matrix4f projection = new Matrix4f().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f, 0.0f, 10000.0f);
-		tmpshader.setUniformMat4("pr_matrix", projection);
-		gui_renderer = new Renderer();
-		Texture splashScreen = Texture.loadTextureSingle("/res/texture/splash.png");
-		window.clear();
-		Vector3f pos = new Vector3f(-0.5f, -0.5f, 0.0f);
-		Vector2f size = new Vector2f(1.0f, 1.0f);
-		gui_renderer.quads.submitVertex(new VertexData(new Vector3f(pos.x, pos.y, pos.z), 					new Vector2f(0.0f, 0.0f), 0, Colors.WHITE));
-		gui_renderer.quads.submitVertex(new VertexData(new Vector3f(pos.x, pos.y + size.y, pos.z), 			new Vector2f(0.0f, 1.0f), 0, Colors.WHITE));
-		gui_renderer.quads.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y + size.y, pos.z), new Vector2f(1.0f, 1.0f), 0, Colors.WHITE));
-		gui_renderer.quads.submitVertex(new VertexData(new Vector3f(pos.x + size.x, pos.y, pos.z), 			new Vector2f(1.0f, 0.0f), 0, Colors.WHITE));
-		tmpshader.enable();
-		gui_renderer.quads.draw(splashScreen.getId(), splashScreen.getType());
-		window.update();
 		
-		//Audio
-		Logger.out("Creating audio device");
+		//Critical Resources
 		Audio.init();
-		
-		//Shaders
-		Logger.out("Creating all the shaders");
-		post_shader = new Shader("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl");
-		multi_texture_shader = new Shader("/res/shader/texture.vert.glsl", "/res/shader/texture.frag.glsl");
+		glyphs = GlyphTexture.loadFont("/res/font/arial.font", 64);
 		single_texture_shader = new Shader("/res/shader/texture-single.vert.glsl", "/res/shader/texture-single.frag.glsl");
-		//post_shader = new Shader("/res/shader/texture.vert.glsl", "/res/shader/texture.frag.glsl");
-		point_shader = new Shader("/res/shader/geometrytexture.vert.glsl", "/res/shader/geometrytexture.frag.glsl", "/res/shader/geometrytexture.geom.glsl");
-		Logger.out("All shaders created successfully!");
-		
-		//Loading resources
-		Logger.out("Loading all resources");
-		texture = Texture.loadTextureAtlas(16, 16, 16, "/res/texture/atlas.png");
-		glyphs = GlyphTexture.loadFont("/res/font/arial.font", 256);
-		audioHit = Audio.loadAudio("/res/audio/hit.ogg");
-		audioSwing = Audio.loadAudio("/res/audio/swing.ogg");
-		audioCollect = Audio.loadAudio("/res/audio/collect.ogg");
+		mat4 projection = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
+		single_texture_shader.setUniformMat4("pr_matrix", projection);
 		TextLabelTexture.initialize(window, glyphs, single_texture_shader);
+		loadDescription = TextLabelTexture.bakeToTexture("Loading");
+		gui_renderer = new Renderer();
+		splashScreen = Texture.loadTextureSingle("/res/texture/splash.png");
+		
+		//Splash screen
+		window.unhide();
+		drawLoadingScreen(gui_renderer, 0.0f, null);
+		
+		//Start async database loading
 		TextureLoader.init(16);
-		Database.initialize();
+		AsyncResLoader loader = new AsyncResLoader();
+		new Thread(loader).start();
+		while (true) {
+			float state = loader.queryLoadState();
+			if (state == 1.0f) break;
+			drawLoadingScreen(gui_renderer, state, "Loading resources");			
+		}
+		
 		TextureLoader.finish();
-		label = TextLabelTexture.bakeTextToTexture("FPS", glyphs);
+		
+		//Rest of the shaders
+		Logger.info("Creating all the shaders");
+		post_shader = new Shader("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl");
+		point_shader = new Shader("/res/shader/geometrytexture.vert.glsl", "/res/shader/geometrytexture.frag.glsl", "/res/shader/geometrytexture.geom.glsl");
+		multi_texture_shader = new Shader("/res/shader/texture.vert.glsl", "/res/shader/texture.frag.glsl");
+		Logger.info("All shaders created successfully!");
 		
 		//Renderer
 		blur_renderer = new Renderer();
@@ -226,48 +245,59 @@ public class Game extends Application {
 		float playerX = Settings.MAP_SIZE / 2.0f, playerY = Settings.MAP_SIZE / 2.0f;
 		inventory = new Inventory();
 		player = new Player(playerX, playerY, inventory);
-		map = new Map();
 		gui = new Gui(
 			Database.getCreature("player").health,
 			Database.getCreature("player").stamina,
 			Database.getCreature("player").healthgain,
 			Database.getCreature("player").staminagain
 		);
-		
-		//Loading world
+
+		//Start async map loading
 		loadWorld(Settings.WORLD_NAME, true);
 		
 		//System and software info
-		Logger.out("LWJGL " + window.getLWJGL());
-		Logger.out("Renderer " + window.getRenderer());
+		Logger.info("LWJGL " + window.getLWJGL());
+		Logger.info("Renderer " + window.getRenderer());
 		
-		Logger.debug("Loop is " + gameloop.toString());
-
 		//Main menu
-		MainMenu.init(gui_renderer, multi_texture_shader, single_texture_shader, point_shader, post_shader, glyphs, Main.game.texture);
+		window.setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		MainMenu.init(gui_renderer, multi_texture_shader, single_texture_shader, point_shader, post_shader, glyphs);
 		window.setCurrentApp(this);
-
-		Logger.debug("Loop is now " + gameloop.toString());
 
 		//Reset window
 		resize(window.getWidth(), window.getHeight());
 
 		//Ready
-		Logger.out("Game ready! Running update and renderloops");
+		Logger.info("Game ready! Running update and renderloops");
 	}
 
 	//Load world with name
 	//If not found, create one
 	private void loadWorld(String name, boolean create) {
-		if (!map.load(name)) {
-			Logger.out("Couldn't load world \"" + name + "\"");
-
-			if (create) {
-				map.create(name, 5);
-			}
+		AsyncMapLoader loader = new AsyncMapLoader();
+		loadedMapName = name;
+		loader.loadMap(name);
+		new Thread(loader).start();
+		while (true) {
+			float state = loader.queryLoadState();
+			if (state == 1.0f) { map = loader.getLoadedMap(); return; }//Load finished
+			if (state == -1) { loadedMapName = null; break; } //Load failed
+			drawLoadingScreen(gui_renderer, state, "Loading map");		
+			
 		}
-		else {
-			((Player) player).load();
+		Logger.warn("Couldn't load world \"" + name + "\"");	
+
+		if (create) {
+			loader.createMap(name, 0);
+			new Thread(loader).start();
+			while (true) {
+				float state = loader.queryLoadState();
+				if (state == 1.0f) { map = loader.getLoadedMap(); return; } //Create finished
+				if (state == -1) { loadedMapName = null; break; } //Create failed
+				drawLoadingScreen(gui_renderer, state, "Creating map");			
+			}
+			
+			Logger.error("Couldn't create world \"" + name + "\" with seed \"" + 0 + "\"");
 		}
 	}
 
@@ -287,7 +317,7 @@ public class Game extends Application {
 			if (key == Keys.KEY_F8) { post_shader.enable(); post_shader.setUniform1i("unif_lens", 1); justPaused = true; return; }
 
 			//Player keys
-			if (key == Keys.KEY_E) { player.setPos(new Vector2f(Math.round(player.getPos().x + 0.5f) - 0.5f, Math.round(player.getPos().y + 0.5f) - 0.5f)); return; }
+			if (key == Keys.KEY_E) { player.setPos(new vec2(Math.round(player.getPos().x + 0.5f) - 0.5f, Math.round(player.getPos().y + 0.5f) - 0.5f)); return; }
 
 			//Inventory
 			if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
@@ -345,14 +375,14 @@ public class Game extends Application {
 		
 		// TODO Auto-generated method stub
 		window.viewport();
-		window.setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		//Matrices
-		Matrix4f projection = new Matrix4f().ortho(-window.getAspect() * Settings.DEBUG_ZOOM, window.getAspect() * Settings.DEBUG_ZOOM, Settings.DEBUG_ZOOM, -Settings.DEBUG_ZOOM, 0.0f, 10000.0f);
+		mat4 projection = new mat4().ortho(-window.getAspect() * Settings.DEBUG_ZOOM, window.getAspect() * Settings.DEBUG_ZOOM, Settings.DEBUG_ZOOM, -Settings.DEBUG_ZOOM);
 		multi_texture_shader.setUniformMat4("pr_matrix", projection);
 		single_texture_shader.setUniformMat4("pr_matrix", projection);
 		point_shader.setUniformMat4("pr_matrix", projection);
-		projection = new Matrix4f().ortho(-1.0f, 1.0f, -1.0f, 1.0f, -10000.0f, 10000.0f);
+		projection = new mat4().ortho(-1.0f, 1.0f, -1.0f, 1.0f);
 		post_shader.setUniformMat4("pr_matrix", projection);
 		
 		//Other
@@ -377,7 +407,7 @@ public class Game extends Application {
 	
 	public String getSavePath() {
 		//"C:/Users/eemel/AppData/Roaming/Unnamed Game" for windows
-		return Settings.SAVE_PATH + "/" + map.getWorldName() + "/";
+		return Settings.SAVE_PATH + "/" + loadedMapName + "/";
 	}
 	
 	public GlyphTexture getGlyphs() {
@@ -390,6 +420,10 @@ public class Game extends Application {
 	
 	public Map getMap() {
 		return map;
+	}
+	
+	public float guiScale() {
+		 return Settings.DEBUG_ZOOM;
 	}
 	
 	public float renderScale() {

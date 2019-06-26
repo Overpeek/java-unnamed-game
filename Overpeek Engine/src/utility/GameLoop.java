@@ -41,13 +41,15 @@ public class GameLoop implements Runnable {
 	}
 	
 	//Disable autonomous window clear, update and input
-	public void disableAutoManage() {
+	public GameLoop disableAutoManage() {
 		auto_manage = false;
+		return this;
 	}
 	
 	//Enable autonomous window clear, update and input
-	public void enableAutoManage() {
+	public GameLoop enableAutoManage() {
 		auto_manage = true;
+		return this;
 	}
 	
 	@Override

@@ -3,21 +3,16 @@ package graphics;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.FloatBuffer;
 
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-import org.joml.Vector4f;
-import org.joml.Vector4i;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
-import org.lwjgl.system.MemoryStack;
 
 import utility.Loader;
 import utility.Logger;
+import utility.mat4;
+import utility.vec2;
+import utility.vec3;
+import utility.vec4;
 
 
 public class Shader {
@@ -78,48 +73,46 @@ public class Shader {
 	public Shader() {
 		//Vertex shader
 		int vertexShader = loadShader(GL20.GL_VERTEX_SHADER, 
-			"#version 330 core\n" +
-			"layout(location = 0) in vec3 vertex_pos;\n" +
-			"layout(location = 1) in vec2 texture_uv;\n" +
-			"layout(location = 2) in float texture_id;\n" +
-			"layout(location = 3) in vec4 vertex_color;\n" +
-
-			"out vec2 shader_uv;\n" +
-			"out vec4 shader_color;\n" +
-			"flat out int shader_id;\n" +
-			"\n" +
-			"uniform mat4 pr_matrix = mat4(1.0);\n" +
-			"uniform mat4 ml_matrix = mat4(1.0);\n" +
-			"uniform mat4 vw_matrix = mat4(1.0);\n" +
-			"\n" +
-			"void main()\n" +
-			"{\n" +
-			"   mat4 mvp = pr_matrix * vw_matrix * ml_matrix;\n" +
-			"	gl_Position = mvp * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);\n" +
-			"	shader_uv = texture_uv;\n" +
-			"	shader_id = int(floor(texture_id));\n" +
-			"	shader_color = vertex_color;\n" +
-			"}\n"
+			"#version 330 core\r\n" + 
+			"layout(location = 0) in vec3 vertex_pos;\r\n" + 
+			"layout(location = 1) in vec2 texture_uv;\r\n" + 
+			"layout(location = 2) in float texture_id;\r\n" + 
+			"layout(location = 3) in vec4 vertex_color;\r\n" + 
+			"\r\n" + 
+			"out vec2 shader_uv;\r\n" + 
+			"out vec4 shader_color;\r\n" + 
+			"\r\n" + 
+			"uniform mat4 pr_matrix;\r\n" + 
+			"\r\n" + 
+			"void main()\r\n" + 
+			"{\r\n" + 
+			"	gl_Position = pr_matrix * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);\r\n" + 
+			"	shader_uv = texture_uv;\r\n" + 
+			"	shader_color = vertex_color;\r\n" + 
+			"}\r\n"
 		);
 
 		//Fragment shader
 		int fragmentShader = loadShader(GL20.GL_FRAGMENT_SHADER,
-			"#version 330 core\n" +
-			"\n" +
-			"in vec2 shader_uv;\n" +
-			"in vec4 shader_color;\n" +
-			"flat in int shader_id;\n" +
-			"\n" +
-			"layout(location = 0) out vec4 color;\n" +
-			"\n" +
-			"uniform sampler2DArray tex;\n" +
-			"uniform int textured = 0;\n" +
-			"\n" +
-			"void main()\n" +
-			"{\n" +
-			"	if (textured != 0) color = texture(tex, vec3(shader_uv, shader_id)) * shader_color;\n" +
-			"	else color = shader_color;\n" +
-			"}\n"
+			"#version 330 core\r\n" + 
+			"layout(location = 0) out vec4 color;\r\n" + 
+			"\r\n" + 
+			"in vec2 shader_uv;\r\n" + 
+			"in vec4 shader_color;\r\n" + 
+			"\r\n" + 
+			"uniform sampler2D tex;\r\n" + 
+			"uniform int usetex = 0;\r\n" + 
+			"\r\n" + 
+			"void main()\r\n" + 
+			"{\r\n" + 
+			"	vec4 textureColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);\r\n" + 
+			"	if (usetex == 0)\r\n" + 
+			"		textureColor = shader_color;\r\n" + 
+			"	else\r\n" + 
+			"		textureColor = shader_color * texture(tex, shader_uv);\r\n" + 
+			"\r\n" + 
+			"	color = textureColor;\r\n" + 
+			"}\r\n"
 		);
 		
 		//Shader program
@@ -132,7 +125,7 @@ public class Shader {
 		programLog("Shader program linking failed!", shaderProgram, GL20.GL_LINK_STATUS);
 
 		//Default projection matrix
-		Matrix4f pr = new Matrix4f().ortho2D(-1.0f, 1.0f, 1.0f, -1.0f);
+		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
 		enable();
 		setUniformMat4("pr_matrix", pr);
 
@@ -199,18 +192,13 @@ public class Shader {
 	public int getUniformLocation(String name) { return GL20.glGetUniformLocation(shaderProgram, name); }
 	
 	public void setUniform1f(String name, float value) { enable(); GL20.glUniform1f(getUniformLocation(name), value); }
-	public void setUniform2f(String name, Vector2f value) { enable(); GL20.glUniform2f(getUniformLocation(name), value.x, value.y); }
-	public void setUniform3f(String name, Vector3f value) { enable(); GL20.glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
-	public void setUniform4f(String name, Vector4f value) { enable(); GL20.glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
+	public void setUniform2f(String name, vec2 value) { enable(); GL20.glUniform2f(getUniformLocation(name), value.x, value.y); }
+	public void setUniform3f(String name, vec3 value) { enable(); GL20.glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
+	public void setUniform4f(String name, vec4 value) { enable(); GL20.glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
 	public void setUniform1i(String name, int value) { enable(); GL20.glUniform1i(getUniformLocation(name), value); }
-	public void setUniform2i(String name, Vector2i value) { enable(); GL20.glUniform2i(getUniformLocation(name), value.x, value.y); }
-	public void setUniform3i(String name, Vector3i value) { enable(); GL20.glUniform3i(getUniformLocation(name), value.x, value.y, value.z); }
-	public void setUniform4i(String name, Vector4i value) { enable(); GL20.glUniform4i(getUniformLocation(name), value.x, value.y, value.z, value.w); }
-	public void setUniformMat4(String name, Matrix4f value) { enable();
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			FloatBuffer fb = value.get(stack.mallocFloat(16));
-			GL20.glUniformMatrix4fv(getUniformLocation(name), false, fb); 
-		}
-	}
+	public void setUniform2i(String name, vec2 value) { enable(); GL20.glUniform2i(getUniformLocation(name), (int)value.x, (int)value.y); }
+	public void setUniform3i(String name, vec3 value) { enable(); GL20.glUniform3i(getUniformLocation(name), (int)value.x, (int)value.y, (int)value.z); }
+	public void setUniform4i(String name, vec4 value) { enable(); GL20.glUniform4i(getUniformLocation(name), (int)value.x, (int)value.y, (int)value.z, (int)value.w); }
+	public void setUniformMat4(String name, mat4 value) { enable();	GL20.glUniformMatrix4fv(getUniformLocation(name), false, value.getAsBuffer()); }
 	
 }

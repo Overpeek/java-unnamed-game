@@ -1,19 +1,17 @@
 package creatures;
 
-import org.joml.Vector2f;
-
 import graphics.Renderer;
-import logic.Game;
 import logic.Inventory;
 import logic.Settings;
 import utility.DataIO;
+import utility.vec2;
 
 public class Player extends Creature {
 	
 	private Inventory inventory;
-	private Vector2f spawn_location;
+	private vec2 spawn_location;
 	private boolean god;
-	private Vector2f death_location;
+	private vec2 death_location;
 
 	
 	public Player(float playerX, float playerY, Inventory _inventory) {
@@ -65,18 +63,18 @@ public class Player extends Creature {
 			setSpawnPoint((int) getPos().x, (int) getPos().y);
 			return false;
 		}
-		setPos(new Vector2f(playerData[0], playerData[1]));
+		setPos(new vec2(playerData[0], playerData[1]));
 		setSpawnPoint((int) playerData[2], (int) playerData[3]);
 		return true;
 	}
 
 
 	public void setSpawnPoint(int x, int y) {
-		spawn_location = new Vector2f(x, y);
+		spawn_location = new vec2(x, y);
 		//if (Game.getGui()) Game.getGui().addChatLine("Spawnpoint set");
 	}
 	
-	public Vector2f getSpawnPoint() {
+	public vec2 getSpawnPoint() {
 		return spawn_location;
 	}
 

@@ -2,14 +2,15 @@ package graphics;
 
 import java.nio.FloatBuffer;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+
+import utility.vec2;
+import utility.vec3;
+import utility.vec4;
 
 public class PointRenderer implements GenericRenderer {
 
@@ -65,7 +66,7 @@ public class PointRenderer implements GenericRenderer {
 	}
 
 	@Override
-	public void submit(Vector3f _pos, Vector2f _size, int _id, Vector4f _color) {
+	public void submit(vec3 _pos, vec2 _size, int _id, vec4 _color) {
 		submitVertex(new VertexData(_pos.x, 			_pos.y, 			_pos.z, 0.0f, 0.0f, _id, _color.x, _color.y, _color.z, _color.w));
 	}
 

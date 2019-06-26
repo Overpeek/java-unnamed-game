@@ -1,12 +1,10 @@
 package logic;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
 import graphics.Renderer;
 import graphics.VertexData;
 import utility.Colors;
-import utility.DataIO;
+import utility.vec2;
+import utility.vec3;
 
 public class Inventory {
 
@@ -123,12 +121,12 @@ public class Inventory {
 
 	private void renderOneSlot(Renderer renderer, float x, float y, float scale, String item, int itemcount) {
 		//All inventory slots
-		renderer.points.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(scale), 0, Colors.WHITE));
+		renderer.points.submitVertex(new VertexData(new vec3(x, y, 0.0f), new vec2(scale), 0, Colors.WHITE));
 	
 		//All inventory items
 		if (item.length() != 0) {
 			int item_texture = Database.getItem(item).texture;
-			renderer.points.submitVertex(new VertexData(new Vector3f(x, y, 0.0f), new Vector2f(scale), item_texture, Colors.WHITE));
+			renderer.points.submitVertex(new VertexData(new vec3(x, y, 0.0f), new vec2(scale), item_texture, Colors.WHITE));
 		}
 		//m_renderer->fontRenderer->renderText(
 		//	glm::vec3(x, y, 0.0f),

@@ -1,11 +1,7 @@
 package world;
 
-import java.io.BufferedReader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import creatures.Creature;
 import creatures.Player;
@@ -16,10 +12,11 @@ import logic.Database.Biome_Data;
 import logic.Main;
 import logic.Settings;
 import utility.Colors;
-import utility.DataIO;
 import utility.Logger;
 import utility.Maths;
 import utility.SimplexNoise_octave;
+import utility.vec2;
+import utility.vec3;
 
 public class Map {
 
@@ -47,6 +44,8 @@ public class Map {
 	private SimplexNoise_octave plantnoise1;
 	private SimplexNoise_octave plantnoise2;
 	
+	private final int tileCount = Settings.MAP_SIZE * Settings.MAP_SIZE;
+	private int processedTileCount = 0;
 
 	
 	public Map() {
@@ -55,7 +54,7 @@ public class Map {
 	}
 	
 	public boolean create(String _name, int seed) {
-		Logger.out("Generating map...  ");
+		Logger.info("Generating map...  ");
 		name = _name;
 		
 		long time = seed;
@@ -76,19 +75,21 @@ public class Map {
 		
 		//Create world based on noisemaps
 		tiles = new MapTile[Settings.MAP_SIZE][Settings.MAP_SIZE];
+		processedTileCount = 0;
 		for (int x = 0; x < Settings.MAP_SIZE; x++)
 		{
 			for (int y = 0; y < Settings.MAP_SIZE; y++)
 			{
 				MapTile tile = getInfoFromNoise(x, y);
 				tiles[x][y] = tile;
+				processedTileCount++;
 			}
 		}
 
 
 
 		//Print status
-		Logger.out("Map generation successful");
+		Logger.info("Map generation successful");
 
 		return true;
 	}
@@ -176,13 +177,13 @@ public class Map {
 
 	public Creature itemDrop(float x, float y, int id) {
 		Creature newItem = addCreature(x, y, id, true);
-		newItem.setVel(new Vector2f(Maths.random(-0.2f, 0.2f), Maths.random(-0.2f, 0.2f)));
+		newItem.setVel(new vec2(Maths.random(-0.2f, 0.2f), Maths.random(-0.2f, 0.2f)));
 		return newItem;
 	}
 
 	public void submitToRenderer(Renderer world_renderer, float off_x, float off_y, float corrector) {
 		// Map rendering
-		Vector2f player_prediction = new Vector2f(
+		vec2 player_prediction = new vec2(
 				Main.game.getPlayer().getPos().x + Main.game.getPlayer().getVel().x * corrector / Settings.UPDATES_PER_SECOND,
 				Main.game.getPlayer().getPos().y + Main.game.getPlayer().getVel().y * corrector / Settings.UPDATES_PER_SECOND);
 
@@ -206,8 +207,8 @@ public class Map {
 				float ry = (tile_y + off_y) * Settings.TILE_SIZE * Main.game.renderScale();
 
 				// Renter tile
-				Vector3f pos = new Vector3f(rx, ry, 0.0f);
-				Vector2f size = new Vector2f(Settings.TILE_SIZE * Main.game.renderScale(), Settings.TILE_SIZE * Main.game.renderScale());
+				vec3 pos = new vec3(rx, ry, 0.0f);
+				vec2 size = new vec2(Settings.TILE_SIZE * Main.game.renderScale(), Settings.TILE_SIZE * Main.game.renderScale());
 
 				world_renderer.points.submitVertex(new VertexData(pos, size, db_tile.texture, Colors.WHITE));
 				//world_renderer.submitQuad(pos, size, db_tile.texture, Colors.WHITE);
@@ -215,8 +216,8 @@ public class Map {
 				// Render object on tile
 				if (!db_obj.data_name.equals("air")) {
 					int objTexture = getObjectTexture(tile_x, tile_y);
-					pos = new Vector3f(rx, ry, 0.0f);
-					size = new Vector2f(Settings.TILE_SIZE * Main.game.renderScale(), Settings.TILE_SIZE * Main.game.renderScale());
+					pos = new vec3(rx, ry, 0.0f);
+					size = new vec2(Settings.TILE_SIZE * Main.game.renderScale(), Settings.TILE_SIZE * Main.game.renderScale());
 
 					world_renderer.points.submitVertex(new VertexData(pos, size, objTexture, db_obj.color));
 					//world_renderer.submitQuad(pos, size, objTexture, Colors.WHITE);
@@ -282,7 +283,7 @@ public class Map {
 	}
 
 	public void save() {
-		Logger.out("Saving world...  ");
+		Logger.info("Saving world...  ");
 		
 		//Load tiles
 		final int bytesPerTile = 4 + 4 + 4;
@@ -319,7 +320,7 @@ public class Map {
 	}
 
 	public boolean load(String name2) {
-		Logger.out("Loading world...  ");
+		Logger.info("Loading world...  ");
 		name = name2;
 
 		ByteBuffer tile_data = Database.readDataBuffer("/world-data/tiles.dat");
@@ -342,6 +343,7 @@ public class Map {
 			return false;
 		}
 		unload();
+		processedTileCount = 0;
 		for (int x = 0; x < Settings.MAP_SIZE; x++)
 		{
 			for (int y = 0; y < Settings.MAP_SIZE; y++)
@@ -351,6 +353,7 @@ public class Map {
 					tile_data.getInt(),
 					tile_data.getInt()
 				);
+				processedTileCount++;
 			}
 		}
 
@@ -441,7 +444,7 @@ public class Map {
 		for (int i = 0; i < creatures.size(); i++)
 		{
 			if (creatures.get(i) != null) {
-				creatures.get(i).setPos(new Vector2f(Math.round(creatures.get(i).getPos().x), Math.round(creatures.get(i).getPos().y)));
+				creatures.get(i).setPos(new vec2(Math.round(creatures.get(i).getPos().x), Math.round(creatures.get(i).getPos().y)));
 
 				//Change objects around the creature
 				for (int x = -1; x < 2; x++) {
@@ -456,6 +459,10 @@ public class Map {
 				return;
 			}
 		}
+	}
+
+	public float tileState() {
+		return (float)processedTileCount / (float)tileCount;
 	}
 
 }

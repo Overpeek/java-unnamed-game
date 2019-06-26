@@ -2,13 +2,13 @@ package graphics;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
 
 import utility.Loader;
+import utility.Logger;
 
 public class Texture {
 	
@@ -55,8 +56,8 @@ public class Texture {
     	returned.texture = GL11.glGenTextures();
 		GL11.glBindTexture(type, returned.texture);
 
-		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_BORDER);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_BORDER);
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
@@ -85,47 +86,52 @@ public class Texture {
     	GL11.glDeleteTextures(texture);
     }
     
-    public static Texture loadTextureSingle(String path) {
+    public static Texture loadBufferedImage(BufferedImage img) {
     	Texture returned = new Texture();
     	returned.type = GL30.GL_TEXTURE_2D;
     
-    	//Load image
+    	//Buffer for image
+		ByteBuffer data = BufferUtils.createByteBuffer(img.getWidth() * img.getHeight()  * 4);
+		for (int x = 0; x < img.getWidth(); x++) {
+			for (int y = 0; y < img.getHeight(); y++) {
+				
+				Color c = new Color(img.getRGB(x, y), true);
+				
+				data.put(4 * (x + y * img.getWidth()) + 0, (byte) c.getRed());
+				data.put(4 * (x + y * img.getWidth()) + 1, (byte) c.getGreen());
+				data.put(4 * (x + y * img.getWidth()) + 2, (byte) c.getBlue());
+				data.put(4 * (x + y * img.getWidth()) + 3, (byte) c.getAlpha());
+			}
+		}
+		data.flip();
+    	
+		//Opengl
+    	returned.texture = GL11.glGenTextures();
+    	GL11.glBindTexture(GL11.GL_TEXTURE_2D, returned.texture);
+    	GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
+		//GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+
+		data.clear();
+		
+    	
+    	return returned;
+    }
+    
+    public static Texture loadTextureSingle(String path) {
+    	Logger.debug("loaded texture " + path);
 		try {
 			InputStream is = Loader.loadRes(path);
 			BufferedImage img = ImageIO.read(is);
 			
-	    	ByteBuffer data = ByteBuffer.allocateDirect(img.getWidth() * img.getHeight() * 4);
-			for (int x = 0; x < img.getWidth(); x++) {
-				for (int y = 0; y < img.getHeight(); y++) {
-					
-					Color c = new Color(img.getRGB(x, y), true);
-					
-					data.put(4 * (x + y * img.getWidth()) + 0, (byte)c.getRed());
-					data.put(4 * (x + y * img.getWidth()) + 1, (byte)c.getGreen());
-					data.put(4 * (x + y * img.getWidth()) + 2, (byte)c.getBlue());
-					data.put(4 * (x + y * img.getWidth()) + 3, (byte)c.getAlpha());
-				}
-			}
-			data.flip();
-	    	
-			//Opengl
-	    	returned.texture = GL11.glGenTextures();
-	    	GL11.glBindTexture(GL11.GL_TEXTURE_2D, returned.texture);
-	    	GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
-			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-
-			data.clear();
+			return Texture.loadBufferedImage(img);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-    	
-    	return returned;
+		return null;
     }
     
     public static Texture loadCubeMap(int r, String paths[]) {

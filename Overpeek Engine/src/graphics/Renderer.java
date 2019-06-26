@@ -16,4 +16,28 @@ public class Renderer {
 		spheres = new SphereRenderer();
 	}
 	
+	public void clear() {
+		quads.clear();
+		points.clear();
+		triangles.clear();
+		lines.clear();
+		spheres.clear();
+	}
+	
+	public void draw(Texture texture) {
+		quads.draw(texture);
+		points.draw(texture);
+		triangles.draw(texture);
+		lines.draw(texture);
+		spheres.draw(texture);
+	}
+
+	public void draw(int texture, int textureType) {
+		quads.draw(texture, textureType);
+		points.draw(texture, textureType);
+		triangles.draw(texture, textureType);
+		lines.draw(texture, textureType);
+		spheres.draw(texture, textureType);
+	}
+	
 }

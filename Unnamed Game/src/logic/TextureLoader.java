@@ -47,7 +47,7 @@ public class TextureLoader {
 	static public void init(int wh) {
 		r = wh;
 		textureBuffer = ByteBuffer.allocateDirect(0);
-		Logger.out("Max supported texture count: " + GL30.GL_MAX_ARRAY_TEXTURE_LAYERS);
+		//Logger.out("Max supported texture count: " + GL30.GL_MAX_ARRAY_TEXTURE_LAYERS);
 		
 		//Load empty
 		load("/res/texture/empty.png"); //Going to get index 0

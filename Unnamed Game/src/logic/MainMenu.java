@@ -1,21 +1,19 @@
 package logic;
 
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
-import graphics.Texture;
 import graphics.VertexData;
 import utility.Application;
 import utility.Colors;
 import utility.GameLoop;
 import utility.Logger;
 import utility.Maths;
+import utility.mat4;
+import utility.vec2;
+import utility.vec3;
+import utility.vec4;
 
 public class MainMenu extends Application {
 	
@@ -31,19 +29,17 @@ public class MainMenu extends Application {
 	static private Shader single_shader;
 	static private Shader point_shader;
 	static private TextLabelTexture label;
-	static private Texture textures;
 	 
 	static private final float UPS = 5;
 	static private Obj objects[] = new Obj[1000];
 
 
 
-	public static void init(Renderer gui_renderer, Shader _multi_shader, Shader _single_shader, Shader _point_shader, Shader _post_shader, GlyphTexture glyphs, Texture _textures) {
+	public static void init(Renderer gui_renderer, Shader _multi_shader, Shader _single_shader, Shader _point_shader, Shader _post_shader, GlyphTexture glyphs) {
 		renderer = gui_renderer;
 		multi_shader = _multi_shader;
 		single_shader = _single_shader;
 		point_shader = _point_shader;
-		textures = _textures;
 	
 		for (int i = 0; i < 1000; i++)
 		{
@@ -66,13 +62,11 @@ public class MainMenu extends Application {
 	
 		point_shader.setUniform1i("ortho", 0);
 		
-		label = TextLabelTexture.bakeTextToTexture("$7MAIN MENU", glyphs);
-		TextLabelTexture.viewPortReset(Main.game.getWindow());
+		label = TextLabelTexture.bakeToTexture("$0M$1A$2I$3N $4M$5E$6N$7U");
 
 		Logger.info("Main menu started");
 		Application game = new MainMenu();
 		loop = new GameLoop((int) UPS, game);
-		Logger.debug("Mainmenu " + loop.toString());
 		//game.window = Main.game.getWindow();
 		loop.run();
         //(new Thread(loop)).start();
@@ -106,31 +100,32 @@ public class MainMenu extends Application {
 		if (Main.game.getWindow().shouldClose()) loop.stop();
 		Main.game.getWindow().clear();
 
-		float mx = Main.game.getWindow().getCursorX(), my = Main.game.getWindow().getCursorY();
+		float mx = Main.game.getWindow().getCursor().x, my = Main.game.getWindow().getCursor().y;
 		//Logger.warn(mx + ", " + my);
 		anglex = -mx * 4.0f;
 		angley = -my * 4.0f;
 
 		//Set matrices
-		Matrix4f pr_matrix = new Matrix4f()
-			    .perspective((float) Math.toRadians(90.0f), Main.game.getWindow().getAspect(), 0.01f, 100.0f);
-		Matrix4f vw_matrix = new Matrix4f()
+		mat4 pr_matrix = new mat4().perspectiveRad(90.0f, Main.game.getWindow().getAspect());
+		mat4 vw_matrix = new mat4()
 				.lookAt((float) Math.cos(anglex), angley, (float) Math.sin(anglex),
 			             0.0f, 0.0f, 0.0f,
 			             0.0f, -1.0f, 0.0f);
 		point_shader.setUniformMat4("pr_matrix", pr_matrix);
 		point_shader.setUniformMat4("vw_matrix", vw_matrix);
-		single_shader.setUniformMat4("pr_matrix", pr_matrix.mul(vw_matrix));
-		multi_shader.setUniformMat4("pr_matrix", pr_matrix.mul(vw_matrix));
+		single_shader.setUniformMat4("pr_matrix", pr_matrix.mult(vw_matrix));
+		multi_shader.setUniformMat4("pr_matrix", pr_matrix.mult(vw_matrix));
 		
 
 		for (int i = 0; i < 1000; i++)
 		{
-			Vector3f pos = new Vector3f(objects[i].x + objects[i].x_vel * corrector / UPS, objects[i].y + objects[i].y_vel * corrector / UPS, objects[i].z + objects[i].z_vel * corrector / UPS);
-			Vector2f size = new Vector2f(0.02f);
-			Vector4f color = new Vector4f(objects[i].r, objects[i].g, objects[i].b, objects[i].a);
+			vec3 pos = new vec3(objects[i].x + objects[i].x_vel * corrector / UPS, objects[i].y + objects[i].y_vel * corrector / UPS, objects[i].z + objects[i].z_vel * corrector / UPS);
+			vec2 size = new vec2(0.02f);
+			vec4 color = new vec4(objects[i].r, objects[i].g, objects[i].b, objects[i].a);
 
-			renderer.points.submitVertex(new VertexData(pos, size, 20, color));
+			//if (i != 0 && i != 999)
+				//renderer.points.submitVertex(new VertexData(pos, size, 20, color));
+			//renderer.points.submitVertex(new VertexData(pos, size, 20, color));
 			//m_renderer->lineRenderer->submitVertex(oe::VertexData(pos, size, 20, m_objcol[i]));
 			//m_renderer->quadRenderer->submitVertex(oe::VertexData(glm::vec3(pos.x, pos.y, pos.z), glm::vec2(0.0f, 0.0f), 20, m_objcol[i]));
 			//m_renderer->quadRenderer->submitVertex(oe::VertexData(glm::vec3(pos.x, pos.y + size.y, pos.z), glm::vec2(0.0f, 1.0f), 20, m_objcol[i]));
@@ -138,11 +133,12 @@ public class MainMenu extends Application {
 			//m_renderer->quadRenderer->submitVertex(oe::VertexData(glm::vec3(pos.x + size.x, pos.y, pos.z), glm::vec2(1.0f, 0.0f), 20, m_objcol[i]));
 		}
 		point_shader.enable();
-		renderer.points.draw(textures.getId(), textures.getType());
+		//renderer.points.draw(0, 0);
 		renderer.points.clear();
 		
-		single_shader.enable();
-		label.drawCentered(new Vector3f(0.0f, -0.0f, 0.0f), new Vector2f(2.0f), Colors.WHITE);
+		single_shader.setUniform1i("usetex", 1);
+		label.queueDrawCentered(new vec3(0.0f, -0.0f, 0.0f), new vec2(0.5f), Colors.WHITE);
+		TextLabelTexture.drawQueue();
 		//m_renderer->drawToFramebuffer(m_shader, m_point_shader, oe::TextureManager::getTexture(0), true, true);
 		//for (int i = 0; i < 8; i++) {
 		//	m_post_shader->setUniform1i("unif_effect", 1);
@@ -160,8 +156,8 @@ public class MainMenu extends Application {
 
 	@Override
 	public void cleanup() {
-		// TODO Auto-generated method stub
-		
+		single_shader.setUniform1i("usetex", 1);
+		point_shader.setUniform1i("usetex", 1);
 	}
 
 

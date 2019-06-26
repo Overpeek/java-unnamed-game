@@ -1,8 +1,5 @@
 package creatures;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
 import graphics.Renderer;
 import graphics.VertexData;
 import logic.Database;
@@ -10,6 +7,8 @@ import logic.Database.Creature_Data;
 import logic.Main;
 import logic.Settings;
 import utility.Colors;
+import utility.vec2;
+import utility.vec3;
 import world.Map;
 
 public abstract class Creature {
@@ -38,10 +37,10 @@ public abstract class Creature {
 
 	private boolean item;
 
-	private Vector2f pos;
-	private Vector2f old_pos;
-	private Vector2f vel;
-	private Vector2f acc;
+	private vec2 pos;
+	private vec2 old_pos;
+	private vec2 vel;
+	private vec2 acc;
 
 	private char heading;
 
@@ -51,9 +50,9 @@ public abstract class Creature {
 	 */
 	public Creature(float _x, float _y, int _id, boolean _item) {
 		id = _id;
-		setPos(new Vector2f(_x + 0.5f, _y + 0.5f));
-		setVel(new Vector2f(0.0f, 0.0f));
-		setAcc(new Vector2f(0.0f, 0.0f));
+		setPos(new vec2(_x + 0.5f, _y + 0.5f));
+		setVel(new vec2(0.0f, 0.0f));
+		setAcc(new vec2(0.0f, 0.0f));
 		item = _item;
 		swingDir = 0;
 
@@ -119,10 +118,10 @@ public abstract class Creature {
 			default:
 				break;
 			}
-			Vector3f pos = new Vector3f((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
-			Vector2f size = new Vector2f(Settings.TILE_SIZE, Settings.TILE_SIZE);
-			pos.mul(Main.game.renderScale());
-			size.mul(Main.game.renderScale());
+			vec3 pos = new vec3((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
+			vec2 size = new vec2(Settings.TILE_SIZE, Settings.TILE_SIZE);
+			pos.mult(Main.game.renderScale());
+			size.mult(Main.game.renderScale());
 
 			renderer.points.submitVertex(new VertexData(pos, size, heading_texture, Colors.WHITE));
 
@@ -154,19 +153,19 @@ public abstract class Creature {
 				break;
 			}
 			if (swingDir != 0) {
-				pos = new Vector3f(swingX, swingY, 0.0f);
-				size = new Vector2f(Settings.TILE_SIZE);
-				pos.mul(Main.game.renderScale());
-				size.mul(Main.game.renderScale());
+				pos = new vec3(swingX, swingY, 0.0f);
+				size = new vec2(Settings.TILE_SIZE);
+				pos.mult(Main.game.renderScale());
+				size.mult(Main.game.renderScale());
 
 				renderer.points.submitVertex(new VertexData(pos, size, swingTexture, Colors.WHITE));
 			}
 		}
 		else {
-			Vector3f pos = new Vector3f((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().x + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
-			Vector2f size = new Vector2f(Settings.TILE_SIZE);
-			pos.mul(Main.game.renderScale());
-			size.mul(Main.game.renderScale());
+			vec3 pos = new vec3((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().x + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
+			vec2 size = new vec2(Settings.TILE_SIZE);
+			pos.mult(Main.game.renderScale());
+			size.mult(Main.game.renderScale());
 
 			int texture = Database.getItem(id).texture;
 			renderer.points.submitVertex(new VertexData(pos, size, texture, Colors.WHITE));
@@ -182,7 +181,7 @@ public abstract class Creature {
 		
 		//Vectorplate
 		if (Main.game.getMap().getTile((int) getPos().x, (int) getPos().y).object == 7) {
-			setAcc(new Vector2f(getAcc().x, getAcc().y + 1.0f));
+			setAcc(new vec2(getAcc().x, getAcc().y + 1.0f));
 		}
 	
 		//Health and stamina regeneration
@@ -209,11 +208,11 @@ public abstract class Creature {
 		}
 	
 		//Positions
-		getVel().add(getAcc());
+		setVel(getVel().add(getAcc()));
 		setOld_pos(getPos());
-		getPos().add(getVel().mul(1.0f / divider));
-		setVel(getVel().mul(1.0f - 1.0f / (divider / 10.0f)));
-		setAcc(new Vector2f(0.0f));
+		setPos(getPos().add(getVel().mult(1.0f / divider)));
+		setVel(getVel().mult(1.0f - 1.0f / (divider / 10.0f)));
+		setAcc(new vec2(0.0f));
 	}
 		
 	protected void commonCollide(float divider) {
@@ -235,10 +234,10 @@ public abstract class Creature {
 	
 					//LEFT COLLIDER
 					if (AABB(
-						new Vector2f(getPos().x - PLAYER_WIDTH / 2.0f, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
-						new Vector2f(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
-						new Vector2f(tilex, tiley),
-						new Vector2f(1.0f, 1.0f)
+						new vec2(getPos().x - PLAYER_WIDTH / 2.0f, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
+						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
+						new vec2(tilex, tiley),
+						new vec2(1.0f, 1.0f)
 					)) {
 						left = true;
 						x_to_move = ((float)tilex + 1.0f + (PLAYER_WIDTH / 2.0f)) - getPos().x;
@@ -246,37 +245,37 @@ public abstract class Creature {
 					
 					//RIGHT COLLIDER
 					if (AABB(
-						new Vector2f(getPos().x, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
-						new Vector2f(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
-						new Vector2f(tilex, tiley),
-						new Vector2f(1.0f, 1.0f)
+						new vec2(getPos().x, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
+						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
+						new vec2(tilex, tiley),
+						new vec2(1.0f, 1.0f)
 					)) {
 						right = true;
 						x_to_move = ((float)tilex - (PLAYER_WIDTH / 2.0f)) - getPos().x;
 					}
 					//TOP COLLIDER
 					if (AABB(
-						new Vector2f(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y - PLAYER_HEIGHT / 2.0f),
-						new Vector2f(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
-						new Vector2f(tilex, tiley),
-						new Vector2f(1.0f, 1.0f)
+						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y - PLAYER_HEIGHT / 2.0f),
+						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
+						new vec2(tilex, tiley),
+						new vec2(1.0f, 1.0f)
 					)) {
 						top = true;
 						y_to_move = ((float)tiley + 1.0f + (PLAYER_HEIGHT / 2.0f)) - getPos().y;
 					}
 					//BOTTOM COLLIDER
 					if (AABB(
-						new Vector2f(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y),
-						new Vector2f(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
-						new Vector2f(tilex, tiley),
-						new Vector2f(1.0f, 1.0f)
+						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y),
+						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
+						new vec2(tilex, tiley),
+						new vec2(1.0f, 1.0f)
 					)) {
 						bottom = true;
 						y_to_move = ((float)tiley - PLAYER_HEIGHT / 2.0f) - getPos().y;
 					}
 	
-					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mul(1.0f, 0.0f); }
-					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mul(0.0f, 1.0f); }
+					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mult(1.0f, 0.0f); }
+					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mult(0.0f, 1.0f); }
 				}
 			}
 		}
@@ -303,37 +302,37 @@ public abstract class Creature {
 
 				if (Database.getObject(tile.object).wall) {
 					if (lineLine(
-						new Vector2f(getPos().x, getPos().y), 
-						new Vector2f(_x, _y),
-						new Vector2f((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y))), 
-						new Vector2f((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y) + 1.0f))
+						new vec2(getPos().x, getPos().y), 
+						new vec2(_x, _y),
+						new vec2((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y))), 
+						new vec2((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y) + 1.0f))
 					)) {
 						//oe::Logger::out("0");
 						return false;
 					}
 					if (lineLine(
-						new Vector2f(getPos().x, getPos().y),
-						new Vector2f(_x, _y),
-						new Vector2f((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y))),
-						new Vector2f((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y)))
+						new vec2(getPos().x, getPos().y),
+						new vec2(_x, _y),
+						new vec2((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y))),
+						new vec2((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y)))
 					)) {
 						//oe::Logger::out("1");
 						return false;
 					}
 					if (lineLine(
-						new Vector2f(getPos().x, getPos().y),
-						new Vector2f(_x, _y),
-						new Vector2f((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y) + 1.0f)),
-						new Vector2f((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y) + 1.0f))
+						new vec2(getPos().x, getPos().y),
+						new vec2(_x, _y),
+						new vec2((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y) + 1.0f)),
+						new vec2((int) (x + Math.floor(getPos().x)), (float) (y + Math.floor(getPos().y) + 1.0f))
 					)) {
 						//oe::Logger::out("2");
 						return false;
 					}
 					if (lineLine(
-						new Vector2f(getPos().x, getPos().y),
-						new Vector2f(_x, _y),
-						new Vector2f((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y) + 1.0f)),
-						new Vector2f((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y)))
+						new vec2(getPos().x, getPos().y),
+						new vec2(_x, _y),
+						new vec2((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y) + 1.0f)),
+						new vec2((int) (x + Math.floor(getPos().x) + 1.0f), (float) (y + Math.floor(getPos().y)))
 					)) {
 						//oe::Logger::out("3");
 						return false;
@@ -345,12 +344,12 @@ public abstract class Creature {
 		return true;
 	}
 	
-	protected boolean AABB(Vector2f aPos, Vector2f aSize, Vector2f bPos, Vector2f bSize) {
+	protected boolean AABB(vec2 aPos, vec2 aSize, vec2 bPos, vec2 bSize) {
 		return	bPos.x < aPos.x + aSize.x && aPos.x < bPos.x + bSize.x
 			&&  bPos.y < aPos.y + aSize.y && aPos.y < bPos.y + bSize.y;
 	}
 	
-	protected boolean lineLine(Vector2f a, Vector2f b, Vector2f c, Vector2f d)
+	protected boolean lineLine(vec2 a, vec2 b, vec2 c, vec2 d)
 	{
 		float denominator = ((b.x - a.x) * (d.y - c.y)) - ((b.y - a.y) * (d.x - c.x));
 		float numerator1 = ((a.y - c.y) * (d.x - c.x)) - ((a.x - c.x) * (d.y - c.y));
@@ -411,35 +410,35 @@ public abstract class Creature {
 		return Database.getCreature(id);
 	}
 
-	public Vector2f getPos() {
+	public vec2 getPos() {
 		return pos;
 	}
 
-	public void setPos(Vector2f pos) {
+	public void setPos(vec2 pos) {
 		this.pos = pos;
 	}
 
-	public Vector2f getOld_pos() {
+	public vec2 getOld_pos() {
 		return old_pos;
 	}
 
-	public void setOld_pos(Vector2f old_pos) {
+	public void setOld_pos(vec2 old_pos) {
 		this.old_pos = old_pos;
 	}
 
-	public Vector2f getVel() {
+	public vec2 getVel() {
 		return vel;
 	}
 
-	public void setVel(Vector2f vel) {
+	public void setVel(vec2 vel) {
 		this.vel = vel;
 	}
 
-	public Vector2f getAcc() {
+	public vec2 getAcc() {
 		return acc;
 	}
 
-	public void setAcc(Vector2f acc) {
+	public void setAcc(vec2 acc) {
 		this.acc = acc;
 	}
 	

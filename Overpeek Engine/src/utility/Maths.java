@@ -27,7 +27,7 @@ public class Maths {
 	public static float noise(float x, float y, float min, float max) {
 		if (noise == null) seed(0);
 		
-		return map((float) noise.noise(x + 0.01f, y + 0.01f, 0.01f), 0.0f, 1.0f, min, max);
+		return map((float) noise.noise(x + 0.01f, y + 0.01f, 0.01f), -1.0f, 1.0f, min, max);
 	}
 	
 }

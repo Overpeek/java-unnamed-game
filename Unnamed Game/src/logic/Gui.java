@@ -6,23 +6,21 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import graphics.Renderer;
-import graphics.VertexData;
 import graphics.TextLabelTexture;
+import graphics.VertexData;
 import utility.Colors;
-import utility.Logger;
+import utility.vec2;
+import utility.vec3;
+import utility.vec4;
 
 public class Gui {
 	
 	private static final int MAX_TEXT_LINES = 10;
 	private static final int GUI_FRAME_LOGGER_SIZE = 200;
 	private static final float GUI_FRAME_LOGGER_BAR_WIDTH = 0.005f;
-	private static final Vector4f COLOR_HEALTH_BAR = new Vector4f(1.0f, 0.2f, 0.2f, 1.0f);
-	private static final Vector4f COLOR_STAMINA_BAR = new Vector4f(0.2f, 1.0f, 0.2f, 1.0f);
+	private static final vec4 COLOR_HEALTH_BAR = new vec4(1.0f, 0.2f, 0.2f, 1.0f);
+	private static final vec4 COLOR_STAMINA_BAR = new vec4(0.2f, 1.0f, 0.2f, 1.0f);
 	
 
 	private int selectedButton;
@@ -76,16 +74,16 @@ public class Gui {
 		avg_frame = 0.0f;
 		avg_update = 0.0f;
 		
-		fps_label = TextLabelTexture.bakeTextToTexture("FPS: 0");
-		ups_label = TextLabelTexture.bakeTextToTexture("UPS: 0");
-		pos_label = TextLabelTexture.bakeTextToTexture("POS: 0");
-		cpu_label = TextLabelTexture.bakeTextToTexture("CPU: 0");
-		gpu_label = TextLabelTexture.bakeTextToTexture("GPU: 0");
-		ram_label = TextLabelTexture.bakeTextToTexture("RAM: 0");
-		renderer_label = TextLabelTexture.bakeTextToTexture("RENDERER: 0");
+		fps_label = TextLabelTexture.bakeToTexture("FPS: 0");
+		ups_label = TextLabelTexture.bakeToTexture("UPS: 0");
+		pos_label = TextLabelTexture.bakeToTexture("POS: 0");
+		cpu_label = TextLabelTexture.bakeToTexture("CPU: 0");
+		gpu_label = TextLabelTexture.bakeToTexture("GPU: 0");
+		ram_label = TextLabelTexture.bakeToTexture("RAM: 0");
+		renderer_label = TextLabelTexture.bakeToTexture("RENDERER: 0");
 		
-		avg_frame_label = TextLabelTexture.bakeTextToTexture("0");
-		avg_update_label = TextLabelTexture.bakeTextToTexture("0");
+		avg_frame_label = TextLabelTexture.bakeToTexture("0");
+		avg_update_label = TextLabelTexture.bakeToTexture("0");
 		
 		//getProcessor();
 	}
@@ -158,43 +156,53 @@ public class Gui {
 	
 	public void render(Renderer blur_renderer, Renderer normal_renderer) {
 		//Health bar
-		Vector3f pos = new Vector3f(Main.game.getWindow().getAspect() - 0.6f, -1.0f + 0.1f, 0.0f).mul(Main.game.renderScale());
-		Vector2f size = new Vector2f(0.5f, 0.05f).mul(Main.game.renderScale());
+		vec3 pos = new vec3(Main.game.getWindow().getAspect() - 0.6f, -1.0f + 0.1f, 1.0f).mult(Main.game.renderScale() * Main.game.guiScale());
+		vec2 size = new vec2(0.5f, 0.05f).mult(Main.game.renderScale() * Main.game.guiScale());
 		blur_renderer.points.submitVertex(new VertexData(pos, size, 0, Colors.BLACK));
 
-		pos = new Vector3f(Main.game.getWindow().getAspect() - 0.595f, -1.0f + 0.105f, 0.0f).mul(Main.game.renderScale());
-		size = new Vector2f(0.49f * (Main.game.getPlayer().getHealth() / Main.game.getPlayer().getMaxHealth()), 0.04f).mul(Main.game.renderScale());
+		pos = new vec3(Main.game.getWindow().getAspect() - 0.595f, -1.0f + 0.105f, 1.0f).mult(Main.game.renderScale() * Main.game.guiScale());
+		size = new vec2(0.49f * (Main.game.getPlayer().getHealth() / Main.game.getPlayer().getMaxHealth()), 0.04f).mult(Main.game.renderScale() * Main.game.guiScale());
 		blur_renderer.points.submitVertex(new VertexData(pos, size, 0, COLOR_HEALTH_BAR));
 
 		//Stealth bar
-		pos = new Vector3f(Main.game.getWindow().getAspect() - 0.6f, -1.0f + 0.16f, 0.0f).mul(Main.game.renderScale());
-		size = new Vector2f(0.5f, 0.05f).mul(Main.game.renderScale());
+		pos = new vec3(Main.game.getWindow().getAspect() - 0.6f, -1.0f + 0.16f, 1.0f).mult(Main.game.renderScale() * Main.game.guiScale());
+		size = new vec2(0.5f, 0.05f).mult(Main.game.renderScale() * Main.game.guiScale());
 		blur_renderer.points.submitVertex(new VertexData(pos, size, 0, Colors.BLACK));
 
-		pos = new Vector3f(Main.game.getWindow().getAspect() - 0.595f, -1.0f + 0.165f, 0.0f).mul(Main.game.renderScale());
-		size = new Vector2f(0.49f * (Main.game.getPlayer().getStamina() / Main.game.getPlayer().getMaxStamina()), 0.04f).mul(Main.game.renderScale());
+		pos = new vec3(Main.game.getWindow().getAspect() - 0.595f, -1.0f + 0.165f, 1.0f).mult(Main.game.renderScale() * Main.game.guiScale());
+		size = new vec2(0.49f * (Main.game.getPlayer().getStamina() / Main.game.getPlayer().getMaxStamina()), 0.04f).mult(Main.game.renderScale() * Main.game.guiScale());
 		blur_renderer.points.submitVertex(new VertexData(pos, size, 0, COLOR_STAMINA_BAR));
 		
 		float textScale = 0.08f * Main.game.renderScale();
 		float x = -Main.game.getWindow().getAspect();
 		if (Main.game.debugMode) {
 			//Debug mode text
-			String text = "UPS: " + Main.game.getLoop().getUps();
-			fps_label.rebake(text, Main.game.getGlyphs());
-			fps_label.draw(new Vector3f(0.0f, 0.0f, 0.0f), new Vector2f(textScale));
-			Logger.debug("Drawn " + new Vector3f(x, -1.0f + (textScale * 1), 0.0f));
+			pos = new vec3(x, -1.0f, 0.0f);
+			String text = "FPS: " + Main.game.getLoop().getFps();
+			fps_label.rebake(text);
+			fps_label.queueDraw(new vec3(pos).mult(Main.game.guiScale()), new vec2(textScale).mult(Main.game.guiScale()));
+			
+			
+			pos.add(new vec3(0.0f, textScale, 0.0f));
+			text = "UPS: " + Main.game.getLoop().getUps();
+			ups_label.rebake(text);
+			ups_label.queueDraw(new vec3(pos).mult(Main.game.guiScale()), new vec2(textScale).mult(Main.game.guiScale()));
 		}
 		if (Main.game.advancedDebugMode) {
 			//Advanced debug mode text
+			pos = new vec3(x, -1.0f, 1.0f).mult(Main.game.guiScale());
+			pos.add(new vec3(0.0f, textScale * 2, 0.0f));
 			String text = "Position X: " + Main.game.getPlayer().getPos().x + ", Y: " + Main.game.getPlayer().getPos().y;
-			pos_label.rebake(text, Main.game.getGlyphs());
-			pos_label.draw(new Vector3f(x, -1.0f + (textScale * 2), 0.0f), new Vector2f(textScale, textScale));
+			pos_label.rebake(text);
+			pos_label.queueDraw(pos, new vec2(textScale));
 			text = "Renderer: " + Main.game.getWindow().getRenderer();
-			renderer_label.rebake(text, Main.game.getGlyphs());
-			renderer_label.draw(new Vector3f(x, -1.0f + (textScale * 4), 0.0f), new Vector2f(textScale, textScale));
+			pos.add(new vec3(0.0f, textScale * 2, 0.0f));
+			renderer_label.rebake(text);
+			renderer_label.queueDraw(pos, new vec2(textScale));
 			text = "CPU: ";
-			cpu_label.rebake(text, Main.game.getGlyphs());
-			cpu_label.draw(new Vector3f(x, -1.0f + (textScale * 5), 0.0f), new Vector2f(textScale, textScale));
+			pos.add(new vec3(0.0f, textScale, 0.0f));
+			cpu_label.rebake(text);
+			cpu_label.queueDraw(pos, new vec2(textScale));
 
 			currentFrame++;
 			if (currentFrame >= GUI_FRAME_LOGGER_SIZE) currentFrame = 0;
@@ -207,39 +215,39 @@ public class Gui {
 			}
 			avg_frame /= (float)GUI_FRAME_LOGGER_SIZE;
 
-			pos = new Vector3f(-Main.game.getWindow().getAspect(), 2.0f / 3.0f, 0.0f);
-			size = new Vector2f(GUI_FRAME_LOGGER_BAR_WIDTH * (GUI_FRAME_LOGGER_SIZE - 1), 0.005f).mul(Main.game.renderScale());
-			Vector3f textPos = new Vector3f(-Main.game.getWindow().getAspect(), 2.0f / 3.0f - 0.02f * Main.game.renderScale(), 0.0f);
-			Vector2f textSize = new Vector2f(textScale * 0.8f);
+			pos = new vec3(-Main.game.getWindow().getAspect(), 2.0f / 3.0f, 0.0f).mult(Main.game.guiScale());
+			size = new vec2(GUI_FRAME_LOGGER_BAR_WIDTH * (GUI_FRAME_LOGGER_SIZE - 1), 0.005f).mult(Main.game.renderScale() * Main.game.guiScale());
+			vec3 textPos = new vec3(-Main.game.getWindow().getAspect(), 2.0f / 3.0f - 0.02f * Main.game.renderScale(), 0.0f);
+			vec2 textSize = new vec2(textScale * 0.8f);
 			normal_renderer.points.submitVertex(new VertexData(pos, size, 0, Colors.GREEN));
 			if (selected_logger) {
 				//Top bar
 				text = "frame: " + (int)avg_frame;
 				avg_frame_label.rebake(text);
-				avg_frame_label.draw(textPos, textSize);
+				avg_frame_label.queueDraw(textPos, textSize);
 
 				//Actual logger
 				for (int i = 0; i < GUI_FRAME_LOGGER_SIZE; i++) {
 					float bar_height = (frame_logger[i] / avg_frame) / 3.0f;
-					pos = new Vector3f(-Main.game.getWindow().getAspect() + (GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale() * i), 1.0f - bar_height, 0.0f);
-					size = new Vector2f(GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale(), bar_height);
+					pos = new vec3(-Main.game.getWindow().getAspect() + (GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale() * i), 1.0f - bar_height, 0.0f);
+					size = new vec2(GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale(), bar_height);
 
-					Vector4f barColor = new Vector4f(Math.max(0.0f, bar_height - 0.5f), Math.max(0.0f, 0.5f - bar_height), 0.0f, 1.0f);
+					vec4 barColor = new vec4(Math.max(0.0f, bar_height - 0.5f), Math.max(0.0f, 0.5f - bar_height), 0.0f, 1.0f);
 					normal_renderer.points.submitVertex(new VertexData(pos, size, 0, barColor));
 				}
 			}
 			else {
 				text = "frame: " + (int)avg_update;
 				avg_update_label.rebake(text);
-				avg_update_label.draw(textPos, textSize);
+				avg_update_label.queueDraw(textPos, textSize);
 
 				for (int i = 0; i < GUI_FRAME_LOGGER_SIZE; i++) {
 					float bar_height = (update_logger[i] / avg_update) / 3.0f;
-					pos = new Vector3f(-Main.game.getWindow().getAspect() + (GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale() * i), 1.0f - bar_height, 0.0f);
-					size = new Vector2f(GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale(), bar_height);
+					pos = new vec3(-Main.game.getWindow().getAspect() + (GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale() * i), 1.0f - bar_height, 0.0f);
+					size = new vec2(GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale(), bar_height);
 
 					float br = Math.max(0.0f, bar_height);
-					Vector4f barColor = new Vector4f(br, 1.0f - br, 0.0f, 1.0f);
+					vec4 barColor = new vec4(br, 1.0f - br, 0.0f, 1.0f);
 					normal_renderer.points.submitVertex(new VertexData(pos, size, 0, barColor));
 				}
 			}

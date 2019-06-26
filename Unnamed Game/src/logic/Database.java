@@ -10,11 +10,11 @@ import java.util.HashMap;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.joml.Vector4f;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import audio.Audio;
 import graphics.Renderer;
 import logic.Database.Biome_Data.BetweenBiomes;
 import logic.Database.Biome_Data.BiomeTileHeight_Data;
@@ -23,6 +23,7 @@ import logic.Database.Creature_Data.Drop;
 import logic.TextureLoader.MultitextureReturnData;
 import utility.DataIO;
 import utility.Logger;
+import utility.vec4;
 
 //Good source https://www.redblobgames.com/maps/terrain-from-noise/
 
@@ -44,6 +45,7 @@ public class Database {
 	private static HashMap<String, Creature_Data> creatures;
 	private static HashMap<String, Biome_Data> biomes;
 	private static HashMap<String, Particle_Data> particles;
+	private static HashMap<String, Audio> sounds;
 
 	private static ArrayList<String> item_names;
 	private static ArrayList<String> tile_names;
@@ -51,16 +53,33 @@ public class Database {
 	private static ArrayList<String> creature_names;
 	private static ArrayList<String> biome_names;
 	private static ArrayList<String> particle_names;
+	private static ArrayList<String> sound_names;
 
 	private static ArrayList<Mod> mods;
+	private static int loadedVanillaGameobjectCount = 0;
+	private static int loadedModCount = 0;
+	private static int modCount = 0;
+	private static final int vanillaGameobjectCount = 33;
+	
+	
+	public static float loadState() {
+		return (float)loadedVanillaGameobjectCount / (float)vanillaGameobjectCount;
+	}
+	
+	public static float modLoadState() { //-1 if no mods
+		if (modCount == 0) return -1;
+		return (float)loadedModCount / (float)modCount;
+	}
 	
 	public static void initialize() {
+		loadedVanillaGameobjectCount = 0;
 		items = new HashMap<String, Item_Data>();
 		tiles = new HashMap<String, Tile_Data>();
 		objects = new HashMap<String, Object_Data>();
 		creatures = new HashMap<String, Creature_Data>();
 		biomes = new HashMap<String, Biome_Data>();
 		particles = new HashMap<String, Particle_Data>();
+		sounds = new HashMap<String, Audio>();
 		
 		item_names = new ArrayList<String>();
 		tile_names = new ArrayList<String>();
@@ -68,6 +87,11 @@ public class Database {
 		creature_names = new ArrayList<String>();
 		biome_names = new ArrayList<String>();
 		particle_names = new ArrayList<String>();
+		sound_names = new ArrayList<String>();
+
+		
+		Logger.info("Database init started");
+		Audio.init(); //Open audio device
 		
 		//Load all vanilla items
 		//byte[] source = DataIO.readByte();
@@ -160,6 +184,21 @@ public class Database {
 			}
 		}
 		
+		//Load all vanilla sounds
+		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/sounds.json")).toString();
+		obj = new JSONObject(source);
+		arr = obj.getJSONArray("sounds");
+		for (int i = 0; i < arr.length(); i++)
+		{
+			try {
+				loadSound(arr.getJSONObject(i));
+			} catch (Exception e) {
+				Logger.crit("Couldn't load sound: [" + i + "]");
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
+		
 		//Load all modded stuff
 		Logger.info("Loading all mods");
 		mods = new ArrayList<Mod>();
@@ -187,6 +226,9 @@ public class Database {
 		for (int i = 0; i < objects.size(); i++) {
 			objects.get(object_names.get(i)).index = i;
 		}
+		//for (int i = 0; i < sounds.size(); i++) {
+			//sounds.get(sound_names.get(i)).index = i;
+		//}
 	}
 	
 	public static void modUpdates() {
@@ -221,12 +263,14 @@ public class Database {
 		
 		File files[] = file.listFiles();
 		if (files == null) return; // no mods found
+		modCount = files.length;
 		for (File child : files) {
 		    if(extensionFilter.accept(child)) {
 		        Logger.info("Loading mod: \"" + child.getName() + "\"");
 		        Mod loadedMod = loadMod(child);
-		        if (loadedMod == null) continue;
+		        if (loadedMod == null) { modCount--; continue; }
 		        Logger.info("Mod: \"" + loadedMod.getName() + "\" Version: \"" + loadedMod.getVersion() + "\" By: \"" + loadedMod.getCreator() + "\" successfully loaded!");
+		        loadedModCount++;
 		        loadedMod.setup();
 		    }
 		}
@@ -283,7 +327,8 @@ public class Database {
 	}
 	
 	public static void loadItem(Item_Data data) {
-	    Logger.debug("Loaded item: " + data.toString());
+	    if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded item: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    items.put(data.data_name, data);
 	    item_names.add(data.data_name);
 	}
@@ -309,7 +354,8 @@ public class Database {
 	}
 	
 	public static void loadTile(Tile_Data data) {
-	    Logger.debug("Loaded tile: " + data.toString());
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded tile: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    tiles.put(data.data_name, data);
 	    tile_names.add(data.data_name);
 	}
@@ -338,12 +384,13 @@ public class Database {
 	    }
 	    
 	    //Add new object
-	    Object_Data object = new Object_Data(name, data_name, texture, texture_last, wall, destroyable, new Vector4f(red, green, blue, alpha), health, drop);
+	    Object_Data object = new Object_Data(name, data_name, texture, texture_last, wall, destroyable, new vec4(red, green, blue, alpha), health, drop);
 	    loadObject(object);
 	}
 	
 	public static void loadObject(Object_Data data) {
-	    Logger.debug("Loaded object: " + data.toString());
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded object: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    objects.put(data.data_name, data);
 	    object_names.add(data.data_name);
 	}
@@ -395,7 +442,8 @@ public class Database {
 	}
 	
 	public static void loadBiome(Biome_Data data) {
-	    Logger.debug("Loaded biome: " + data.toString());
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded biome: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    biomes.put(data.data_name, data);
 	    biome_names.add(data.data_name);
 	}
@@ -442,12 +490,13 @@ public class Database {
 			drops.add(drop);
 		}
 	    
-	    Creature_Data object = new Creature_Data(name, data_name, texture, texture_last, walkspeed, friendly, ghost, knockback, melee, health, regen, stamina, staminaregen, drops, new Vector4f(red, green, blue, alpha));
+	    Creature_Data object = new Creature_Data(name, data_name, texture, texture_last, walkspeed, friendly, ghost, knockback, melee, health, regen, stamina, staminaregen, drops, new vec4(red, green, blue, alpha));
 	    loadCreature(object);
 	}
 	
 	public static void loadCreature(Creature_Data data) {
-	    Logger.debug("Loaded creature: " + data.toString());
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded creature: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    creatures.put(data.data_name, data);
 	    creature_names.add(data.data_name);
 	}
@@ -474,9 +523,26 @@ public class Database {
 	}
 	
 	public static void loadParticle(Particle_Data data) {
-	    Logger.debug("Loaded particle: " + data.toString());
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded particle: " + data.toString());
+	    loadedVanillaGameobjectCount++;
 	    particles.put(data.data_name, data);
 	    particle_names.add(data.data_name);
+	}
+	
+	public static void loadSound(JSONObject json) throws JSONException {
+		//Generic data
+		String data_name = json.getString("data_name");
+		String path = json.getString("audio");
+	    
+		Audio audio = Audio.loadAudio(path);
+		loadSound(audio, data_name);
+	}
+	
+	public static void loadSound(Audio audio, String data_name) {
+		if (Settings.SHOW_DEBUG_MESSAGES) Logger.debug("Loaded sound: " + data_name);
+	    loadedVanillaGameobjectCount++;
+	    sounds.put(data_name, audio);
+	    sound_names.add(data_name);
 	}
 	
 	//Save data
@@ -725,12 +791,12 @@ public class Database {
 		public int texture_last = 0;
 		public boolean wall = false;
 		public boolean destroyable = false;
-		public Vector4f color = new Vector4f(0.0f);
+		public vec4 color = new vec4(0.0f);
 
 		public int health = 0;
 		public int dropsAs = 0;
 
-		public Object_Data(String _name, String _data_name, int _texture, int _last_texture, boolean _wall, boolean _destroyable, Vector4f _color, int _health, int _dropsAs) {
+		public Object_Data(String _name, String _data_name, int _texture, int _last_texture, boolean _wall, boolean _destroyable, vec4 _color, int _health, int _dropsAs) {
 			name = _name;
 			data_name = _data_name;
 			texture = _texture;
@@ -926,7 +992,7 @@ public class Database {
 		public int texture_last = 0;
 		public boolean friendly = false;
 		public boolean ghost = false;
-		public Vector4f color = new Vector4f(0.0f);
+		public vec4 color = new vec4(0.0f);
 		public float knockback = 0.0f;
 		public float meleeDamage = 0.0f;
 
@@ -962,7 +1028,7 @@ public class Database {
 			}
 		}
 
-		public Creature_Data(String _name, String _data_name, int _texture, int _texture_last, float _walkSpeed, boolean _friendly, boolean _ghost, float _kb, float _melee, float _hp, float _hpg, float _st, float _stg, ArrayList<Drop> _drops, Vector4f _color) {
+		public Creature_Data(String _name, String _data_name, int _texture, int _texture_last, float _walkSpeed, boolean _friendly, boolean _ghost, float _kb, float _melee, float _hp, float _hpg, float _st, float _stg, ArrayList<Drop> _drops, vec4 _color) {
 			name = _name;
 			data_name = _data_name;
 			walkSpeed = _walkSpeed;

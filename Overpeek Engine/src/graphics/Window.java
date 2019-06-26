@@ -1,21 +1,48 @@
 package graphics;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_DONT_CARE;
+import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
+import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
+import static org.lwjgl.opengl.GL11.GL_INVALID_OPERATION;
+import static org.lwjgl.opengl.GL11.GL_INVALID_VALUE;
+import static org.lwjgl.opengl.GL11.GL_LEQUAL;
+import static org.lwjgl.opengl.GL11.GL_LINE;
+import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_OUT_OF_MEMORY;
+import static org.lwjgl.opengl.GL11.GL_POINT;
+import static org.lwjgl.opengl.GL11.GL_RENDERER;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glDepthFunc;
+import static org.lwjgl.opengl.GL11.glDepthMask;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glGetError;
+import static org.lwjgl.opengl.GL11.glGetString;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import org.joml.Vector4f;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
@@ -30,28 +57,32 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLUtil;
 
 import utility.Application;
+import utility.Button;
 import utility.Loader;
 import utility.Logger;
-import utility.Maths;
 import utility.Logger.type;
+import utility.Maths;
+import utility.vec2;
+import utility.vec4;
 
 
 public class Window {
-
-	public static final int WINDOW_MULTISAMPLE_X2	= 0x0000020;
-	public static final int WINDOW_MULTISAMPLE_X4	= 0x0000040;
-	public static final int WINDOW_MULTISAMPLE_X8	= 0x0000080;
-	public static final int WINDOW_BORDERLESS		= 0x0000001;
-	public static final int WINDOW_RESIZEABLE		= 0x0000100;
-	public static final int WINDOW_TRANSPARENT		= 0x0001000;
-	public static final int WINDOW_FULLSCREEN		= 0x0010000;
-	public static final int WINDOW_DEBUGMODE		= 0x0100000;
-
-	public static final int POLYGON_LINE			= 0x1000000;
-	public static final int POLYGON_FILL			= 0x2000000;
-	public static final int POLYGON_POINT			= 0x3000000;
 	
+	public static final int POLYGON_LINE			= 0x00000001;
+	public static final int POLYGON_FILL			= 0x00000002;
+	public static final int POLYGON_POINT			= 0x00000003;
 
+	public static final int WINDOW_MULTISAMPLE_X2	= 0x00000020;
+	public static final int WINDOW_MULTISAMPLE_X4	= 0x00000040;
+	public static final int WINDOW_MULTISAMPLE_X8	= 0x00000080;
+	public static final int WINDOW_BORDERLESS		= 0x00000100;
+	public static final int WINDOW_RESIZEABLE		= 0x00001000;
+	public static final int WINDOW_TRANSPARENT		= 0x00010000;
+	public static final int WINDOW_FULLSCREEN		= 0x00100000;
+	public static final int WINDOW_DEBUGMODE		= 0x01000000;
+	public static final int WINDOW_HIDDEN			= 0x10000000;
+
+	private boolean openHidden;
 	private int polygonmode;
 	private long window;
 	private int width;
@@ -63,6 +94,8 @@ public class Window {
 	private int fullscreen; 
 	private int multisample;
 	private Application active_Application;
+	private Renderer defaultRenderer;
+	private ArrayList<Button> button_objects;
 	
 	private boolean debug_mode = true;
 
@@ -108,17 +141,21 @@ public class Window {
 			}
 			if (action == GLFW_PRESS) { buttons[button] = true; singleButtons[button] = true; }
 			if (action == GLFW_RELEASE) { buttons[button] = false; }
+			
+			for (Button b : button_objects) {
+				b.checkPressed(cursorX, cursorY, button);
+			}
 	    }
 	};
 	
 	GLFWCursorPosCallback cursor = new GLFWCursorPosCallback() {
 		@Override
 		public void invoke(long window, double xpos, double ypos)
-	    {
-			if (active_Application != null) active_Application.mousePos((float) xpos, (float) ypos);
-			
+	    {			
 			cursorX = Maths.map((float) xpos, 0.0f, getWidth(), -getAspect(), getAspect());
-			cursorY = Maths.map((float) ypos, 0.0f, getHeight(), 1.0f, -1.0f);
+			cursorY = Maths.map((float) ypos, 0.0f, getHeight(), -1.0f, 1.0f);
+			
+			if (active_Application != null) active_Application.mousePos((float) cursorX, (float) cursorY);
 	    }
 	};
 	
@@ -131,7 +168,7 @@ public class Window {
 			
 			width = _width;
 			height = _height;
-			System.out.println("Width: " + width + ", Height: " + height);
+			//System.out.println("Width: " + width + ", Height: " + height);
 	    }
 	};
 	
@@ -184,15 +221,16 @@ public class Window {
 			debug_mode = true;
 		} else debug_mode = false;
 		
+		if ((mods & WINDOW_HIDDEN) != 0) {
+			openHidden = true;
+		} else openHidden = false;
+		
 		if ((mods & POLYGON_FILL) != 0) {
 			polygonmode = POLYGON_FILL;
-			Logger.debug("Polygonmode is now " + polygonmode);
 		} else if ((mods & POLYGON_LINE) != 0) {
 			polygonmode = POLYGON_LINE;
-			Logger.debug("Polygonmode is now " + polygonmode);
 		} else if ((mods & POLYGON_POINT) != 0) {
 			polygonmode = POLYGON_POINT;
-			Logger.debug("Polygonmode is now " + polygonmode);
 		} else polygonmode = POLYGON_FILL;
 		
 		init();
@@ -205,6 +243,7 @@ public class Window {
 		}
 		
 		//Window
+		if (openHidden) glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 		if (debug_mode) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 		if (multisample != 0) glfwWindowHint(GLFW_SAMPLES, multisample);
 		glfwWindowHint(GLFW_RESIZABLE, resizeable);
@@ -242,6 +281,27 @@ public class Window {
 		if (polygonmode == POLYGON_FILL) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		else if (polygonmode == POLYGON_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		
+		defaultRenderer = new Renderer();
+		button_objects = new ArrayList<Button>();
+	}
+	
+	public void unhide() {
+		glfwShowWindow(window);
+	}
+	
+	public void hide() {
+		glfwHideWindow(window);
+	}
+	
+	public void addButton(Button btn) {
+		button_objects.add(btn);
+	}
+	
+	private void drawButtons() {
+		for (Button b : button_objects) {
+			b.manualRender(defaultRenderer, this);
+		}
 	}
 	
 	public boolean shouldClose() {
@@ -250,6 +310,7 @@ public class Window {
 	
 	public void clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		defaultRenderer.clear();
 	}
 	
 	public void input() {
@@ -265,12 +326,26 @@ public class Window {
 	}
 	
 	public void update() {
+		drawButtons();
+		defaultRenderer.draw(0, 0);
+		
 		if (debug_mode) checkGLErrors();
 		glfwSwapBuffers(window);
 	}
 	
 	public float getAspect() {
 		return (float)width / (float)height;
+	}
+	
+	public vec2 getWindowPos() {
+		int[] xpos = new int[1], ypos = new int[1];
+		glfwGetWindowPos(window, xpos, ypos);
+		
+		return new vec2(xpos[0], ypos[0]);
+	}
+	
+	public void setWindowPos(vec2 pos) {
+		glfwSetWindowPos(window, (int)pos.x, (int)pos.y);
 	}
 	
 	public void checkGLErrors() {
@@ -305,7 +380,7 @@ public class Window {
 		}
 	}
 	
-	public void clearColor(Vector4f c) {
+	public void clearColor(vec4 c) {
 		glClearColor(c.x, c.y, c.z, c.w);
 	}
 	
@@ -384,12 +459,18 @@ public class Window {
 		glfwSetCursorPos(window, x, y);
 	}
 	
-	public float getCursorX() {
-		return cursorX;
+	public vec2 getCursorFast() {
+		return new vec2(cursorX, cursorY);
 	}
 	
-	public float getCursorY() {
-		return cursorY;
+	public vec2 getCursor() {
+		double[] xpos = new double[1], ypos = new double[1];
+		glfwGetCursorPos(window, xpos, ypos);
+
+		float x = Maths.map((float) xpos[0], 0.0f, getWidth(), -getAspect(), getAspect());
+		float y = Maths.map((float) ypos[0], 0.0f, getHeight(), -1.0f, 1.0f);
+		
+		return new vec2(x, y);
 	}
 	
 	public float getScrollTotal() {
@@ -406,6 +487,10 @@ public class Window {
 	
 	public int getWidth() {
 		return width;
+	}
+
+	public void hideToTray() {
+		glfwIconifyWindow(window);
 	}
 	
 }
