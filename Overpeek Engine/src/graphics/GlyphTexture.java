@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
@@ -105,7 +106,7 @@ public class GlyphTexture {
     	returned.maxHeight = imageHeight;
 
     	//4 (r, g, b, a) times pixels times 224 (glyph count)
-    	ByteBuffer data = ByteBuffer.allocateDirect(4 * imageWidth * imageHeight * 225);
+    	ByteBuffer data = BufferUtils.createByteBuffer(4 * imageWidth * imageHeight * 225);
     	index = 0;
     	for (int i = 32; i < 256; i++) {
     		index++;
@@ -118,7 +119,7 @@ public class GlyphTexture {
     	    	for (int y = 0; y < imageHeight; y++) {
     	    		Color color = new Color(0.0f, 0.0f, 0.0f, 0.0f);
     	    		if (x < ch.getWidth() - 1 && y < ch.getHeight() - 1) {
-        	    		//color = new Color(ch.getRGB(x, y));
+        	    		color = new Color(ch.getRGB(x, y));
     	    		}
 
 					data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 0, (byte)color.getRed());
@@ -131,7 +132,6 @@ public class GlyphTexture {
 					//data.put(4 * (x + y * imageWidth + index * imageWidth * imageHeight) + 3, (byte)color.getAlpha());
 				}
 			}
-    	    ch.flush();
     	}
 		
 		data.flip();
@@ -197,7 +197,7 @@ public class GlyphTexture {
 	    Graphics2D g2d = (Graphics2D) bi.getGraphics();
 	    Color color = new Color(0.0f, 0.0f, 0.0f, 0.5f);
 	    g2d.setBackground(color);
-	    color = new Color(0.0f, 0.0f, 1.0f, 1.0f);
+	    color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 	    g2d.setColor(color);
 	    textabel.draw(g2d, 0, -bounds.y);
 	    g2d.dispose();

@@ -206,7 +206,7 @@ public class Game extends Application {
 		//Critical Resources
 		Audio.init();
 		glyphs = GlyphTexture.loadFont("/res/font/arial.font", 64);
-		single_texture_shader = new Shader("/res/shader/texture-single.vert.glsl", "/res/shader/texture-single.frag.glsl");
+		single_texture_shader = Shader.singleTextureShader(); //("/res/shader/texture-single.vert.glsl", "/res/shader/texture-single.frag.glsl");
 		mat4 projection = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
 		single_texture_shader.setUniformMat4("pr_matrix", projection);
 		TextLabelTexture.initialize(window, glyphs, single_texture_shader);
@@ -232,9 +232,9 @@ public class Game extends Application {
 		
 		//Rest of the shaders
 		Logger.info("Creating all the shaders");
-		post_shader = new Shader("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl");
-		point_shader = new Shader("/res/shader/geometrytexture.vert.glsl", "/res/shader/geometrytexture.frag.glsl", "/res/shader/geometrytexture.geom.glsl");
-		multi_texture_shader = new Shader("/res/shader/texture.vert.glsl", "/res/shader/texture.frag.glsl");
+		post_shader = Shader.loadFromSources("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl", true);
+		point_shader = Shader.loadFromSources("/res/shader/geometrytexture.vert.glsl", "/res/shader/geometrytexture.frag.glsl", "/res/shader/geometrytexture.geom.glsl", true);
+		multi_texture_shader = Shader.multiTextureShader(); //("/res/shader/texture.vert.glsl", "/res/shader/texture.frag.glsl");
 		Logger.info("All shaders created successfully!");
 		
 		//Renderer

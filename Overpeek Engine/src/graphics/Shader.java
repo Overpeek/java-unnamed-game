@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL40;
 
 import utility.Loader;
 import utility.Logger;
@@ -69,121 +70,185 @@ public class Shader {
 			Logger.out(text + "\n" + infoLogString, Logger.type.ERROR);
 		}
 	}
+	
+	public static Shader singleTextureShader() {
+		String vertsource = "#version 330 core\n" +
+							"layout(location = 0) in vec3 vertex_pos;\n" +
+							"layout(location = 1) in vec2 texture_uv;\n" +
+							"layout(location = 2) in float texture_id;\n" +
+							"layout(location = 3) in vec4 vertex_color;\n" +
+					
+							"out vec2 shader_uv;\n" +
+							"out vec4 shader_color;\n" +
+							"flat out int shader_id;\n" +
+							"\n" +
+							"uniform mat4 pr_matrix = mat4(1.0);\n" +
+							"uniform mat4 ml_matrix = mat4(1.0);\n" +
+							"uniform mat4 vw_matrix = mat4(1.0);\n" +
+							"\n" +
+							"void main()\n" +
+							"{\n" +
+							"   mat4 mvp = pr_matrix * vw_matrix * ml_matrix;\n" +
+							"	gl_Position = mvp * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);\n" +
+							"	shader_uv = texture_uv;\n" +
+							"	shader_id = int(floor(texture_id));\n" +
+							"	shader_color = vertex_color;\n" +
+							"}\n";
+		
+		String fragsource = "#version 330 core\n" +
+							"\n" +
+							"in vec2 shader_uv;\n" +
+							"in vec4 shader_color;\n" +
+							"flat in int shader_id;\n" +
+							"\n" +
+							"layout(location = 0) out vec4 color;\n" +
+							"\n" +
+							"uniform sampler2D tex;\n" +
+							"uniform int usetex = 0;\n" +
+							"\n" +
+							"void main()\n" +
+							"{\n" +
+							"	if (usetex != 0) color = texture(tex, vec2(shader_uv)) * shader_color;\n" +
+							"	else color = shader_color;\n" +
+							"}\n";
+		
+		return loadFromSources(vertsource, fragsource, false);
+	}
+	
+	public static Shader multiTextureShader() {
+		String vertsource = "#version 330 core\n" +
+							"layout(location = 0) in vec3 vertex_pos;\n" +
+							"layout(location = 1) in vec2 texture_uv;\n" +
+							"layout(location = 2) in float texture_id;\n" +
+							"layout(location = 3) in vec4 vertex_color;\n" +
+					
+							"out vec2 shader_uv;\n" +
+							"out vec4 shader_color;\n" +
+							"flat out int shader_id;\n" +
+							"\n" +
+							"uniform mat4 pr_matrix = mat4(1.0);\n" +
+							"uniform mat4 ml_matrix = mat4(1.0);\n" +
+							"uniform mat4 vw_matrix = mat4(1.0);\n" +
+							"\n" +
+							"void main()\n" +
+							"{\n" +
+							"   mat4 mvp = pr_matrix * vw_matrix * ml_matrix;\n" +
+							"	gl_Position = mvp * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);\n" +
+							"	shader_uv = texture_uv;\n" +
+							"	shader_id = int(floor(texture_id));\n" +
+							"	shader_color = vertex_color;\n" +
+							"}\n";
 
-	public Shader() {
+		String fragsource = "#version 330 core\n" +
+							"\n" +
+							"in vec2 shader_uv;\n" +
+							"in vec4 shader_color;\n" +
+							"flat in int shader_id;\n" +
+							"\n" +
+							"layout(location = 0) out vec4 color;\n" +
+							"\n" +
+							"uniform sampler2DArray tex;\n" +
+							"uniform int usetex = 0;\n" +
+							"\n" +
+							"void main()\n" +
+							"{\n" +
+							"	if (usetex != 0) color = texture(tex, vec3(shader_uv, shader_id)) * shader_color;\n" +
+							"	else color = shader_color;\n" +
+							"}\n";
+		
+		return loadFromSources(vertsource, fragsource, false);
+	}
+	
+	/**
+	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * */
+	public static Shader loadFromSources(String vertex, String fragment, boolean usePath) {
+		Shader shader = new Shader();
+		
 		//Vertex shader
-		int vertexShader = loadShader(GL20.GL_VERTEX_SHADER, 
-			"#version 330 core\r\n" + 
-			"layout(location = 0) in vec3 vertex_pos;\r\n" + 
-			"layout(location = 1) in vec2 texture_uv;\r\n" + 
-			"layout(location = 2) in float texture_id;\r\n" + 
-			"layout(location = 3) in vec4 vertex_color;\r\n" + 
-			"\r\n" + 
-			"out vec2 shader_uv;\r\n" + 
-			"out vec4 shader_color;\r\n" + 
-			"\r\n" + 
-			"uniform mat4 pr_matrix;\r\n" + 
-			"\r\n" + 
-			"void main()\r\n" + 
-			"{\r\n" + 
-			"	gl_Position = pr_matrix * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);\r\n" + 
-			"	shader_uv = texture_uv;\r\n" + 
-			"	shader_color = vertex_color;\r\n" + 
-			"}\r\n"
-		);
+		int vertexShader = 0;
+		if (usePath)
+			vertexShader = shader.loadShaderFile(GL20.GL_VERTEX_SHADER, vertex);
+		else
+			vertexShader = shader.loadShader(GL20.GL_VERTEX_SHADER, vertex);
 
 		//Fragment shader
-		int fragmentShader = loadShader(GL20.GL_FRAGMENT_SHADER,
-			"#version 330 core\r\n" + 
-			"layout(location = 0) out vec4 color;\r\n" + 
-			"\r\n" + 
-			"in vec2 shader_uv;\r\n" + 
-			"in vec4 shader_color;\r\n" + 
-			"\r\n" + 
-			"uniform sampler2D tex;\r\n" + 
-			"uniform int usetex = 0;\r\n" + 
-			"\r\n" + 
-			"void main()\r\n" + 
-			"{\r\n" + 
-			"	vec4 textureColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);\r\n" + 
-			"	if (usetex == 0)\r\n" + 
-			"		textureColor = shader_color;\r\n" + 
-			"	else\r\n" + 
-			"		textureColor = shader_color * texture(tex, shader_uv);\r\n" + 
-			"\r\n" + 
-			"	color = textureColor;\r\n" + 
-			"}\r\n"
-		);
+		int fragmentShader = 0;
+		if (usePath)
+			fragmentShader =  shader.loadShaderFile(GL20.GL_FRAGMENT_SHADER, fragment);
+		else
+			fragmentShader =  shader.loadShader(GL20.GL_FRAGMENT_SHADER, fragment);
 		
 		//Shader program
-		shaderProgram = GL20.glCreateProgram();
-		GL20.glAttachShader(shaderProgram, vertexShader);
-		GL20.glAttachShader(shaderProgram, fragmentShader);
-		GL20.glLinkProgram(shaderProgram);
+		shader.shaderProgram = GL20.glCreateProgram();
+		GL20.glAttachShader(shader.shaderProgram, vertexShader);
+		GL20.glAttachShader(shader.shaderProgram, fragmentShader);
+		GL20.glLinkProgram(shader.shaderProgram);
 
 		//Get shader program linking error
-		programLog("Shader program linking failed!", shaderProgram, GL20.GL_LINK_STATUS);
+		shader.programLog("Shader program linking failed!", shader.shaderProgram, GL20.GL_LINK_STATUS);
 
 		//Default projection matrix
 		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
-		enable();
-		setUniformMat4("pr_matrix", pr);
+		shader.setUniformMat4("pr_matrix", pr);
 
 		//Free up data
 		GL20.glDeleteShader(vertexShader);
 		GL20.glDeleteShader(fragmentShader);
+		
+		return shader;
 	}
 
-	public Shader(String vertexPath, String fragmentPath) {
-
+	/**
+	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * */
+	public static Shader loadFromSources(String vertex, String fragment, String geometry, boolean usePath) {
+		Shader shader = new Shader();
+		
 		//Vertex shader
-		int vertexShader = loadShaderFile(GL20.GL_VERTEX_SHADER, vertexPath);
+		int vertexShader = 0;
+		if (usePath)
+			vertexShader = shader.loadShaderFile(GL20.GL_VERTEX_SHADER, vertex);
+		else
+			vertexShader = shader.loadShader(GL20.GL_VERTEX_SHADER, vertex);
 
 		//Fragment shader
-		int fragmentShader = loadShaderFile(GL20.GL_FRAGMENT_SHADER, fragmentPath);
-
-
-		//Shader program
-		shaderProgram = GL20.glCreateProgram();
-		GL20.glAttachShader(shaderProgram, vertexShader);
-		GL20.glAttachShader(shaderProgram, fragmentShader);
-		GL20.glLinkProgram(shaderProgram);
-
-
-		//Get shader program linking error
-		programLog("Shader program linking failed!", shaderProgram, GL20.GL_LINK_STATUS);
-
-		//Free up data
-		GL20.glDeleteShader(vertexShader);
-		GL20.glDeleteShader(fragmentShader);
-	}
-
-	public Shader(String vertexPath, String fragmentPath, String geometryPath) {
-
-		//Vertex shader
-		int vertexShader = loadShaderFile(GL20.GL_VERTEX_SHADER, vertexPath);
-
-		//Fragment shader
-		int fragmentShader = loadShaderFile(GL20.GL_FRAGMENT_SHADER, fragmentPath);
+		int fragmentShader = 0;
+		if (usePath)
+			fragmentShader =  shader.loadShaderFile(GL20.GL_FRAGMENT_SHADER, fragment);
+		else
+			fragmentShader =  shader.loadShader(GL20.GL_FRAGMENT_SHADER, fragment);
 
 		//Geometry shader
-		int geometryShader = loadShaderFile(GL32.GL_GEOMETRY_SHADER, geometryPath);
-
+		int geometryShader = 0;
+		if (usePath)
+			geometryShader =  shader.loadShaderFile(GL32.GL_GEOMETRY_SHADER, geometry);
+		else
+			geometryShader =  shader.loadShader(GL32.GL_GEOMETRY_SHADER, geometry);
+		
 		//Shader program
-		shaderProgram = GL20.glCreateProgram();
-		GL20.glAttachShader(shaderProgram, vertexShader);
-		GL20.glAttachShader(shaderProgram, fragmentShader);
-		GL20.glAttachShader(shaderProgram, geometryShader);
-		GL20.glLinkProgram(shaderProgram);
+		shader.shaderProgram = GL20.glCreateProgram();
+		GL20.glAttachShader(shader.shaderProgram, vertexShader);
+		GL20.glAttachShader(shader.shaderProgram, fragmentShader);
+		GL20.glAttachShader(shader.shaderProgram, geometryShader);
+		GL20.glLinkProgram(shader.shaderProgram);
 
 		//Get shader program linking error
-		programLog("Shader program linking failed!", shaderProgram, GL20.GL_LINK_STATUS);
+		shader.programLog("Shader program linking failed!", shader.shaderProgram, GL20.GL_LINK_STATUS);
+
+		//Default projection matrix
+		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
+		shader.setUniformMat4("pr_matrix", pr);
 
 		//Free up data
 		GL20.glDeleteShader(vertexShader);
 		GL20.glDeleteShader(fragmentShader);
 		GL20.glDeleteShader(geometryShader);
+		
+		return shader;
 	}
+	
+	private Shader() {}
 
 
 	public void enable() { GL20.glUseProgram(shaderProgram); }

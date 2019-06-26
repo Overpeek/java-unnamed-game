@@ -76,7 +76,7 @@ public class TextLabelTexture {
 	public static void initialize(Window _window, GlyphTexture _glyphs, Shader single_texture_shader) {
 		glyphs = _glyphs;
 		label_draw_shader = single_texture_shader;
-		label_bake_shader = new Shader();
+		label_bake_shader = Shader.multiTextureShader();
 		label_draw = new Renderer();
 		label_bake = new Renderer();
 		drawQueue = new ArrayList<QueueData>();

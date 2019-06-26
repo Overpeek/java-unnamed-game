@@ -18,7 +18,8 @@ import utility.vec3;
 public class Main extends Application {
 	
 	Renderer renderer;
-	Shader shader;
+	Shader single_shader;
+	Shader multi_shader;
 	Curve curves[][];
 	int w = 1;
 	int h = 1;
@@ -55,15 +56,11 @@ public class Main extends Application {
 			}
 		}
 
-		shader.setUniform1i("usetex", 1);
-		//text.queueDraw(new vec3(0.0f), new vec2(0.1f));
-		//TextLabelTexture.drawQueue();
+		single_shader.setUniform1i("usetex", 1);
+		text.queueDraw(new vec3(0.0f), new vec2(0.1f));
+		TextLabelTexture.drawQueue();
 		
-		renderer.quads.clear();
-		renderer.quads.submit(new vec3(-0.5f), new vec2(1.0f), n++, Colors.WHITE);
-		renderer.quads.draw(glyphs.getTexture());
-		
-		shader.setUniform1i("usetex", 0);
+		single_shader.setUniform1i("usetex", 0);
 		renderer.spheres.draw(0, 0);
 		renderer.points.draw(0, 0);
 		renderer.lines.draw(0, 0);
@@ -96,15 +93,18 @@ public class Main extends Application {
 		
 		//window.setLineWidth(2.0f);
 		renderer = new Renderer();
-		shader = new Shader("/texture-single.vert.glsl", "/texture-single.frag.glsl");
+		single_shader = Shader.loadFromSources("/texture-single.vert.glsl", "/texture-single.frag.glsl", true);
+		multi_shader = Shader.multiTextureShader();
 		mat4 pr_matrix = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
-		shader.setUniform1i("usetex", 1);
-		shader.setUniformMat4("pr_matrix", pr_matrix);
+		single_shader.setUniform1i("usetex", 1);
+		single_shader.setUniformMat4("pr_matrix", pr_matrix);
+		multi_shader.setUniform1i("usetex", 1);
+		multi_shader.setUniformMat4("pr_matrix", pr_matrix);
 		
 		glyphs = GlyphTexture.loadFont(new Font("arial", Font.PLAIN, 64));
-		TextLabelTexture.initialize(window, glyphs, shader);
+		TextLabelTexture.initialize(window, glyphs, single_shader);
 		text = TextLabelTexture.bakeToTexture("Test");
-		shader.enable();
+		single_shader.enable();
 		
 		curves = new Curve[w][h];
 		for (int x = 0; x < w; x++) {
