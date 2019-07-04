@@ -13,6 +13,21 @@ public class mat4 {
 		matrix = new Matrix4f();
 	}
 	
+	public mat4 rotateX(float x) {
+		matrix = matrix.rotateX(x);
+		return this;
+	}
+	
+	public mat4 rotateZ(float z) {
+		matrix = matrix.rotateZ(z);
+		return this;
+	}
+	
+	public mat4 rotateY(float y) {
+		matrix = matrix.rotateY(y);
+		return this;
+	}
+	
 	public mat4 add(mat4 other) {
 		matrix = matrix.add(other.matrix);
 		return this;

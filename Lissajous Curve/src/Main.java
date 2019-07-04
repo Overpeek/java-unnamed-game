@@ -14,6 +14,7 @@ import utility.Keys;
 import utility.mat4;
 import utility.vec2;
 import utility.vec3;
+import utility.vec4;
 
 public class Main extends Application {
 	
@@ -39,6 +40,7 @@ public class Main extends Application {
 				curves[x][y].update();
 			}
 		}
+		text.rebake("Test jW‰≈. FPS: " + gameloop.getFps());
 	}
 
 	int n = 0;
@@ -57,7 +59,7 @@ public class Main extends Application {
 		}
 
 		single_shader.setUniform1i("usetex", 1);
-		text.queueDraw(new vec3(0.0f), new vec2(0.1f));
+		text.queueDraw(new vec3(-1.0f, 0.0f, 0.0f), new vec2(0.1f));
 		TextLabelTexture.drawQueue();
 		
 		single_shader.setUniform1i("usetex", 0);
@@ -75,8 +77,8 @@ public class Main extends Application {
 	@Override
 	public void init() {
 		window = new Window(800, 800, "Lissajous Curve", Window.WINDOW_DEBUGMODE); //Window.WINDOW_TRANSPARENT | Window.WINDOW_BORDERLESS | Window.WINDOW_MULTISAMPLE_X8);
-		window.setClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-		window.setSwapInterval(1);
+		window.clearColor(new vec4(0.2f, 0.2f, 0.2f, 1.0f));
+		window.setSwapInterval(0);
 		window.setCurrentApp(this);
 		window.addButton(new Button(1.0f - 0.03f, -1.0f, 0.03f, 0.03f, Colors.RED, 1, new Callback() {
 			@Override

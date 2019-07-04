@@ -30,4 +30,11 @@ public class Maths {
 		return map((float) noise.noise(x + 0.01f, y + 0.01f, 0.01f), -1.0f, 1.0f, min, max);
 	}
 	
+	public static float clamp(float value, float min, float max) {
+		if (value >= max) value = max;
+		if (value <= min) value = min;
+		
+		return value;
+	}
+	
 }

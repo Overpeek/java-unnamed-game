@@ -76,11 +76,11 @@ public class GameLoop implements Runnable {
 	            updates++;
 	            delta--;
 	        }
-	        long calcums = System.nanoTime();
+	        long calcfms = System.nanoTime();
 	        if (auto_manage) { app.window.clear(); app.window.input(); }
 	        app.render((float)delta);
 	        if (auto_manage) { app.window.update(); }
-	        uns = (int) (System.nanoTime() - calcums);
+	        fns = (int) (System.nanoTime() - calcfms);
 	        frames++;
 	        if (System.currentTimeMillis() - timer > 1000) {
 	            timer += 1000;

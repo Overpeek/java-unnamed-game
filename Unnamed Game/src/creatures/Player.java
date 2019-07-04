@@ -11,6 +11,7 @@ public class Player extends Creature {
 	private Inventory inventory;
 	private vec2 spawn_location;
 	private boolean god;
+	private boolean clipmode;
 	private vec2 death_location;
 
 	
@@ -45,7 +46,7 @@ public class Player extends Creature {
 
 	@Override
 	public void collide(float divider) {
-		commonCollide(divider);
+		if (clipmode) commonCollide(divider);
 	}
 
 	@Override
@@ -76,6 +77,22 @@ public class Player extends Creature {
 	
 	public vec2 getSpawnPoint() {
 		return spawn_location;
+	}
+	
+	public boolean getGodmode() {
+		return god;
+	}
+	
+	public void setGodmode(boolean mode) {
+		god = mode;
+	}
+	
+	public boolean getClipmode() {
+		return clipmode;
+	}
+	
+	public void setClipmode(boolean mode) {
+		clipmode = mode;
 	}
 
 }

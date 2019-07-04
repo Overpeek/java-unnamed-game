@@ -96,6 +96,7 @@ public class Window {
 	private Application active_Application;
 	private Renderer defaultRenderer;
 	private ArrayList<Button> button_objects;
+	private vec4 clearColor;
 	
 	private boolean debug_mode = true;
 
@@ -270,14 +271,13 @@ public class Window {
 			GLUtil.setupDebugMessageCallback();
 			GL43.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL43.GL_DEBUG_SEVERITY_NOTIFICATION, (IntBuffer) null, false);
 		}
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		clearColor = new vec4(0.2f, 0.2f, 0.2f, 1.0f);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(true);
 		glDepthFunc(GL_LEQUAL);
 		
-		Logger.debug("Polygonmode: " + polygonmode);
 		if (polygonmode == POLYGON_FILL) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		else if (polygonmode == POLYGON_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
@@ -309,7 +309,22 @@ public class Window {
 	}
 	
 	public void clear() {
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		defaultRenderer.clear();
+	}
+	
+	public void clear(vec4 c) {
+		glClearColor(c.x, c.y, c.z, c.w);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor(c);
+		defaultRenderer.clear();
+	}
+	
+	public void clear(float r, float g, float b, float a) {
+		glClearColor(r, g, b, a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor(r, g, b, a);
 		defaultRenderer.clear();
 	}
 	
@@ -381,11 +396,11 @@ public class Window {
 	}
 	
 	public void clearColor(vec4 c) {
-		glClearColor(c.x, c.y, c.z, c.w);
+		clearColor = c;
 	}
 	
-	public void setClearColor(float r, float g, float b, float a) {
-		glClearColor(r, g, b, a);
+	public void clearColor(float r, float g, float b, float a) {
+		clearColor = new vec4(r, g, b, a);
 	}
 	
 	public void setSwapInterval(int interval) {
@@ -395,10 +410,6 @@ public class Window {
 	public void setBackFaceCulling(boolean on) {
 		if (on) GL11.glEnable(GL11.GL_CULL_FACE);
 		else GL11.glDisable(GL11.GL_CULL_FACE);
-	}
-	
-	public void setLineWidth(float w) {
-		GL11.glLineWidth(w);
 	}
 
 	public void setIcon(String path) {

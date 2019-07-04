@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL40;
 import org.lwjgl.opengl.GL42;
 
 import utility.Loader;
@@ -22,6 +23,9 @@ public class Texture {
 	
     private int texture;
     private int type;
+    private int width;
+    private int height;
+    private int depth;
     
     
     public Texture() {}
@@ -42,6 +46,14 @@ public class Texture {
     	return type;
     }
     
+    public int getWidth() {
+    	return width;
+    }
+    
+    public int getHeight() {
+    	return height;
+    }
+
     public void bind() {
 		GL11.glBindTexture(type, texture);
     }
@@ -50,10 +62,21 @@ public class Texture {
 		GL11.glBindTexture(GL30.GL_TEXTURE_2D, 0);
     }
     
+    public static int GL_2D = GL13.GL_TEXTURE_2D;
+    public static int GL_2D_ARRAY = GL30.GL_TEXTURE_2D_ARRAY;
+    public static int GL_3D = GL13.GL_TEXTURE_3D;
+    public static int GL_3D_ARRAY = GL13.GL_TEXTURE_2D;
+    
+    /**
+     * Types: (GL_2D, GL_2D_ARRAY, GL_3D, GL_CUBE)
+     * */
     public static Texture empty2d(int width, int height, int type) {
     	Texture returned = new Texture();
     	returned.type = type;
     	returned.texture = GL11.glGenTextures();
+    	returned.width = width;
+    	returned.height = height;
+    	returned.depth = 1;
 		GL11.glBindTexture(type, returned.texture);
 
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_BORDER);
@@ -65,10 +88,16 @@ public class Texture {
 		return returned;
     }
     
+    /**
+     * Types: (GL_2D, GL_2D_ARRAY, GL_3D, GL_CUBE)
+     * */
     public static Texture empty3d(int width, int height, int depth, int type) {
     	Texture returned = new Texture();
     	returned.type = type;
     	returned.texture = GL11.glGenTextures();
+    	returned.width = width;
+    	returned.height = height;
+    	returned.depth = depth;
 		GL11.glBindTexture(type, returned.texture);
 
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
@@ -80,6 +109,22 @@ public class Texture {
 		//GL12.glTexSubImage3D(type, 0, 0, 0, 0, width, height, depth, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
 		//GL30.glTexImage3D(type, 1, GL11.GL_RGB, width, height, depth, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
 		return returned;
+    }
+    
+    /**
+     * Data must be in RGBA as unsigned bytes
+     * Size: (width * height * 4(rgba))
+     * */
+    public void setData2D(ByteBuffer data) {
+		GL11.glTexSubImage2D(type, 0, 0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
+    }
+    
+    /**
+     * Data must be in RGBA as unsigned bytes
+     * Size: (width * height * depth * 4(rgba))
+     * */
+    public void setData3D(ByteBuffer data) {
+		GL12.glTexSubImage3D(type, 0, 0, 0, 0, width, height, depth, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
     }
     
     public void delete() {
@@ -107,6 +152,9 @@ public class Texture {
     	
 		//Opengl
     	returned.texture = GL11.glGenTextures();
+    	returned.width = img.getWidth();
+    	returned.height = img.getHeight();
+    	returned.depth = 1;
     	GL11.glBindTexture(GL11.GL_TEXTURE_2D, returned.texture);
     	GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
@@ -122,7 +170,6 @@ public class Texture {
     }
     
     public static Texture loadTextureSingle(String path) {
-    	Logger.debug("loaded texture " + path);
 		try {
 			InputStream is = Loader.loadRes(path);
 			BufferedImage img = ImageIO.read(is);
@@ -134,6 +181,9 @@ public class Texture {
 		return null;
     }
     
+    /**
+     * Cube texture data is static and cannot be changed
+     * */
     public static Texture loadCubeMap(int r, String paths[]) {
     	Texture returned = new Texture();
     	returned.type = GL13.GL_TEXTURE_CUBE_MAP;
@@ -164,7 +214,10 @@ public class Texture {
                         0, GL11.GL_RGBA, img.getWidth(), img.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
     			data.clear();
 			}
-    		
+
+        	returned.width = 0;
+        	returned.height = 0;
+        	returned.depth = 0;
     		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MIN_FILTER, GL13.GL_LINEAR);
     		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MAG_FILTER, GL13.GL_LINEAR);
     		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);
@@ -206,6 +259,9 @@ public class Texture {
 			data.flip();
 
 			returned.texture = GL11.glGenTextures();
+        	returned.width = r;
+        	returned.height = r;
+        	returned.depth = 256;
 			GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, returned.texture);
 
 			GL11.glTexParameteri(GL30.GL_TEXTURE_2D_ARRAY, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);

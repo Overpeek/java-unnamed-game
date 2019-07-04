@@ -1,12 +1,16 @@
 package graphics;
 
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
 import utility.Logger;
+import utility.vec4;
 
 public class Framebuffer {
 
@@ -15,9 +19,10 @@ public class Framebuffer {
 	private int width;
 	private int height;
 	private int rbo;
+	private vec4 clearColor;
 	
 	private Framebuffer() {
-		
+		clearColor = new vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 	
 	public int getWidth() {
@@ -64,7 +69,28 @@ public class Framebuffer {
 	}
 	
 	public void clear() {
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+	
+	public void clear(vec4 c) {
+		glClearColor(c.x, c.y, c.z, c.w);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor(c);
+	}
+	
+	public void clear(float r, float g, float b, float a) {
+		glClearColor(r, g, b, a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor(r, g, b, a);
+	}
+	
+	public void clearColor(vec4 c) {
+		clearColor = c;
+	}
+	
+	public void clearColor(float r, float g, float b, float a) {
+		clearColor = new vec4(r, g, b, a);
 	}
 	
 	public void delete() {

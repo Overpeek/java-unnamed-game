@@ -10,7 +10,7 @@ uniform mat4 vw_matrix = mat4(1.0);
 
 #define pi 3.14159
 #define cameraFov pi / 2.0
-float EPSILON = 0.0000001;
+float EPSILON = 0.001;
 
 uniform float time = 0.0;
 uniform vec3 light = vec3(0.0, -2.0, 0.0);
@@ -74,7 +74,7 @@ float sdSphere( vec3 p, float s )
 }
 
 float sdDistort(vec3 p) {
-	return sin(20.0f * p.x);// + sin(20.0f * p.y) + sin(20.0f * p.z);
+	return sin(20.0f * p.x) + sin(20.0f * p.y) + sin(20.0f * p.z);
 }
 
 float opRep( in vec3 p, in vec3 c )
@@ -90,14 +90,16 @@ float smoothMin(float a, float b) {
 }
 
 vec4 getColorAndDst(vec3 point) {
-	float d0 = sdSphere(point - vec3( sin(time), 0.0f,  0.0f), 0.3f);
-	float d1 = sdSphere(point - vec3(-0.5f, 0.0f,  0.5f), 0.3f);
-	float d2 = sdSphere(point - vec3( 0.5f, 0.0f, -0.5f), 0.3f);
-	float d3 = sdSphere(point - vec3(-0.5f, 0.0f, -0.5f), 0.3f);
-	float d4 = sdBox(point - vec3(0.0f, 0.0f, 0.0f), vec3(0.1f, 0.5f, 0.5f));
-	//float d5 = sdBox(point - vec3(0.0f, 0.6f, 0.0f), vec3(0.3f, 0.5f, 0.5f));
-	float closest = smoothMin(d0, d4);
-	//float closest = mandelbulb(point);
+	//float d0 = sdSphere(point - vec3( sin(time), 0.0f,  0.0f), 0.3f);
+	//float d1 = sdSphere(point - vec3(-0.5f, 0.0f,  0.5f), 0.3f);
+	//float d2 = sdSphere(point - vec3( 0.5f, 0.0f, -0.5f), 0.3f);
+	//float d3 = sdSphere(point - vec3(-0.5f, 0.0f, -0.5f), 0.3f);
+	//float d4 = sdBox(point - vec3(0.0f, -0.6f, 0.0f), vec3(0.1f, 0.5f, 0.5f));
+	//float d5 = sdBox(point - vec3(0.0f, 0.6f, 0.0f), vec3(0.1f, 0.5f, 0.5f));
+	float d6 = opRep(point, vec3(10.0f, 10.0f, 10.0f));// mandelbulb(point);
+	//float d6 = mandelbulb(point);
+	//float closest = min(d0, min(d1, min(d2, min(d3, min(d4, min(d5, d6))))));
+	float closest = d6;
 
 	vec3 col = vec3(1.0, 1.0, 1.0);
 
@@ -109,8 +111,8 @@ float distToObjs(vec3 point) {
 }
 
 vec3 estimateNormal(vec3 p) {
-	vec2 e = vec2(0.001, 0.0);
 	float d = distToObjs(p);
+	vec2 e = vec2(d / 2.0f, 0.0);
 	vec3 n = d - vec3(
 			distToObjs(p-e.xyy),
 			distToObjs(p-e.yxy),
@@ -205,7 +207,25 @@ void main()
 
 	vec3 rayColor = vec3(1.0);
 
-	vec4 rayData = rayMarch(rayOrigin, directionVector, int(pow(2, 8)), 1000.0);
+
+
+	for (int i = 0; i < 3; ++i) {
+		vec4 rayData = rayMarch(rayOrigin, directionVector, 128, 1000.0);
+
+		if (rayData.w == 1) { //ray hit something
+			//rayColor *= getColorAndDst(rayData.xyz).xyz;
+			rayOrigin = rayData.xyz;
+			rayOrigin -= directionVector * EPSILON;
+			vec3 normal = normalize(estimateNormal(rayOrigin));
+
+			directionVector = reflect(directionVector, normal);
+		} else { //ray did not hit anything
+			rayColor = texture(skybox, normalize(vec3(directionVector.x, -directionVector.y, directionVector.z))).rgb;
+			break;
+		}
+	}
+
+	/*
 	if (rayData.w == 1) { //ray hit something
 		rayColor *= getColorAndDst(rayData.xyz).xyz;
 		rayOrigin = rayData.xyz;
@@ -227,9 +247,9 @@ void main()
 		} /////////////
 
 		//Refraction TODO: improve
-		vec3 refractO = rayOrigin + normal * EPSILON * 2.0f;
-		vec3 refractD = refract(directionVector, normal, 1.0003 / 1.3330);
-		colorDiff += texture(skybox, normalize(vec3(refractD.x, -refractD.y, refractD.z))).rgb * 3.0 / 4.0;
+		//vec3 refractO = rayOrigin + normal * EPSILON * 2.0f;
+		//vec3 refractD = refract(directionVector, normal, 1.0003 / 1.3330);
+		//colorDiff += texture(skybox, normalize(vec3(refractD.x, -refractD.y, refractD.z))).rgb * 3.0 / 4.0;
 		//{ /////////////
 		//	vec4 rayData2 = rayMarch(refractO, refractD, int(pow(2, 8)), 1000.0);
 		//	if (rayData2.w == 1) { //ray hit something
@@ -245,6 +265,7 @@ void main()
 	else { //ray hit nothing
 		rayColor *= texture(skybox, normalize(vec3(directionVector.x, -directionVector.y, directionVector.z))).rgb;
 	}
+	*/
 
 
 

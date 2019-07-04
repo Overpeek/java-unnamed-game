@@ -1,5 +1,7 @@
 package utility;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
@@ -21,12 +23,23 @@ public class Debug {
 		}
 	}
 	
+	public static BufferedImage resize(BufferedImage img, int newW, int newH) { 
+	    Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_FAST);
+	    BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+	    Graphics2D g2d = dimg.createGraphics();
+	    g2d.drawImage(tmp, 0, 0, null);
+	    g2d.dispose();
+
+	    return dimg;
+	}  
+	
 	public static void debugImagePopup(BufferedImage img) {
 		JPanel panel = new JPanel();
 	    JLabel label = new JLabel(new ImageIcon(img));
 	    panel.add(label);
 	    JFrame.setDefaultLookAndFeelDecorated(true);
-	    JFrame frame = new JFrame("JPanel Example");
+	    JFrame frame = new JFrame("DEBUG");
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    frame.add(panel); 
 	    frame.pack();

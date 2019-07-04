@@ -1,9 +1,5 @@
 package logic;
 
-import java.awt.Font;
-
-import org.joml.Matrix4f;
-
 import audio.Audio;
 import creatures.Creature;
 import creatures.Player;
@@ -33,22 +29,17 @@ public class Game extends Application {
 	private Renderer blur_renderer;
 	private Renderer normal_renderer;
 	private Renderer gui_renderer;
-	private Texture texture;
 	private GlyphTexture glyphs;
 	private Window window;
-	private Audio audioHit;
-	private Audio audioSwing;
-	private Audio audioCollect;
 	private Map map;
 	private Inventory inventory;
 	private Creature player;
-	private boolean mainMenu;
-	private boolean paused;
 	private boolean justPaused;
 	private Gui gui;
 	private Texture splashScreen;
 	private String loadedMapName;
 	
+	public boolean paused;
 	public boolean advancedDebugMode;
 	public boolean debugMode;
 	
@@ -57,7 +48,6 @@ public class Game extends Application {
 	//Main update loop
 	@Override
 	public void update() {
-		Logger.debug("FPS: " + gameloop.getFps());
 		float playerSpeed = Database.getCreature("player").walkSpeed;
 
 		if (window.key(Keys.KEY_LEFT_SHIFT)) playerSpeed *= 2;
@@ -69,6 +59,7 @@ public class Game extends Application {
 		if (Settings.DEBUG_REGEN_WORLD) {
 			loadWorld(Settings.WORLD_NAME, true); //Debug regen world
 		}
+		gui.update(Settings.UPDATES_PER_SECOND);
 		Database.modUpdates();
 	}
 
@@ -96,14 +87,15 @@ public class Game extends Application {
 			map.submitToRenderer(blur_renderer, -player.getPos().x - player.getVel().x * corrector / Settings.UPDATES_PER_SECOND, -player.getPos().y - player.getVel().y * corrector / Settings.UPDATES_PER_SECOND, corrector);
   
 			player.draw(blur_renderer, -player.getPos().x - player.getVel().x * corrector / Settings.UPDATES_PER_SECOND, -player.getPos().y - player.getVel().y * corrector / Settings.UPDATES_PER_SECOND, corrector, renderScale());
-			gui.render(blur_renderer, normal_renderer);
+			gui.renderWithBlur(blur_renderer, normal_renderer);
+			gui.renderWithoutBlur(blur_renderer);
 			Database.modRendering(blur_renderer);
 			//m_inventory->render(m_worldrenderer.get());
 		}
 		//
 		point_shader.enable();
-		blur_renderer.points.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
-		normal_renderer.points.draw(TextureLoader.getTextureId(), TextureLoader.getTextureType());
+		blur_renderer.points.draw(TextureLoader.getTexture());
+		normal_renderer.points.draw(TextureLoader.getTexture());
 		
 		single_texture_shader.setUniform1i("usetex", 1);
 		TextLabelTexture.drawQueue();
@@ -155,10 +147,9 @@ public class Game extends Application {
 	
 	private TextLabelTexture loadDescription;
 	private void drawLoadingScreen(Renderer renderer, float state, String text) {
-		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		vec3 pos = new vec3(-0.5f, -0.5f, 0.0f);
 		vec2 size = new vec2(1.0f, 1.0f);
-		window.clear();
+		window.clear(1.0f, 1.0f, 1.0f, 1.0f);
 		single_texture_shader.enable();
 		
 		//Back texture
@@ -199,9 +190,8 @@ public class Game extends Application {
 		window = new Window(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT, Settings.WINDOW_DEFAULT_TITLE, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
 		window.setSwapInterval(0);
 		window.setIcon("/res/texture/icon.png");
-		window.setLineWidth(2.0f);
 		window.setBackFaceCulling(false);
-		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		window.clearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		//Critical Resources
 		Audio.init();
@@ -260,7 +250,6 @@ public class Game extends Application {
 		Logger.info("Renderer " + window.getRenderer());
 		
 		//Main menu
-		window.setClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		MainMenu.init(gui_renderer, multi_texture_shader, single_texture_shader, point_shader, post_shader, glyphs);
 		window.setCurrentApp(this);
 
@@ -273,7 +262,7 @@ public class Game extends Application {
 
 	//Load world with name
 	//If not found, create one
-	private void loadWorld(String name, boolean create) {
+	public void loadWorld(String name, boolean create) {
 		AsyncMapLoader loader = new AsyncMapLoader();
 		loadedMapName = name;
 		loader.loadMap(name);
@@ -305,7 +294,7 @@ public class Game extends Application {
 	//Key press callback
 	@Override
 	public void keyPress(int key, int action) {
-		//gui.keyPress(key, action);
+		gui.keyPress(key, action);
 		if (action == Keys.PRESS) {
 			if (key == Keys.KEY_ESCAPE) { paused = !paused; justPaused = true; return; }
 			
@@ -375,10 +364,9 @@ public class Game extends Application {
 		
 		// TODO Auto-generated method stub
 		window.viewport();
-		window.setClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		//Matrices
-		mat4 projection = new mat4().ortho(-window.getAspect() * Settings.DEBUG_ZOOM, window.getAspect() * Settings.DEBUG_ZOOM, Settings.DEBUG_ZOOM, -Settings.DEBUG_ZOOM);
+		mat4 projection = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
 		multi_texture_shader.setUniformMat4("pr_matrix", projection);
 		single_texture_shader.setUniformMat4("pr_matrix", projection);
 		point_shader.setUniformMat4("pr_matrix", projection);
@@ -393,8 +381,8 @@ public class Game extends Application {
 
 	@Override
 	public void charCallback(char character) {
-		// TODO Auto-generated method stub
-		
+		Logger.debug("Typed character: " + character);
+		gui.typing(character, 0);
 	}
 	
 	public String getResourcePath() {
@@ -423,7 +411,7 @@ public class Game extends Application {
 	}
 	
 	public float guiScale() {
-		 return Settings.DEBUG_ZOOM;
+		 return 1.0f; //Settings.DEBUG_ZOOM;
 	}
 	
 	public float renderScale() {
@@ -439,8 +427,8 @@ public class Game extends Application {
 	}
 
 
-	public Creature getPlayer() {
-		return player;
+	public Player getPlayer() {
+		return (Player) player;
 	}
 
 
@@ -458,6 +446,13 @@ public class Game extends Application {
 
 	@Override
 	public void scroll(float x_delta, float y_delta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void saveWorld() {
 		// TODO Auto-generated method stub
 		
 	}

@@ -98,7 +98,7 @@ public class MainMenu extends Application {
 	@Override
 	public void render(float corrector) {
 		if (Main.game.getWindow().shouldClose()) loop.stop();
-		Main.game.getWindow().clear();
+		Main.game.getWindow().clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 		float mx = Main.game.getWindow().getCursor().x, my = Main.game.getWindow().getCursor().y;
 		//Logger.warn(mx + ", " + my);

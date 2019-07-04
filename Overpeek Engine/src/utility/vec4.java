@@ -20,6 +20,13 @@ public class vec4 {
 		this.w = val;
 	}
 	
+	public vec4(Color color) {
+		this.x = color.getRed();
+		this.y = color.getGreen();
+		this.z = color.getBlue();
+		this.w = color.getAlpha();
+	}
+	
 	public vec4(vec4 xyzw) {
 		this.x = xyzw.x;
 		this.y = xyzw.y;

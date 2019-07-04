@@ -8,11 +8,7 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL42;
-
+import graphics.Texture;
 import utility.Logger;
 
 public class TextureLoader {
@@ -29,15 +25,11 @@ public class TextureLoader {
 
 	static private ByteBuffer textureBuffer;
 	static private int r;
-	static private int texture;
+	static private Texture texture;
 	static private int type;
 	static private int current_layer;
 
-	public static int getTextureType() {
-		return type;
-	}
-
-	public static int getTextureId() {
+	public static Texture getTexture() {
 		return texture;
 	}
 
@@ -145,7 +137,12 @@ public class TextureLoader {
 		//
 		// Free temporary data
 		//textureBuffers = new ArrayList<byte[]>();
+		
+		textureBuffer.flip();
+		texture = Texture.empty3d(r, r, layers, Texture.GL_2D_ARRAY);
+		texture.setData3D(textureBuffer);
 
+		/*
 		type = GL30.GL_TEXTURE_2D_ARRAY;
 		texture = GL11.glGenTextures();
 		GL11.glBindTexture(type, texture);
@@ -157,8 +154,8 @@ public class TextureLoader {
 
 		//Logger.out("r: " + r + " layers: " + layers);
 		GL42.glTexStorage3D(type, 1, GL11.GL_RGBA8, r, r, layers);
-		textureBuffer.flip();
 		GL12.glTexSubImage3D(type, 0, 0, 0, 0, r, r, layers, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, textureBuffer);
+		*/
 	}
 
 }
