@@ -44,7 +44,6 @@ public class GlyphTexture {
 	}
     private Map<Character, Glyph> glyphs = new HashMap<>();
     private int maxHeight;
-    private int topToBottomHeight;
     private int maxWidth;
     private int resolution;
 	private Texture texture;
@@ -55,15 +54,17 @@ public class GlyphTexture {
     public Texture getTexture() {
     	return texture;
     }
-    
-    public int getTopToBottomHeight() {
-    	return topToBottomHeight;
-    }
-    
+
+    /**
+     * Max height difference between all characters
+     * */
     public int getHeight() {
     	return maxHeight;
     }
     
+    /**
+     * Width of the widest character
+     * */
     public int getWidth() {
     	return maxWidth;
     }
@@ -71,7 +72,10 @@ public class GlyphTexture {
     public Glyph getGlyphData(Character c) {
 		return glyphs.get(c);
     }
-    
+
+    /**
+     * Font size
+     * */
     public int getResolution() {
     	return resolution;
     }
@@ -100,23 +104,23 @@ public class GlyphTexture {
     	//Get max possible bounds
     	FontRenderContext frc = new FontRenderContext(null, true, true);
 	    StringBuilder allCharacters = new StringBuilder();
-	    int maxWidth = 0, maxHeight = 0;
+	    int maxWidth = 0;
     	for (char i = 32; i < 256; i++) {
     	    if (i == 127) continue;
     	    TextLayout textabel = new TextLayout(String.valueOf(i), font, frc);
     		allCharacters.append(i);
     		Rectangle bound = textabel.getPixelBounds(frc, 0, 0);
     		maxWidth = Math.max(maxWidth, bound.width);
-    		maxHeight = Math.max(maxHeight, bound.height);
     	}
+    	
     	TextLayout textabel = new TextLayout(allCharacters.toString(), font, frc);
 	    returned.maxTextBounds = textabel.getPixelBounds(null, 0, 0);
-	    returned.maxTextBounds.width = maxWidth;
-	    returned.maxTextBounds.height = maxHeight;
-    	
-    	returned.maxHeight = maxWidth;
-    	returned.maxWidth = maxHeight;
+    	returned.maxHeight = returned.maxTextBounds.height;
+    	returned.maxWidth = maxWidth;
 
+    	
+    	
+    	
     	//4 (r, g, b, a) times pixels times 224 (glyph count)
     	ByteBuffer data = BufferUtils.createByteBuffer(4 * returned.maxWidth * returned.maxHeight * 225);
     	int index = 0;
@@ -164,20 +168,18 @@ public class GlyphTexture {
 		
 		data.clear();
 
-		Glyph startGlyph = returned.getGlyphData('A');
-		returned.topToBottomHeight = 0;
-		int highest_point = startGlyph.y;
-		int lowest_point = startGlyph.y;
-		for (int i = 32; i < 256; i++) {
-    	    if (i == 127) continue;
-			Glyph glyph = returned.getGlyphData((char) i);
-			int tempHeight = glyph.y;
-			//Logger.debug("c: " + (char)i + ", y: " + tempHeight + ", h: " + glyph.height);
-			
-			highest_point = Math.max(tempHeight, highest_point);
-			lowest_point = Math.min(tempHeight + glyph.height, lowest_point);
-		}
-		returned.topToBottomHeight = Math.abs(highest_point - lowest_point);
+//		Glyph startGlyph = returned.getGlyphData('A');
+//		//returned.topToBottomHeight = 0;
+//		int highest_point = startGlyph.y;
+//		int lowest_point = startGlyph.y + startGlyph.height;
+//		for (int i = 32; i < 256; i++) {
+//    	    if (i == 127) continue;
+//			Glyph glyph = returned.getGlyphData((char) i);
+//			int tempHeight = glyph.y;
+//			
+//			highest_point = Math.min(tempHeight, highest_point); //because up is negative
+//			lowest_point = Math.max(tempHeight + glyph.height, lowest_point); //and down is positive
+//		}
 		
 		return returned;
     }
@@ -229,15 +231,15 @@ public class GlyphTexture {
 	    Rectangle bounds = textabel.getPixelBounds(frc, 0, 0);
 	    //Logger.debug("c: " + c + ", c.b: " + bounds + ", greatest c.b: " + maxTextBounds);
 	    	// c: j, c.b: Rectangle[x=-3,y=-46,width=13,height=60], greatest c.b: Rectangle[x=22,y=-58,width=61,height=61]
-	    BufferedImage bi = new BufferedImage(maxTextBounds.width, maxTextBounds.height, BufferedImage.TYPE_INT_ARGB);
+	    BufferedImage bi = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB);
 	    Graphics2D g2d = (Graphics2D) bi.getGraphics();
 	    Color color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 	    g2d.setBackground(color);
 	    g2d.setColor(color);
-	    g2d.fillRect(0, 0, maxTextBounds.width, maxTextBounds.height);
+	    g2d.fillRect(0, 0, maxWidth, maxHeight);
 	    color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 	    g2d.setColor(color);
-	    textabel.draw(g2d, 0, -bounds.y);
+	    textabel.draw(g2d, 0, -maxTextBounds.y);
 	    g2d.dispose();
 	    
 	    glyphs.put(c, new Glyph((int) textabel.getAdvance(), -bounds.y, bounds.height, texture_index));

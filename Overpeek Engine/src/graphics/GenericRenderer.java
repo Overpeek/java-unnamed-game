@@ -13,6 +13,7 @@ public interface GenericRenderer {
 	public abstract void submitVertex(VertexData data);
 	public abstract void draw(int texture, int textureType);
 	public abstract void draw(Texture texture);
+	public abstract void draw();
 	public abstract void submit(vec3 pos, vec2 size, int id, vec4 color);
 	
 }

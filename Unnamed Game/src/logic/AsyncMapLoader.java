@@ -11,19 +11,19 @@ public class AsyncMapLoader implements Runnable {
 	private String name = null;
 	private int state = 0;
 	
-	public void loadMap(String mapName) {
-		name = mapName;
-		action = 0;
-		state = 0;
-		new Thread().run();
+	public void loadMap(Map map, String mapName) {
+		this.name = mapName;
+		this.action = 0;
+		this.state = 0;
+		this.map = map;
 	}
 	
-	public void createMap(String mapName, int seed) {
-		name = mapName;
-		action = 1;
-		state = 0;
+	public void createMap(Map map, String mapName, int seed) {
+		this.name = mapName;
+		this.action = 1;
+		this.state = 0;
 		this.seed = seed;
-		new Thread(new AsyncMapLoader()).run();		
+		this.map = map;	
 	}
 	
 	public Map getLoadedMap() {
@@ -33,14 +33,15 @@ public class AsyncMapLoader implements Runnable {
 	@Override
 	public void run() {
 		if (action == 0) { //Load
-			map = new Map();
+			action = 0;
 			if (!map.load(name)) state = -1;
 		}
 		else if (action == 1) { //Create
-			map = new Map();
+			action = 0;
 			if (!map.create(name, seed)) state = -1;
 		}
 		else {
+			action = 0;
 			//Unknown
 		}
 	}

@@ -91,7 +91,7 @@ public class vec4 {
 	
 	@Override
 	public String toString() {
-		return "(" + x + ", " + y + ", " + z + ", " + w + ")";
+		return "vec4[" + x + "," + y + "," + z + "," + w + "]";
 	}
 	
 }

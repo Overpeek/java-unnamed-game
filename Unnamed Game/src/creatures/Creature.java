@@ -1,10 +1,13 @@
 package creatures;
 
+import java.util.ArrayList;
+
 import graphics.Renderer;
-import graphics.VertexData;
 import logic.Database;
 import logic.Database.Creature_Data;
 import logic.Main;
+import logic.Particle;
+import logic.ParticleManager;
 import logic.Settings;
 import utility.Colors;
 import utility.vec2;
@@ -12,16 +15,11 @@ import utility.vec3;
 import world.Map;
 
 public abstract class Creature {
-	private static final int HEADING_UP = 0;
-	private static final int HEADING_DOWN = 2;
-	private static final int HEADING_LEFT = 3;
-	private static final int HEADING_RIGHT = 1;
+	
 	private static final float PLAYER_WIDTH = 0.8f;
 	private static final float PLAYER_HEIGHT = 0.8f;
 
-	private float counterToRemoveSwingAnimation = 0;
-	private int id;
-	private int swingDir;
+	protected String id;
 
 	private float health;
 	private float stamina;
@@ -35,28 +33,40 @@ public abstract class Creature {
 	private float staminaRegenCooldown;
 	private float healthRegenCooldown;
 
-	private boolean item;
-
 	private vec2 pos;
 	private vec2 old_pos;
 	private vec2 vel;
 	private vec2 acc;
 
 	private char heading;
+	private boolean item;
 
 	
 	/*
-	 * GENERIC CONSTRUCTOR
+	 * ABSTRACT METHODS
 	 */
-	public Creature(float _x, float _y, int _id, boolean _item) {
-		id = _id;
-		setPos(new vec2(_x + 0.5f, _y + 0.5f));
+	/**args == item id if item*/
+	public abstract Creature construct(float x, float y, String args);
+
+	public abstract void die();
+	
+	public abstract void draw(Renderer renderer, float preupdate_scale);
+	
+	public abstract void update(float ups);
+	
+	public abstract void collide(float ups);
+	
+	public abstract void ai(float ups);
+	
+	/*
+	 * COMMON METHODS FOR ABSTRACT CALLS
+	 */
+	protected Creature commonConstruct(float x, float y, String id) {
+		this.id = id;
+		setPos(new vec2(x + 0.5f, y + 0.5f));
 		setVel(new vec2(0.0f, 0.0f));
 		setAcc(new vec2(0.0f, 0.0f));
-		item = _item;
-		swingDir = 0;
 
-		// HS
 		maxHealth = getData().health;
 		maxStamina = getData().stamina;
 		healthGainRate = getData().healthgain;
@@ -67,129 +77,58 @@ public abstract class Creature {
 
 		resetHealth();
 		resetStamina();
+		
+		//Check if item object
+		item = false;
+		if (this instanceof Item) item = true;
+		
+		return this;
 	}
-
 	
-	/*
-	 * ABSTRACT METHODS
-	 */
-	public abstract void die();
-	
-	public abstract void draw(Renderer renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale);
-	
-	public abstract void update(int index, float divider);
-	
-	public abstract void collide(float divider);
-	
-	public abstract void ai(float divider);
-	
-	
-	
-	/*
-	 * COMMON METHODS FOR ABSTRACT CALLS
-	 */
 	protected void commonDie() {
 		//Drops
 		for (int i = 0; i < getData().drops.size(); i++) {
-			Main.game.getMap().addCreature(getPos().x, getPos().y, getData().drops.get(i).item, true);
+			//TODO:
+			//Main.game.getMap().addCreature(getPos().x, getPos().y, getData().drops.get(i).item, true);
 		}
 
 		//Remove this
 		Main.game.getMap().removeCreature(this);
 	}
 	
-	protected void commonDraw(Renderer renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale ) {
-		if (!item) {
-			int heading_texture = 0;
-			switch (heading)
-			{
-			case HEADING_UP:
-				heading_texture = getData().texture;
-				break;
-			case HEADING_DOWN:
-				heading_texture = getData().texture + 1;
-				break;
-			case HEADING_LEFT:
-				heading_texture = getData().texture + 2;
-				break;
-			case HEADING_RIGHT:
-				heading_texture = getData().texture + 3;
-				break;
-			default:
-				break;
-			}
-			vec3 pos = new vec3((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
-			vec2 size = new vec2(Settings.TILE_SIZE, Settings.TILE_SIZE);
-			pos.mult(Main.game.renderScale());
-			size.mult(Main.game.renderScale());
+	protected void commonDraw(Renderer renderer, float preupdate_scale) {
+		int heading_texture = getData().texture + heading;
+		vec3 pos = new vec3(
+				(getPos().x + getVel().x * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				(getPos().y + getVel().y * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				0.0f);
+		vec2 size = new vec2(Settings.TILE_SIZE);
+		pos.mult(Main.game.renderScale());
+		size.mult(Main.game.renderScale());
 
-			renderer.points.submitVertex(new VertexData(pos, size, heading_texture, Colors.WHITE));
-
-			float swingX = 0.0f, swingY = 0.0f;
-			int swingTexture = 13;
-			switch (swingDir)
-			{
-			case 1:
-				swingTexture = 13;
-				swingX = (getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE; 
-				swingY = (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 1.0f) * Settings.TILE_SIZE;
-				break;
-			case 2:
-				swingTexture = 12;
-				swingX = (getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.0f) * Settings.TILE_SIZE; 
-				swingY = (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE;
-				break;
-			case 3:
-				swingTexture = 15;
-				swingX = (getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE; 
-				swingY = (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.0f) * Settings.TILE_SIZE;
-				break;
-			case 4:
-				swingTexture = 14;
-				swingX = (getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 1.0f) * Settings.TILE_SIZE; 
-				swingY = (getPos().y + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE;
-				break;
-			default:
-				break;
-			}
-			if (swingDir != 0) {
-				pos = new vec3(swingX, swingY, 0.0f);
-				size = new vec2(Settings.TILE_SIZE);
-				pos.mult(Main.game.renderScale());
-				size.mult(Main.game.renderScale());
-
-				renderer.points.submitVertex(new VertexData(pos, size, swingTexture, Colors.WHITE));
-			}
-		}
-		else {
-			vec3 pos = new vec3((getPos().x + getVel().x * corrector / Settings.UPDATES_PER_SECOND + renderOffsetX - 0.5f) * Settings.TILE_SIZE, (getPos().x + getVel().y * corrector / Settings.UPDATES_PER_SECOND + renderOffsetY - 0.5f) * Settings.TILE_SIZE, 0.0f);
-			vec2 size = new vec2(Settings.TILE_SIZE);
-			pos.mult(Main.game.renderScale());
-			size.mult(Main.game.renderScale());
-
-			int texture = Database.getItem(id).texture;
-			renderer.points.submitVertex(new VertexData(pos, size, texture, Colors.WHITE));
-		}
+		renderer.quads.submit(pos, size, heading_texture, Colors.WHITE);
 	}
 	
-	protected void commonMeleeAi(float divider) {
+	protected void commonMeleeAi(float ups) {}
+	
+	protected void commonUpdate(float ups) {
+		float oneOverups = 1.0f / ups;
 		
-	}
-	
-	protected void commonUpdate(float divider) {
-		ai(divider);
+		setHeading(getAcc().x, getAcc().y);
+		
+		ai(ups);
 		
 		//Vectorplate
 		if (Main.game.getMap().getTile((int) getPos().x, (int) getPos().y).object == 7) {
-			setAcc(new vec2(getAcc().x, getAcc().y + 1.0f));
+			//setAcc(new vec2(getAcc().x, getAcc().y + 1.0f));
 		}
 	
 		//Health and stamina regeneration
 		if (staminaRegenCooldown > 2.0f) stamina += staminaGainRate;
-		else staminaRegenCooldown += 1.0 / divider;
+		else staminaRegenCooldown += oneOverups;
 	
 		if (healthRegenCooldown > 2.0f) health += healthGainRate;
-		else healthRegenCooldown += 1.0 / divider;
+		else healthRegenCooldown += oneOverups;
 	
 	
 		clampHPAndSTA();
@@ -198,25 +137,18 @@ public abstract class Creature {
 			return;
 		}
 	
-		if (swingDir != 0) {
-			float addition = 1.0f / divider;
-			counterToRemoveSwingAnimation += addition;
-		}
-		if (counterToRemoveSwingAnimation > 0.10) {
-			counterToRemoveSwingAnimation = 0;
-			swingDir = 0;
-		}
-	
 		//Positions
-		setVel(getVel().add(getAcc()));
-		setOld_pos(getPos());
-		setPos(getPos().add(getVel().mult(1.0f / divider)));
-		setVel(getVel().mult(1.0f - 1.0f / (divider / 10.0f)));
-		setAcc(new vec2(0.0f));
+		getVel().add( getAcc() );
+		//setOld_pos( getPos() );
+		getPos().add( getVel().mult(oneOverups) );
+		//getVel().mult( 1.0f - (oneOverups / 10.0f) );
+		setAcc( new vec2(0.0f) );
+		
+		collide(ups);
 	}
 		
-	protected void commonCollide(float divider) {
-		if (!item && Database.getCreature(id).ghost) return;
+	protected void commonCollide(float ups) {
+		if (Database.getCreature(id).ghost) return;
 	
 		for (int _x = -1; _x < 2; _x++)
 		{
@@ -283,17 +215,106 @@ public abstract class Creature {
 
 	
 	/*
-	 * PRIVATE HELPER FUNCTIONS
+	 * HELPER FUNCTIONS
 	 */
-	public boolean canSeePlayer(float _x, float _y) {
+	public void hit() {
+		if (item) return;
+		float hitx = getPos().x, hity = getPos().y;
+		switch (heading)
+		{
+		case 0:
+			hity -= 1;
+			break;
+		case 1:
+			hitx -= 1;
+			break;
+		case 2:
+			hity += 1;
+			break;
+		default:
+			hitx += 1;
+			break;
+		}
+
+		// Swing particle
+		float swingX = 0.0f, swingY = 0.0f;
+		switch (heading)
+		{
+		case 0: // Swing to up
+			swingX =  0.0f;
+			swingY = -0.5f;
+			break;
+		case 1: // Swing to down
+			swingX =  0.0f;
+			swingY =  0.5f;
+			break;
+		case 2: // Swing to left
+			swingX = -0.5f;
+			swingY =  0.0f;
+			break;
+		default: // Swing to right
+			swingX =  0.5f;
+			swingY =  0.0f;
+			break;
+		}
+		swingX *= Main.game.renderScale();
+		swingY *= Main.game.renderScale();
+		vec3 swing_pos = new vec3(getPos().x + swingX, getPos().y + swingY, 0.0f).mult(Settings.TILE_SIZE);
+		ParticleManager.add(new Particle(swing_pos.vec2(), "swing", heading));
+		
+
+		//Creature hitting
+		ArrayList<Creature> in_radius_creatures = Main.game.getMap().findAllCreatures(hitx, hity, 1.0f);
+		for (int i = 0; i < in_radius_creatures.size(); i++)
+		{
+			if (in_radius_creatures.get(i).equals(this)) continue;
+
+			vec2 directionVector = new vec2(
+					in_radius_creatures.get(i).getPos().x - getPos().x, 
+					in_radius_creatures.get(i).getPos().y - getPos().y);
+			directionVector.normalizeNew();
+		
+			in_radius_creatures.get(i).getAcc().x += directionVector.x / 10.0f * (getData().knockback);
+			in_radius_creatures.get(i).getAcc().y += directionVector.y / 10.0f * (getData().knockback);
+			in_radius_creatures.get(i).setHealth(in_radius_creatures.get(i).getHealth() - getData().meleeDamage);
+		}
+
+		//Tile hitting
+		//Map.MapTile tmp = Main.game.getMap().getTile(Math.round(hitx), Math.round(hity));
+		//if (tmp != null) {
+		//	if (Database.getObject(tmp.object).destroyable) {
+		//		Main.game.getMap().hit(Math.round(hitx), Math.round(hity), (int) getData().meleeDamage);
+		//	}
+		//}
+
+		//Swing noise
+		Database.getSound("hit");
+	}
+	
+	public void setHeading(float x, float y) {
+		//Heads towards where its going
+		if (Math.abs(x) > Math.abs(y)) {
+			if (x < 0) {
+				heading = 2;
+			}
+			else {
+				heading = 3;
+			}
+		}
+		else {
+			if (y < 0) {
+				heading = 0;
+			}
+			else {
+				heading = 1;
+			}
+		}
+	}
+	
+	public boolean canSee(float _x, float _y) {
 		if (Main.game.advancedDebugMode) return false;
 		//LineABXY from this enemy to x,y
 
-		//for all tiles
-		//	if this tile has inpassable object
-		//	for all object sides
-		//	if LineABXY and this object side intersects
-		//		return false
 		for (int x = -Settings.MAP_WORK_DST; x < Settings.MAP_WORK_DST; x++)
 		{
 			for (int y = -Settings.MAP_WORK_DST; y < Settings.MAP_WORK_DST; y++)
@@ -394,6 +415,10 @@ public abstract class Creature {
 		return maxStamina;
 	}
 	
+	public void setHealth(float value) {
+		health = value;
+	}
+	
 	public float getHealth() {
 		return health;
 	}
@@ -402,7 +427,7 @@ public abstract class Creature {
 		return stamina;
 	}
 	
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 	

@@ -22,7 +22,7 @@ public:
 	static void init(oe::Renderer *renderer, oe::Shader *shader, oe::Shader *pointshader, oe::Shader *postshader);
 	static void deinit();
 
-	static void render(float corrector);
+	static void render(float preupdate_scale);
 	static void update();
 
 	static void key(int key, int action);

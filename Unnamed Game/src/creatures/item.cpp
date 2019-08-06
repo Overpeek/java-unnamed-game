@@ -15,12 +15,12 @@ Item::Item(float x, float y, int id) : Creature::Creature(x, y, id, true) {
 	nothing = false;
 }
 
-void Item::ai(float divider) {
+void Item::ai(float ups) {
 	//No ai
 }
 
-void Item::update(int index, float divider) {
-	Creature::update(index, divider);
+void Item::update(int index, float ups) {
+	Creature::update(index, ups);
 
 	//float distanceToPlayer = abs(getX() - Game::getPlayer()->getX()) + abs(getY() - Game::getPlayer()->getY());
 	//if (distanceToPlayer < 0.8) {
@@ -32,6 +32,6 @@ void Item::update(int index, float divider) {
 	//}
 }
 
-void Item::collide(float divider) {
-	Creature::collide(divider);
+void Item::collide(float ups) {
+	Creature::collide(ups);
 }

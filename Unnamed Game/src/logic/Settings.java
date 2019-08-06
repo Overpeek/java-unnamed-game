@@ -9,7 +9,7 @@ public final class Settings {
 
 	public static final int UPDATES_PER_SECOND = 60;
 
-	public static final float DEBUG_ZOOM = 10.0f;
+	public static final float DEBUG_ZOOM = 1.0f;
 	public static final boolean DEBUG_MODE = false;
 	public static final boolean SHOW_DEBUG_MESSAGES = false;
 	public static final boolean DEBUG_DISABLE_SAVING = false;
@@ -29,7 +29,9 @@ public final class Settings {
 	public static final float PLAYER_WIDTH = 0.8f;
 	public static final float PLAYER_HEIGHT = 0.8f;
 
-	public static final int MAP_SIZE = 512;
+	public static final int MAP_SIZE_CHUNKS = 2<<4; // chunks * chunks
+	public static final int CHUNK_SIZE = 2<<3;
+	public static final int MAP_SIZE_TILES = MAP_SIZE_CHUNKS * CHUNK_SIZE; // chunks * chunks
 	public static final int MAP_MAX_CREATURES = 2048;
 
 	public static final String USER_HOME = System.getProperty("user.home");

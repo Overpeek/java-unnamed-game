@@ -51,7 +51,7 @@ void MainMenu::deinit() {
 
 float anglex = 0.0f;
 float angley = 0.0f;
-void MainMenu::render(float corrector) {
+void MainMenu::render(float preupdate_scale) {
 	Game::getWindow()->clear();
 
 	double mx, my;
@@ -69,7 +69,7 @@ void MainMenu::render(float corrector) {
 
 	for (int i = 0; i < 1000; i++)
 	{
-		glm::vec3 pos(m_objpos[i] + m_objvel[i] * corrector / 30.0f);
+		glm::vec3 pos(m_objpos[i] + m_objvel[i] * preupdate_scale / 30.0f);
 		glm::vec2 size = glm::vec2(0.02);
 
 		m_renderer->pointRenderer->submitVertex(oe::VertexData(pos, size, 20, m_objcol[i]));

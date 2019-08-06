@@ -248,8 +248,8 @@ void Gui::addTextToLatest(std::string text) {
 	if (m_last_inputs.size() > MAX_TEXT_LINES) m_last_inputs.erase(m_last_inputs.begin());
 }
 
-void Gui::update(float divider) {
-	m_chat_opened_timer -= 1.0f / divider;
+void Gui::update(float ups) {
+	m_chat_opened_timer -= 1.0f / ups;
 	if (Game::advancedDebugMode) {
 		m_currentUpdate++;
 		if (m_currentUpdate >= GUI_FRAME_LOGGER_SIZE) m_currentUpdate = 0;

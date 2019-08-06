@@ -1,11 +1,20 @@
 package creatures;
 
+
 import graphics.Renderer;
+import graphics.VertexData;
+import logic.Database;
+import logic.Main;
+import logic.Settings;
+import utility.Colors;
+import utility.vec2;
+import utility.vec3;
 
 public class Item extends Creature {
 
-	public Item(float _x, float _y, int _id) {
-		super(_x, _y, _id, true);
+	@Override
+	public Creature construct(float x, float y, String id) {
+		return commonConstruct(x, y, id);
 	}
 
 	@Override
@@ -14,22 +23,31 @@ public class Item extends Creature {
 	}
 
 	@Override
-	public void draw(Renderer renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale) {
-		commonDraw(renderer, renderOffsetX, renderOffsetY, corrector, renderScale);
+	public void draw(Renderer renderer, float preupdate_scale) {
+		vec3 pos = new vec3(
+				(getPos().x + getVel().x * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				(getPos().x + getVel().y * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				0.0f);
+		vec2 size = new vec2(Settings.TILE_SIZE);
+		pos.mult(Main.game.renderScale());
+		size.mult(Main.game.renderScale());
+
+		int texture = Database.getItem(id).texture;
+		renderer.points.submitVertex(new VertexData(pos, size, texture, Colors.WHITE));
 	}
 
 	@Override
-	public void update(int index, float divider) {
-		commonUpdate(divider);
+	public void update(float ups) {
+		commonUpdate(ups);
 	}
 
 	@Override
-	public void collide(float divider) {
-		commonCollide(divider);
+	public void collide(float ups) {
+		commonCollide(ups);
 	}
 
 	@Override
-	public void ai(float divider) {
+	public void ai(float ups) {
 		//NO AI
 	}
 

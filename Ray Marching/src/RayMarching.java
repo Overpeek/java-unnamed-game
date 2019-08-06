@@ -72,7 +72,7 @@ public class RayMarching extends Application {
 	}
 
 	@Override
-	public void render(float corrector) {
+	public void render(float preupdate_scale) {
 		// TODO Auto-generated method stub
 		raymarch_shader.enable();
 		renderer.quads.submit(new vec3(-1.0f, -1.0f, 0.0f), new vec2(2.0f, 2.0f), 0, Colors.BLACK);

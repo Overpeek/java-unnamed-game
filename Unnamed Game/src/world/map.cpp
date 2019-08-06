@@ -291,9 +291,9 @@ int Map::getObjectTexture(int x, int y) {
 	return Database::objects[thistile->m_object].texture;
 }
 
-void Map::submitToRenderer(oe::Renderer *renderer, float offX, float offY, float corrector) {
+void Map::submitToRenderer(oe::Renderer *renderer, float offX, float offY, float preupdate_scale) {
 	//Map rendering
-	glm::fvec2 player_prediction = glm::fvec2(Game::getPlayer()->getX() + Game::getPlayer()->getVelX() * corrector / UPDATES_PER_SECOND, Game::getPlayer()->getY() + Game::getPlayer()->getVelY() * corrector / UPDATES_PER_SECOND);
+	glm::fvec2 player_prediction = glm::fvec2(Game::getPlayer()->getX() + Game::getPlayer()->getVelX() * preupdate_scale / UPDATES_PER_SECOND, Game::getPlayer()->getY() + Game::getPlayer()->getVelY() * preupdate_scale / UPDATES_PER_SECOND);
 	for (int x = -RENDER_HORIZONTAL; x < RENDER_HORIZONTAL; x++)
 	{
 		for (int y = -RENDER_VERTICAL; y < RENDER_VERTICAL; y++)
@@ -345,11 +345,11 @@ void Map::submitToRenderer(oe::Renderer *renderer, float offX, float offY, float
 	//Creature rendering
 	for (int i = 0; i < m_creatures.size(); i++)
 	{
-		m_creatures[i]->submitToRenderer(renderer, -Game::getPlayer()->getX() - Game::getPlayer()->getVelX() * corrector / UPDATES_PER_SECOND, -Game::getPlayer()->getY() - Game::getPlayer()->getVelY() * corrector / UPDATES_PER_SECOND, corrector, Game::renderScale());
+		m_creatures[i]->submitToRenderer(renderer, -Game::getPlayer()->getX() - Game::getPlayer()->getVelX() * preupdate_scale / UPDATES_PER_SECOND, -Game::getPlayer()->getY() - Game::getPlayer()->getVelY() * preupdate_scale / UPDATES_PER_SECOND, preupdate_scale, Game::renderScale());
 	}
 }
 
-void Map::renderGhostObject(oe::Renderer *renderer, float x, float y, int id, float offX, float offY, float corrector) {
+void Map::renderGhostObject(oe::Renderer *renderer, float x, float y, int id, float offX, float offY, float preupdate_scale) {
 	x = floor(x);
 	y = floor(y);
 	//x += 0.5;
@@ -441,10 +441,10 @@ void Map::removeCreature(Creature *creature) {
 	oe::Logger::out("Couldn't find creature: ", buffAsStdStr.c_str(), "!", oe::critical);
 }
 
-void Map::update(float divider) {
+void Map::update(float ups) {
 	for (int i = 0; i < m_creatures.size(); i++)
 	{
-		m_creatures[i]->update(i, divider);
+		m_creatures[i]->update(i, ups);
 	}
 
 	for (int x = -MAP_WORK_DST; x < MAP_WORK_DST; x++)

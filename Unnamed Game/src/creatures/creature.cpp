@@ -41,7 +41,7 @@ void Creature::die() {
 	Game::getMap()->removeCreature(this);
 }
 
-void Creature::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale) {
+void Creature::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float preupdate_scale, float renderScale) {
 	if (!m_item) {
 		int heading_texture = 0;
 		switch (heading)
@@ -61,7 +61,7 @@ void Creature::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, flo
 		default:
 			break;
 		}
-		glm::vec3 pos = glm::vec3((getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 0.5f) * TILE_SIZE, (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 0.5f) * TILE_SIZE, 0.0f) * Game::renderScale();
+		glm::vec3 pos = glm::vec3((getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 0.5f) * TILE_SIZE, (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 0.5f) * TILE_SIZE, 0.0f) * Game::renderScale();
 		glm::vec2 size = glm::vec2(TILE_SIZE, TILE_SIZE) * Game::renderScale();
 
 		renderer->quadRenderer->submitVertex(oe::VertexData(glm::vec3(pos.x, pos.y, pos.z), glm::vec2(0.0f, 0.0f), heading_texture, OE_COLOR_WHITE));
@@ -75,19 +75,19 @@ void Creature::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, flo
 		{
 		case 1:
 			swingTexture = 13;
-			swingX = (getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 0.5) * TILE_SIZE; swingY = (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 1.0) * TILE_SIZE;
+			swingX = (getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 0.5) * TILE_SIZE; swingY = (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 1.0) * TILE_SIZE;
 			break;
 		case 2:
 			swingTexture = 12;
-			swingX = (getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 0.0) * TILE_SIZE; swingY = (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 0.5) * TILE_SIZE;
+			swingX = (getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 0.0) * TILE_SIZE; swingY = (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 0.5) * TILE_SIZE;
 			break;
 		case 3:
 			swingTexture = 15;
-			swingX = (getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 0.5) * TILE_SIZE; swingY = (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 0.0) * TILE_SIZE;
+			swingX = (getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 0.5) * TILE_SIZE; swingY = (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 0.0) * TILE_SIZE;
 			break;
 		case 4:
 			swingTexture = 14;
-			swingX = (getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 1.0) * TILE_SIZE; swingY = (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 0.5) * TILE_SIZE;
+			swingX = (getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 1.0) * TILE_SIZE; swingY = (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 0.5) * TILE_SIZE;
 			break;
 		default:
 			break;
@@ -103,7 +103,7 @@ void Creature::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, flo
 		}
 	}
 	else {
-		glm::vec3 pos = glm::vec3((getX() + getVelX() * corrector / UPDATES_PER_SECOND + renderOffsetX - 0.5f) * TILE_SIZE, (getY() + getVelY() * corrector / UPDATES_PER_SECOND + renderOffsetY - 0.5f) * TILE_SIZE, 0.0f) * Game::renderScale();
+		glm::vec3 pos = glm::vec3((getX() + getVelX() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetX - 0.5f) * TILE_SIZE, (getY() + getVelY() * preupdate_scale / UPDATES_PER_SECOND + renderOffsetY - 0.5f) * TILE_SIZE, 0.0f) * Game::renderScale();
 		glm::vec2 size = glm::vec2(TILE_SIZE, TILE_SIZE) * Game::renderScale();
 
 		renderer->quadRenderer->submitVertex(oe::VertexData(glm::vec3(pos.x, pos.y, pos.z), glm::vec2(0.0f, 0.0f), Database::items[m_id].texture, OE_COLOR_WHITE));
@@ -121,11 +121,11 @@ void Creature::clampHPAndSTA() {
 	if (m_stamina < 0) m_stamina = 0;
 }
 
-void Creature::update(int index, float divider) {
-	ai(divider);
+void Creature::update(int index, float ups) {
+	ai(ups);
 
 	if (vel_x < 1e-5 && vel_y < 1e-5) {
-		collide(divider);
+		collide(ups);
 	}
 
 	//Vectorplate
@@ -136,10 +136,10 @@ void Creature::update(int index, float divider) {
 
 	//Health and stamina regeneration
 	if (m_staminaRegenCooldown > 2.0f) m_stamina += m_staminaGainRate;
-	else m_staminaRegenCooldown += 1.0 / divider;
+	else m_staminaRegenCooldown += 1.0 / ups;
 
 	if (m_healthRegenCooldown > 2.0f) m_health += m_healthGainRate;
-	else m_healthRegenCooldown += 1.0 / divider;
+	else m_healthRegenCooldown += 1.0 / ups;
 
 
 	clampHPAndSTA();
@@ -149,7 +149,7 @@ void Creature::update(int index, float divider) {
 	}
 
 	if (m_swingDir != 0) {
-		float addition = 1.0f / divider;
+		float addition = 1.0f / ups;
 		m_counterToRemoveSwingAnimation += addition;
 	}
 	if (m_counterToRemoveSwingAnimation > 0.10) {
@@ -158,16 +158,16 @@ void Creature::update(int index, float divider) {
 	}
 
 	//Positions
-	collide(divider);
+	collide(ups);
 	vel_x += acc_x;
 	vel_y += acc_y;
 	//DELAY IF l_
 	old_x = x;
 	old_y = y;
-	x += vel_x / divider;
-	y += vel_y / divider;
-	vel_x *= 1.0f - 1.0f / (divider / 10.0);
-	vel_y *= 1.0f - 1.0f / (divider / 10.0);
+	x += vel_x / ups;
+	y += vel_y / ups;
+	vel_x *= 1.0f - 1.0f / (ups / 10.0);
+	vel_y *= 1.0f - 1.0f / (ups / 10.0);
 	acc_x = 0;
 	acc_y = 0;
 }
@@ -244,7 +244,7 @@ bool AABB(glm::fvec2 aPos, glm::fvec2 aSize, glm::fvec2 bPos, glm::fvec2 bSize) 
 		&&  bPos.y < aPos.y + aSize.y && aPos.y < bPos.y + bSize.y;
 }
 
-void Creature::collide(float divider) {
+void Creature::collide(float ups) {
 	m_bumping = false;
 	if (!m_item && Database::creatures[m_id].ghost) return;
 

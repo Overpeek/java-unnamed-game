@@ -9,7 +9,7 @@ private:
 public:
 	Item(float x, float y, int id);
 
-	void ai(float divider);
-	void update(int index, float divider);
-	void collide(float divider);
+	void ai(float ups);
+	void update(int index, float ups);
+	void collide(float ups);
 };

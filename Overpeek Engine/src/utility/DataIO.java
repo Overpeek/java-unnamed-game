@@ -7,10 +7,13 @@ import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
+import org.json.JSONObject;
 
 public class DataIO {
 	
@@ -108,6 +111,11 @@ public class DataIO {
 		charBuf.get(array);
 		
 		return array;
+	}
+	
+	public static JSONObject loadJSONObject(String path) {
+		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile(path)).toString();
+		return new JSONObject(source);
 	}
 	
 }

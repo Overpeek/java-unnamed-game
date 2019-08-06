@@ -12,12 +12,15 @@ public class Buffer {
 	int id;
 	int type;
 	int componentCount;
+	
+	public static boolean oneIsMapped;
+	public boolean thisIsMapped;
 
 	/*
 	- "componentCount" is amount of components per vertex
 	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
 	*/
-	Buffer(float _data[], int type, int _componentCount, int _usage) {
+	public Buffer(float _data[], int type, int _componentCount, int _usage) {
 		componentCount = _componentCount;
 		this.type = type; 
 		
@@ -30,7 +33,7 @@ public class Buffer {
 	- "componentCount" is amount of components per vertex
 	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
 	*/
-	Buffer(FloatBuffer _data, int type, int _componentCount, int _usage) {
+	public Buffer(FloatBuffer _data, int type, int _componentCount, int _usage) {
 		componentCount = _componentCount;
 		this.type = type; 
 		
@@ -43,7 +46,7 @@ public class Buffer {
 	- "componentCount" is amount of components per vertex
 	- "usage" is either GL_STATIC_DRAW or GL_DYNAMIC_DRAW
 	*/
-	Buffer(ByteBuffer _data, int type, int _componentCount, int _usage) {
+	public Buffer(ByteBuffer _data, int type, int _componentCount, int _usage) {
 		componentCount = _componentCount;
 		this.type = type; 
 		
@@ -65,44 +68,48 @@ public class Buffer {
 		GL15.glBufferData(type, _data, _usage);
 	}
 
-	void bind() {
+	public void bind() {
 		GL15.glBindBuffer(type, id);
 	}
 
-	void unbind() {
+	public void unbind() {
 		GL15.glBindBuffer(type, 0);
 	}
 
-	void setBufferData(float _data[], int _componentCount) {
+	public void setBufferData(float _data[], int _componentCount) {
 		componentCount = _componentCount;
 
 		bind();
 		GL15.glBufferSubData(type, 0, _data);
 	}
 
-	void setBufferData(FloatBuffer _data, int _componentCount) {
+	public void setBufferData(FloatBuffer _data, int _componentCount) {
 		componentCount = _componentCount;
 
 		bind();
 		GL15.glBufferSubData(type, 0, _data);
 	}
 
-	ByteBuffer mapBuffer() {
+	public ByteBuffer mapBuffer() {
+		thisIsMapped = true;
+		oneIsMapped = true;
 		bind();
 		return GL15.glMapBuffer(type, GL15.GL_WRITE_ONLY);
 	}
 
-	void mapBuffer(ByteBuffer buffer) {
+	public void mapBuffer(ByteBuffer buffer) {
 		bind();
 		GL15.glMapBuffer(type, GL15.GL_WRITE_ONLY, buffer);
 	}
 
-	void unmapBuffer() {
+	public void unmapBuffer() {
+		thisIsMapped = false;
+		oneIsMapped = false;
 		bind();
 		GL15.glUnmapBuffer(type);
 	}
 
-	int getComponentCount() { 
+	public int getComponentCount() { 
 		return componentCount; 
 	}
 

@@ -1,16 +1,17 @@
 package graphics;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
-
-import org.lwjgl.opengl.GL40;
 
 import graphics.GlyphTexture.Glyph;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 
 import utility.Colors;
-import utility.Debug;
-import utility.Logger;
 import utility.mat4;
 import utility.vec2;
 import utility.vec3;
@@ -30,7 +31,6 @@ public class TextLabelTexture {
 		}
 		
 		public ArrayList<CharColorPair> drawData;
-		public String text;
 		
 		public TextDrawData() {
 			drawData = new ArrayList<CharColorPair>();
@@ -40,14 +40,12 @@ public class TextLabelTexture {
 	private static class QueueData {
 		public vec3 pos;
 		public vec2 size;
-		public vec4 color;
 		public float aspect;
 		public Texture tex;
 		
-		public QueueData(vec3 pos, vec2 size, vec4 color, float aspect, Texture tex) {
+		public QueueData(vec3 pos, vec2 size, float aspect, Texture tex) {
 			this.pos = pos;
 			this.size = size;
-			this.color = color;
 			this.tex = tex;
 			this.aspect = aspect;
 		}
@@ -55,14 +53,17 @@ public class TextLabelTexture {
 	
 	private static ArrayList<QueueData> drawQueue;
 	
+	private float textAspect;
+	private float framebufferAspect;
 	private String current_text;
 	private Framebuffer buffer;
-	private float textAspect;
 
 	private static Window window;
 	private static Shader label_draw_shader;
 	private static Shader label_bake_shader;
-	private static Renderer label_draw;
+	private static VertexArray label_vao;
+	private static Buffer label_vbo;
+	private static FloatBuffer label_buffer;
 	private static Renderer label_bake;
 	private static GlyphTexture glyphs;
 	
@@ -75,51 +76,74 @@ public class TextLabelTexture {
 		return buffer;
 	}
 	
-	public static void initialize(Window _window, GlyphTexture _glyphs, Shader single_texture_shader) {
+	public static Shader getDefaultShader() {
+		return label_draw_shader;
+	}
+	
+	public static void initialize(Window _window, GlyphTexture _glyphs) {
 		glyphs = _glyphs;
-		label_draw_shader = single_texture_shader;
+		label_draw_shader = Shader.singleTextureShader();
 		label_bake_shader = Shader.multiTextureShader();
-		label_draw = new Renderer();
 		label_bake = new Renderer();
 		drawQueue = new ArrayList<QueueData>();
 		window = _window;
+
+		label_vao = new VertexArray();
+		label_buffer = BufferUtils.createFloatBuffer(VertexData.componentCount * 6);
+		label_vbo = new Buffer(label_buffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount, GL15.GL_DYNAMIC_DRAW);
+		GL20.glEnableVertexAttribArray(0);
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribPos);
+		GL20.glEnableVertexAttribArray(1);
+		GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribUV);
+		GL20.glEnableVertexAttribArray(2);
+		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribTex);
+		GL20.glEnableVertexAttribArray(3);
+		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribCol);
 	}
 	
 	public void delete() {
 		if (buffer != null) buffer.delete();
 	}
 	
-	public void queueDraw(vec3 pos, vec2 size) {
-		queueDraw(pos, size, Colors.WHITE);
-	}
-	
-	public static void drawQueue() {
-		//label_draw_shader.enable();
+	public static void drawQueue(boolean useDefaultShader) {
+		if (useDefaultShader) label_draw_shader.enable();
 		for (QueueData qd : drawQueue) {
 			qd.size.x *= qd.aspect;
-			qd.pos.z += 0.1f;
+			qd.pos.z += 0.001f;
 			
-			label_draw.clear();
-			label_draw.quads.submit(qd.pos, qd.size, 0, qd.color);
-			label_draw.quads.draw(qd.tex);
+			label_buffer.put(new VertexData(qd.pos.x, qd.pos.y, qd.pos.z, 							0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			label_buffer.put(new VertexData(qd.pos.x, qd.pos.y + qd.size.y, qd.pos.z, 				0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			label_buffer.put(new VertexData(qd.pos.x + qd.size.x, qd.pos.y + qd.size.y, qd.pos.z, 	1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			
+			label_buffer.put(new VertexData(qd.pos.x, qd.pos.y, qd.pos.z, 							0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			label_buffer.put(new VertexData(qd.pos.x + qd.size.x, qd.pos.y + qd.size.y, qd.pos.z, 	1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			label_buffer.put(new VertexData(qd.pos.x + qd.size.x, qd.pos.y, qd.pos.z, 				1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f).get());
+			label_buffer.flip();
+			label_vbo.setBufferData(label_buffer, VertexData.componentCount);
+			
+			GL13.glActiveTexture(GL13.GL_TEXTURE0);
+			qd.tex.bind();
+			label_vao.bind();
+			GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 6);
+			label_buffer.clear();
 		}
 		drawQueue = new ArrayList<QueueData>();
 	}
 	
-	public void queueDraw(vec3 pos, vec2 size, vec4 color) {
-		drawQueue.add(new QueueData(new vec3(pos), new vec2(size), new vec4(color), textAspect, buffer.getTexture()));
+	public void queueDraw(vec3 pos, vec2 size) {
+		drawQueue.add(new QueueData(new vec3(pos), new vec2(size), framebufferAspect, buffer.getTexture()));
 	}
 	
-	public void queueDrawCentered(vec3 pos, vec2 size, vec4 color) {
+	public void queueDrawCentered(vec3 pos, vec2 size) {
 		pos.x -= size.x * textAspect / 2.0f;
 		pos.y -= size.y / 2.0f;
-		queueDraw(new vec3(pos.x, pos.y, pos.z), size, color);
+		queueDraw(new vec3(pos.x, pos.y, pos.z), size);
 	}
 	
 	public TextLabelTexture rebake(String text, GlyphTexture glyphs) {
 		if (text.equals(current_text)) return this; //No rebaking if new text is going to be the same
 		
-		delete();
+		//No need to generate new framebuffer
 		stringToTextureOpenGL(this, text, glyphs);
 		return this;
 	}
@@ -163,12 +187,31 @@ public class TextLabelTexture {
 			stringBuilder.append(c);
 			drawData.drawData.add(new TextDrawData.CharColorPair(c, curColor));
 		}
-		drawData.text = stringBuilder.toString();
 		return drawData;
 	}
 	
 	private static void resetViewPort() {
 		window.viewport();
+	}
+	
+	private Framebuffer generateFramebuffer(String text, GlyphTexture glyphs, int minWidth, int minHeight) {
+		TextDrawData drawData = textToDrawData(text);
+		
+		int framebuffer_width = 0;
+		int framebuffer_height = glyphs.getHeight();
+		for (TextDrawData.CharColorPair cp : drawData.drawData) {
+			framebuffer_width += glyphs.getGlyphData(cp.character).advance;
+		}
+		textAspect = (float)framebuffer_width / (float)framebuffer_height;
+		
+		if (framebuffer_height <= 0) framebuffer_height = 1; // no div by 0
+		if (framebuffer_width <= minWidth) framebuffer_width = minWidth;
+		if (framebuffer_height <= minHeight) framebuffer_height = minHeight;
+		framebufferAspect = (float)framebuffer_width / (float)framebuffer_height;
+		
+		//Framebuffer stuff
+		buffer = Framebuffer.createFramebuffer(framebuffer_width, framebuffer_height);
+		return buffer;
 	}
 	
 	/**
@@ -179,46 +222,30 @@ public class TextLabelTexture {
 		label.current_text = text;
 		TextDrawData drawData = textToDrawData(text);
 		
-		//Get final framebuffer metrics
-		int framebuffer_width = 0;
-		int framebuffer_height = glyphs.getTopToBottomHeight();
-		for (TextDrawData.CharColorPair cp : drawData.drawData) {
-			framebuffer_width += glyphs.getGlyphData(cp.character).advance;
-		}
-		label.textAspect = (float)framebuffer_width / (float)framebuffer_height;
-		//Logger.debug(framebuffer_width + " * " + framebuffer_height);
-		
-		//Framebuffer stuff
-		label.buffer = Framebuffer.createFramebuffer(framebuffer_width, framebuffer_height);
 		label.buffer.bind();
-		mat4 bakeMatrix = new mat4().ortho(0.0f, framebuffer_width, framebuffer_height, 0.0f);
+		mat4 bakeMatrix = new mat4().ortho(0.0f, label.getFramebuffer().getWidth(), 0.0f, label.getFramebuffer().getHeight());
 		label_bake_shader.setUniformMat4("pr_matrix", bakeMatrix);
 		
 		//Clear framebuffer (background)
-		label.buffer.clear(0.0f, 0.0f, 0.0f, 0.2f);
+		//label.buffer.clear(1.0f, 0.0f, 0.5f, 1.0f); //pink
+		label.buffer.clear(0.0f, 0.0f, 0.0f, 0.0f); //transparent
 		
 		//Draw submits
 		float xDelta = 0.0f;
-		float baseline = -glyphs.getHeight();
 		label_bake.clear();
-		//label_bake.quads.submit(new vec3(-10.0f), new vec2(framebuffer_width * 2, framebuffer_height * 2), 0, Colors.ORANGE);
 		for (TextDrawData.CharColorPair cp : drawData.drawData) {
 			Glyph glyph = glyphs.getGlyphData(cp.character);
-			float yDelta = glyph.y;
-			//label_bake.quads.submitVertex(new VertexData(new vec3(xDelta, yDelta, 0.0f), 						 					new vec2(0.0f, 0.0f), glyph.textureId, cp.color));
-			//label_bake.quads.submitVertex(new VertexData(new vec3(xDelta, yDelta + glyphs.getHeight(), 0.0f), 				 		new vec2(0.0f, 1.0f), glyph.textureId, cp.color));
-			//label_bake.quads.submitVertex(new VertexData(new vec3(xDelta + glyphs.getWidth(), yDelta + glyphs.getHeight(), 0.0f), 	new vec2(1.0f, 1.0f), glyph.textureId, cp.color));
-			//label_bake.quads.submitVertex(new VertexData(new vec3(xDelta + glyphs.getWidth(), yDelta, 0.0f), 		 				new vec2(1.0f, 0.0f), glyph.textureId, cp.color));
-			label_bake.quads.submit(new vec3(xDelta, yDelta + baseline, 0.0f), new vec2(glyphs.getWidth(), glyphs.getHeight()), glyph.textureId, cp.color);
+			//float yDelta = glyph.y;
+			label_bake.quads.submit(new vec3(xDelta, glyphs.getHeight(), 0.0f), new vec2(glyphs.getWidth(), -glyphs.getHeight()), glyph.textureId, cp.color);
 			xDelta += glyph.advance;
 		}
 		
 		//Drawing
 		label_bake_shader.enable();
-		label_bake_shader.setUniform1i("usetex", 1);
 		Texture tex = glyphs.getTexture();
+		label_bake_shader.setUniform1i("usetex", 1);
 		label_bake.quads.draw(tex);
-		Framebuffer.unbind();
+		label.buffer.unbind();
 		
 		resetViewPort();
 		//Debug.printElapsedMS();
@@ -253,8 +280,32 @@ public class TextLabelTexture {
 	}
 	*/
 	
+	/**
+	 * Default min-width is 50 characters
+	 * */
 	public static TextLabelTexture bakeToTexture(String text, GlyphTexture glyphs) {
 		TextLabelTexture label = new TextLabelTexture();
+		label.generateFramebuffer(text, glyphs, glyphs.getWidth() * 50, 1);
+		stringToTextureOpenGL(label, text, glyphs);
+		return label;
+	}
+
+	/**
+	 * Default min-width is 50 characters
+	 * */
+	public static TextLabelTexture bakeToTexture(String text, int minWidth) {
+		TextLabelTexture label = new TextLabelTexture();
+		label.generateFramebuffer(text, glyphs, minWidth, 1);
+		stringToTextureOpenGL(label, text, glyphs);
+		return label;
+	}
+
+	/**
+	 * Default min-width is 50 characters
+	 * */
+	public static TextLabelTexture bakeToTexture(String text, GlyphTexture glyphs, int minWidth) {
+		TextLabelTexture label = new TextLabelTexture();
+		label.generateFramebuffer(text, glyphs, minWidth, 1);
 		stringToTextureOpenGL(label, text, glyphs);
 		return label;
 	}

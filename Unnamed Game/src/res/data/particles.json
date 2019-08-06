@@ -10,7 +10,7 @@
 			"name": "Swing",
         	"data_name": "swing",
 			"texture": "/res/texture/particle/swing.png",
-			"life_time": 0.2
+			"life_time": 0.05
 		}
 	]
 }

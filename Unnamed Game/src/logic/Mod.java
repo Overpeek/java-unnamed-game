@@ -5,6 +5,7 @@ import graphics.Renderer;
 public abstract class Mod {
 	
 	public abstract String getName();
+	public abstract String getDataName();
 	public abstract String getVersion();
 	public abstract String getCreator();
 	

@@ -25,30 +25,34 @@ public class TriangleRenderer implements GenericRenderer {
 	
 	private boolean buffer_mapped;
 
+
+	
+	public int getPrimitiveCount() {
+		return vertex_count / 3;
+	}
 	
 	public TriangleRenderer() {
-		FloatBuffer arrayBuffer = BufferUtils.createFloatBuffer(MAX_VERTICES * VertexData.componentCount());
+		arrayBuffer = BufferUtils.createFloatBuffer(MAX_VERTICES * VertexData.componentCount);
 		buffer_mapped = false;
 		vertex_count = 0;
 		
 		vertexArray = new VertexArray();
-		arrayBufferObject = new Buffer(arrayBuffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
-		
+		arrayBufferObject = new Buffer(arrayBuffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount, GL15.GL_DYNAMIC_DRAW);
+
 		GL20.glEnableVertexAttribArray(0);
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribPos());
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribPos);
 		GL20.glEnableVertexAttribArray(1);
-		GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribUV());
+		GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribUV);
 		GL20.glEnableVertexAttribArray(2);
-		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribTex());
+		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribTex);
 		GL20.glEnableVertexAttribArray(3);
-		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribCol());
+		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribCol);
 
 	}
 
 	@Override
 	public void begin() {
 		arrayBuffer = arrayBufferObject.mapBuffer().asFloatBuffer();
-		arrayBuffer.clear();
 		buffer_mapped = true;
 	}
 
@@ -76,6 +80,7 @@ public class TriangleRenderer implements GenericRenderer {
 	@Override
 	public void clear() {
 		vertex_count = 0;
+		arrayBuffer.clear();
 	}
 
 	@Override
@@ -99,6 +104,11 @@ public class TriangleRenderer implements GenericRenderer {
 		
 		//Actual drawing
 		GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, vertex_count);
+	}
+
+	@Override
+	public void draw() {
+		draw(0, 0);
 	}
 
 }

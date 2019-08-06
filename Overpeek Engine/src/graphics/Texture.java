@@ -79,8 +79,8 @@ public class Texture {
     	returned.depth = 1;
 		GL11.glBindTexture(type, returned.texture);
 
-		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_BORDER);
-		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_BORDER);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_S, GL13.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(type, GL11.GL_TEXTURE_WRAP_T, GL13.GL_CLAMP_TO_EDGE);
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(type, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
@@ -231,7 +231,7 @@ public class Texture {
     	return returned;
     }
 
-    public static Texture loadTextureAtlas(int r, int rows, int cols, String path) {
+    public static Texture loadTextureAtlas(int r, int rows, int cols, int count, String path) {
     	Texture returned = new Texture();
     	returned.type = GL30.GL_TEXTURE_2D_ARRAY;
     	
@@ -241,7 +241,7 @@ public class Texture {
 			
 			int dataSize = 4 * r * r * 256;
 			ByteBuffer data = ByteBuffer.allocateDirect(dataSize);
-			for (int i = 0; i < 256; i++) {
+			for (int i = 0; i < count; i++) {
 				for (int y = 0; y < r; y++) {
 					for (int x = 0; x < r; x++) {
 						int xInInput = (i % rows) * r + x;

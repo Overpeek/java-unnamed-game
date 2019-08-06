@@ -1,25 +1,26 @@
-import org.joml.vec2;
-import org.joml.vec3;
+package mod;
 
-import graphics.Renderer;
-import graphics.VertexData;
-import logic.Database;
-import logic.Mod;
-import logic.TextureLoader;
-import utility.Colors;
-import utility.DataIO;
-import utility.Logger;
+import org.json.JSONObject;
+
+import graphics.*;
+import logic.*;
+import utility.*;
 
 public class Main extends Mod {
 	
-	int texture = 0;
-	float time = 0.0f;
-
+	private int texture = 0;
+	private float time = 0.0f;
+	
 	@Override
 	public void setup() { //This method is called right after this mod has been loaded
 		//Logger.debug(getName() + " Setup");
 		texture = TextureLoader.load("res/mods/test.png");
 		Database.loadItem(new Database.Item_Data("Template item", "moditem", texture, texture, 99, 0.0f, 0.0f, 0.0f, 0));
+		
+		//Insert TestModCreature into database
+		Class<?> clazz = TestModCreature.class;
+		JSONObject creature_data = DataIO.loadJSONObject("testmodcreature.json");
+		Database.loadCreature(creature_data, clazz);
 	}
 
 	@Override

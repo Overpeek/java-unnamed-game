@@ -51,7 +51,7 @@ public:
 
 	void renderBlur(oe::Renderer *renderer_blurred);
 	void renderNoBlur(oe::Renderer *renderer);
-	void update(float divider);
+	void update(float ups);
 	void keyPress(int key, int action);
 	void addChatLine(std::string text);
 

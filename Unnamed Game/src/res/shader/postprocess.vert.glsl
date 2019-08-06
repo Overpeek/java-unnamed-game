@@ -15,7 +15,7 @@ uniform mat4 pr_matrix;
 void main()
 {
 	gl_Position = pr_matrix * vec4(vertex_pos.x, vertex_pos.y, vertex_pos.z, 1.0f);
-	shader_uv = texture_uv;
+	shader_uv = vec2(texture_uv.x, 1.0 - texture_uv.y);
 	shader_id = int(floor(texture_id));
 	shader_color = vertex_color;
 }

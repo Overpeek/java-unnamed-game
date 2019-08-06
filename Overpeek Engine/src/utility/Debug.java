@@ -15,11 +15,14 @@ public class Debug {
 	
 	public static void debugFreeze(Window window, GameLoop loop) {
 		while(true) {
-			if (window.shouldClose()) System.exit(0);
-			if (window.key(Keys.KEY_ESCAPE)) return;
+			if (window != null && loop != null) {
+				if (window.shouldClose()) System.exit(0);
+				window.input();
+				if (window.key(Keys.KEY_ESCAPE)) return;
+				Logger.debug("press ESC to continue");
+			}
 
-			Logger.debug("FROZEN FOR DEBUG: press esc to continue");
-			window.input();
+			Logger.debug("DEBUG FROZEN");
 		}
 	}
 	

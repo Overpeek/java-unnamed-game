@@ -3,7 +3,7 @@
 		{
 			"name": "Ocean",
         	"data_name": "ocean",
-			"height": 0.5,
+			"height": 0.45,
 			"height_map": [
 				{
 					"height": 0.8,
@@ -54,7 +54,7 @@
 		{
 			"name": "Default",
         	"data_name": "default",
-			"height": 0.75,
+			"height": 0.6,
 			"height_map": [
 				{
 					"height": 0.05,
@@ -86,7 +86,7 @@
 		{
 			"name": "Spruce Forest",
         	"data_name": "forest0",
-			"height": 0.75,
+			"height": 0.7,
 			"height_map": [
 				{
 					"height": 0.05,
@@ -122,7 +122,7 @@
 		{
 			"name": "Birch Forest",
         	"data_name": "forest1",
-			"height": 0.75,
+			"height": 0.7,
 			"height_map": [
 				{
 					"height": 0.05,
@@ -165,12 +165,12 @@
 					"tile": "gravel",
 					"objects": [
 						{
-							"object": "grass",
-							"rarity": "0.5"
+							"object": "stonewall",
+							"rarity": "0.0"
 						},
 						{
-							"object": "birch",
-							"rarity": "0.5"
+							"object": "air",
+							"rarity": "0.3"
 						}
 					]
 				}

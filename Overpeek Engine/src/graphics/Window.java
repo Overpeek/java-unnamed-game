@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 import org.lwjgl.Version;
+import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -115,7 +116,20 @@ public class Window {
 		active_Application = app;
 	}
 	
+	
+	
+	
+	GLFWCharCallback character = new GLFWCharCallback() {
+
+		@Override
+		public void invoke(long window, int character) {
+			if (active_Application != null) active_Application.charCallback((char)character);
+		}
+		
+	};
+	
 	GLFWKeyCallback key = new GLFWKeyCallback() {
+		
 		@Override
 		public void invoke(long window, int key, int scancode, int action, int mods)
 	    {
@@ -128,9 +142,11 @@ public class Window {
 			if (action == GLFW_PRESS) { keys[key] = true; singleKeys[key] = true; }
 			if (action == GLFW_RELEASE) { keys[key] = false; }
 	    }
+		
 	};
 	
 	GLFWMouseButtonCallback button = new GLFWMouseButtonCallback() {
+		
 		@Override
 		public void invoke(long window, int button, int action, int mods)
 	    {
@@ -147,9 +163,11 @@ public class Window {
 				b.checkPressed(cursorX, cursorY, button);
 			}
 	    }
+		
 	};
 	
 	GLFWCursorPosCallback cursor = new GLFWCursorPosCallback() {
+		
 		@Override
 		public void invoke(long window, double xpos, double ypos)
 	    {			
@@ -158,6 +176,7 @@ public class Window {
 			
 			if (active_Application != null) active_Application.mousePos((float) cursorX, (float) cursorY);
 	    }
+		
 	};
 	
 	GLFWFramebufferSizeCallback resize = new GLFWFramebufferSizeCallback() {
@@ -171,6 +190,7 @@ public class Window {
 			height = _height;
 			//System.out.println("Width: " + width + ", Height: " + height);
 	    }
+		
 	};
 	
 	GLFWScrollCallback scroll = new GLFWScrollCallback() {
@@ -264,6 +284,7 @@ public class Window {
 		glfwSetFramebufferSizeCallback(window, resize);
 		glfwSetCursorPosCallback(window, cursor);
 		glfwSetScrollCallback(window, scroll);
+		glfwSetCharCallback(window, character);
 		
 		//OpenGL
 		GL.createCapabilities();
@@ -284,6 +305,7 @@ public class Window {
 		
 		defaultRenderer = new Renderer();
 		button_objects = new ArrayList<Button>();
+		Shader.setActiveWindow(this);
 	}
 	
 	public void unhide() {
@@ -317,15 +339,29 @@ public class Window {
 	public void clear(vec4 c) {
 		glClearColor(c.x, c.y, c.z, c.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		clearColor(c);
+		resetClearColor();
 		defaultRenderer.clear();
 	}
 	
 	public void clear(float r, float g, float b, float a) {
 		glClearColor(r, g, b, a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		clearColor(r, g, b, a);
+		resetClearColor();
 		defaultRenderer.clear();
+	}
+	
+	public void clearColor(vec4 c) {
+		glClearColor(c.x, c.y, c.z, c.w);
+		clearColor = c;
+	}
+	
+	public void clearColor(float r, float g, float b, float a) {
+		glClearColor(r, g, b, a);
+		clearColor = new vec4(r, g, b, a);
+	}
+	
+	private void resetClearColor() {
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 	}
 	
 	public void input() {
@@ -344,7 +380,7 @@ public class Window {
 		drawButtons();
 		defaultRenderer.draw(0, 0);
 		
-		if (debug_mode) checkGLErrors();
+		if (debug_mode) checkGLErrors(true);
 		glfwSwapBuffers(window);
 	}
 	
@@ -363,7 +399,7 @@ public class Window {
 		glfwSetWindowPos(window, (int)pos.x, (int)pos.y);
 	}
 	
-	public void checkGLErrors() {
+	public void checkGLErrors(boolean closeIfError) {
 		int err = glGetError();
 		if (err != 0) {
 			String errorText;
@@ -391,16 +427,11 @@ public class Window {
 				errorText = "Unknown error!";
 				break;
 			}
-			Logger.out("OpenGL: " + err + " -- " + errorText, Logger.type.ERROR);
+			if (closeIfError)
+				Logger.error("OpenGL: " + err + " -- " + errorText);
+			else
+				Logger.crit("OpenGL: " + err + " -- " + errorText);
 		}
-	}
-	
-	public void clearColor(vec4 c) {
-		clearColor = c;
-	}
-	
-	public void clearColor(float r, float g, float b, float a) {
-		clearColor = new vec4(r, g, b, a);
 	}
 	
 	public void setSwapInterval(int interval) {
@@ -444,6 +475,10 @@ public class Window {
 	
 	public String getRenderer() {
 		return glGetString(GL_RENDERER);
+	}
+	
+	public String getGL() {
+		return glGetString(GL11.GL_VERSION);
 	}
 	
 	public String getLWJGL() {

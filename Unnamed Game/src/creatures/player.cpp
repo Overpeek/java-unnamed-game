@@ -17,13 +17,13 @@ Player::Player(float x, float y, Inventory *inv) : Creature(x, y, 0, false) {
 	m_death_y = -1;
 }
 
-void Player::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale) {
-	Creature::submitToRenderer(renderer, renderOffsetX, renderOffsetY, corrector, Game::renderScale());
+void Player::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float preupdate_scale, float renderScale) {
+	Creature::submitToRenderer(renderer, renderOffsetX, renderOffsetY, preupdate_scale, Game::renderScale());
 
 	if (m_death_x != -1) {
 
-		float renderDeathX = oe::clamp((m_death_x - (getX() + vel_x * corrector/ UPDATES_PER_SECOND)) * TILE_SIZE, -Game::getWindow()->getAspect(), Game::getWindow()->getAspect() - 0.1f);
-		float renderDeathY = oe::clamp((m_death_y - (getY() + vel_y * corrector/ UPDATES_PER_SECOND)) * TILE_SIZE, -1.0f, 1.0f - 0.1f);
+		float renderDeathX = oe::clamp((m_death_x - (getX() + vel_x * preupdate_scale/ UPDATES_PER_SECOND)) * TILE_SIZE, -Game::getWindow()->getAspect(), Game::getWindow()->getAspect() - 0.1f);
+		float renderDeathY = oe::clamp((m_death_y - (getY() + vel_y * preupdate_scale/ UPDATES_PER_SECOND)) * TILE_SIZE, -1.0f, 1.0f - 0.1f);
 
 		glm::vec3 pos = glm::vec3(renderDeathX, renderDeathY, 0.0f);
 		glm::vec2 size = glm::vec2(TILE_SIZE) * Game::renderScale();
@@ -49,12 +49,12 @@ void Player::submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float
 		if (x_dst + y_dst < m_hitdist) {
 			Game::getMap()->renderGhostObject(
 				renderer, 
-				getX() + vel_x * corrector / UPDATES_PER_SECOND + mx, 
-				getY() + vel_y * corrector / UPDATES_PER_SECOND + my, 
+				getX() + vel_x * preupdate_scale / UPDATES_PER_SECOND + mx, 
+				getY() + vel_y * preupdate_scale / UPDATES_PER_SECOND + my, 
 				Database::items[inventory->selectedId].placedAs, 
-				-getX() - vel_x * corrector / UPDATES_PER_SECOND,
-				-getY() - vel_y * corrector / UPDATES_PER_SECOND,
-				corrector
+				-getX() - vel_x * preupdate_scale / UPDATES_PER_SECOND,
+				-getY() - vel_y * preupdate_scale / UPDATES_PER_SECOND,
+				preupdate_scale
 			);
 		}
 	}
@@ -87,7 +87,7 @@ void Player::getSpawnPoint(int &x, int &y) {
 	y = m_spawn_location_y;
 }
 
-void Player::update(float divider) {
+void Player::update(float ups) {
 #if USE_MOUSE
 	double mx, my;
 	Game::getWindow()->getMousePos(mx, my);
@@ -128,11 +128,11 @@ void Player::update(float divider) {
 		return;
 	}
 
-	Creature::update(0, divider);
+	Creature::update(0, ups);
 }
 
-void Player::collide(float divider) {
-	if (!m_no_clip) Creature::collide(divider);
+void Player::collide(float ups) {
+	if (!m_no_clip) Creature::collide(ups);
 }
 
 void Player::hit() {

@@ -43,10 +43,10 @@ public:
 
 	Creature(float x, float y, int id, bool item);
 
-	virtual void update(int index, float divider);
-	virtual void ai(float divider) = 0;
-	virtual void collide(float divider);
-	virtual void submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale);
+	virtual void update(int index, float ups);
+	virtual void ai(float ups) = 0;
+	virtual void collide(float ups);
+	virtual void submitToRenderer(oe::Renderer *renderer, float renderOffsetX, float renderOffsetY, float preupdate_scale, float renderScale);
 	virtual void hit(float damageadd, float kbadd);
 	virtual void die();
 	

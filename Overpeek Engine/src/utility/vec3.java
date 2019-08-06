@@ -52,6 +52,14 @@ public class vec3 {
 		return this;
 	}
 	
+	public vec3 addNew(vec3 other) {
+		return new vec3(this.x + other.x, this.y + other.y, this.z + other.z);
+	}
+	
+	public vec3 addNew(float x, float y, float z) {
+		return new vec3(this.x + x, this.y + y, this.z + z);
+	}
+	
 	public vec3 mult(vec3 other) {
 		this.x *= other.x;
 		this.y *= other.y;
@@ -73,9 +81,25 @@ public class vec3 {
 		return this;
 	}
 	
+	public vec3 multNew(vec3 other) {
+		return new vec3(this.x * other.x, this.y * other.y, this.z * other.z);
+	}
+	
+	public vec3 multNew(float x, float y, float z) {
+		return new vec3(this.x * x, this.y * y, this.z * z);
+	}
+	
+	public vec3 multNew(float val) {
+		return new vec3(this.x * val, this.y * val, this.z * val);
+	}
+	
+	public vec2 vec2() {
+		return new vec2(x, y);
+	}
+	
 	@Override
 	public String toString() {
-		return "(" + x + ", " + y + ", " + z + ")";
+		return "vec3[" + x + "," + y + "," + z + "]";
 	}
 	
 }

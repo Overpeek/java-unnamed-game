@@ -13,6 +13,11 @@ public class mat4 {
 		matrix = new Matrix4f();
 	}
 	
+	public mat4 move(vec3 by) {
+		matrix = matrix.translate(by.x, by.y, by.z);
+		return this;
+	}
+	
 	public mat4 rotateX(float x) {
 		matrix = matrix.rotateX(x);
 		return this;

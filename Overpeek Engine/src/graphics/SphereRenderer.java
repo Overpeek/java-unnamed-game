@@ -9,6 +9,12 @@ public class SphereRenderer {
 	private LineRenderer outline_renderer;
 	private TriangleRenderer fill_renderer;
 	
+
+	
+	public int getPrimitiveCount() {
+		return outline_renderer.getPrimitiveCount() + fill_renderer.getPrimitiveCount();
+	}
+	
 	public SphereRenderer() {
 		outline_renderer = new LineRenderer();
 		fill_renderer = new TriangleRenderer();
@@ -63,6 +69,10 @@ public class SphereRenderer {
 	public void draw(int texture, int textureType) {
 		outline_renderer.draw(texture, textureType);
 		fill_renderer.draw(texture, textureType);
+	}
+
+	public void draw() {
+		draw(0, 0);
 	}
 
 }

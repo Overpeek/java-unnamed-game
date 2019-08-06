@@ -37,4 +37,11 @@ public class Maths {
 		return value;
 	}
 	
+	public static boolean isInRange(float value, float min, float max) {
+		if (value == clamp(value, min, max))
+			return true;
+		
+		return false;
+	}
+	
 }

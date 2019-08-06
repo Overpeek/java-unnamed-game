@@ -25,22 +25,27 @@ public class PointRenderer implements GenericRenderer {
 	private boolean buffer_mapped;
 
 	
+
+	public int getPrimitiveCount() {
+		return vertex_count;
+	}
+	
 	public PointRenderer() {
-		FloatBuffer arrayBuffer = BufferUtils.createFloatBuffer(MAX_POINTS * VertexData.componentCount());
+		arrayBuffer = BufferUtils.createFloatBuffer(MAX_POINTS * VertexData.componentCount);
 		buffer_mapped = false;
 		vertex_count = 0;
 		
 		vertexArray = new VertexArray();
-		arrayBufferObject = new Buffer(arrayBuffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount(), GL15.GL_DYNAMIC_DRAW);
-		
+		arrayBufferObject = new Buffer(arrayBuffer, GL20.GL_ARRAY_BUFFER, VertexData.componentCount, GL15.GL_DYNAMIC_DRAW);
+
 		GL20.glEnableVertexAttribArray(0);
-		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribPos());
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribPos);
 		GL20.glEnableVertexAttribArray(1);
-		GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribUV());
+		GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribUV);
 		GL20.glEnableVertexAttribArray(2);
-		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribTex());
+		GL20.glVertexAttribPointer(2, 1, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribTex);
 		GL20.glEnableVertexAttribArray(3);
-		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof(), VertexData.attribCol());
+		GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, VertexData.sizeof, VertexData.attribCol);
 
 	}
 
@@ -72,6 +77,7 @@ public class PointRenderer implements GenericRenderer {
 
 	@Override
 	public void clear() {
+		arrayBuffer.clear();
 		vertex_count = 0;
 	}
 
@@ -96,6 +102,11 @@ public class PointRenderer implements GenericRenderer {
 		
 		//Actual drawing
 		GL11.glDrawArrays(GL11.GL_POINTS, 0, vertex_count);
+	}
+
+	@Override
+	public void draw() {
+		draw(0, 0);
 	}
 	
 }

@@ -29,7 +29,7 @@ public class VertexData {
 	}
 	
 	public float[] get() {
-		float arr[] = new float[componentCount()];
+		float arr[] = new float[componentCount];
 		arr[0] = x;
 		arr[1] = y;
 		arr[2] = z;
@@ -43,27 +43,15 @@ public class VertexData {
 		return arr;
 	}
 
-	static int sizeof() {
-		return 10 * 4;
-	}
+	public static final int componentCount = 	10;
 
-	static int componentCount() {
-		return 10;
-	}
+	public static final int sizeof = componentCount * 4;
 
-	static int attribPos() {
-		return 0 * 4;
-	}
+	public static final int attribPos = 		0 * 4;
 
-	static int attribUV() {
-		return 3 * 4;
-	}
+	public static final int attribUV = 			3 * 4;
 
-	static int attribTex() {
-		return 5 * 4;
-	}
+	public static final int attribTex = 		5 * 4;
 
-	static int attribCol() {
-		return 6 * 4;
-	}
+	public static final int attribCol = 		6 * 4;
 }

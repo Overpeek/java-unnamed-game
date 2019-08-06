@@ -45,7 +45,7 @@ public class Main extends Application {
 
 	int n = 0;
 	@Override
-	public void render(float corrector) {
+	public void render(float preupdate_scale) {
 		renderer.spheres.clear();
 		renderer.points.clear();
 		renderer.lines.clear();

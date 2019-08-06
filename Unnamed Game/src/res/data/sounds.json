@@ -1,14 +1,17 @@
 {
 	"sounds": [
 		{
+			"name": "Collect Item",
 			"data_name": "collect",
 			"audio": "/res/audio/collect.ogg"
 		},
 		{
+			"name": "Hit",
 			"data_name": "hit",
 			"audio": "/res/audio/hit.ogg"
 		},
 		{
+			"name": "Swing",
 			"data_name": "swing",
 			"audio": "/res/audio/swing.ogg"
 		}

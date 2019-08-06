@@ -8,7 +8,7 @@ import utility.vec3;
 
 public class Inventory {
 
-	private int itemIds[][] = new int[Settings.INVENTORY_WIDTH][Settings.INVENTORY_HEIGHT + 1];
+	private String itemIds[][] = new String[Settings.INVENTORY_WIDTH][Settings.INVENTORY_HEIGHT + 1];
 	private int itemCounts[][] = new int[Settings.INVENTORY_WIDTH][Settings.INVENTORY_HEIGHT + 1];
 	private int selectedSlot = 0;
 	private boolean visible = false;
@@ -22,7 +22,7 @@ public class Inventory {
 		{
 			for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
 			{
-				itemIds[x][y] = 0;
+				itemIds[x][y] = null;
 				itemCounts[x][y] = 0;
 			}
 		}
@@ -145,7 +145,7 @@ public class Inventory {
 		{
 			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
 			{
-				itemIds[x][y] = 0;
+				itemIds[x][y] = null;
 				itemCounts[x][y] = 0;
 			}
 		}
@@ -156,16 +156,16 @@ public class Inventory {
 
 		//oe::Logger::out(m_itemCounts[int(selectedSlot)][0]);
 
-		if (itemCounts[(int)getSelectedSlot()][0] <= 0) itemIds[(int)getSelectedSlot()][0] = 0;
+		if (itemCounts[(int)getSelectedSlot()][0] <= 0) itemIds[(int)getSelectedSlot()][0] = null;
 	}
 
-	public boolean addItem(int id, int n) {
+	public boolean addItem(String id, int n) {
 		for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
 		{
 			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
 			{
 				//oe::Logger::out("inv ", n);
-				if (itemIds[x][y] == 0 || itemIds[x][y] == id) {
+				if (itemIds[x][y] == null || itemIds[x][y] == id) {
 					itemIds[x][y] = id;
 					itemCounts[x][y] += n;
 					if (itemCounts[x][y] + n >= Database.getItem(id).stack_size) {
@@ -189,7 +189,7 @@ public class Inventory {
 		{
 			for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
 			{
-				if (itemIds[x][y] != 0) {
+				if (itemIds[x][y] != null) {
 					dropItem(x, y, -1);
 				}
 			}
@@ -203,7 +203,7 @@ public class Inventory {
 				Main.game.getMap().itemDrop(Main.game.getPlayer().getPos().x, Main.game.getPlayer().getPos().y, itemIds[x][y]);
 			}
 			itemCounts[x][y] = 0;
-			itemIds[x][y] = 0;
+			itemIds[x][y] = null;
 		}
 		for (int count = 0; count < n; count++)
 		{
@@ -213,11 +213,11 @@ public class Inventory {
 				itemCounts[x][y]--;
 
 				if (itemCounts[x][y] <= 0) {
-					itemIds[x][y] = 0;
+					itemIds[x][y] = null;
 					break;
 				}
 			}
-			itemIds[x][y] = 0;
+			itemIds[x][y] = null;
 			break;
 		}
 	}

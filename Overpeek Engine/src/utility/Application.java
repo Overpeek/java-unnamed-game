@@ -9,7 +9,7 @@ public abstract class Application {
 
 	public abstract void update();
 	
-	public abstract void render(float corrector);
+	public abstract void render(float preupdate_scale);
 	
 	public abstract void cleanup();
 	

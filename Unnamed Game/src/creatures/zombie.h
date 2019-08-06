@@ -25,13 +25,13 @@ private:
 	int m_stuck_timer;
 
 private:
-	void followTarget(float divider);
+	void followTarget(float ups);
 
 public:
 	Zombie(float x, float y);
 
-	void ai(float divider);
-	void update(int index, float divider);
-	void collide(float divider);
-	void submitToRenderer(oe::Renderer* renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale) override;
+	void ai(float ups);
+	void update(int index, float ups);
+	void collide(float ups);
+	void submitToRenderer(oe::Renderer* renderer, float renderOffsetX, float renderOffsetY, float preupdate_scale, float renderScale) override;
 };

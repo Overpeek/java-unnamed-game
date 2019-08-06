@@ -8,8 +8,12 @@ public class Renderer {
 	public LineRenderer lines;
 	public SphereRenderer spheres;
 	
+	public int getPrimitiveCount() {
+		return quads.getPrimitiveCount() + points.getPrimitiveCount() + triangles.getPrimitiveCount() + lines.getPrimitiveCount() + spheres.getPrimitiveCount();
+	}
+	
 	public Renderer() {
-		quads = new QuadRenderer();
+		quads = QuadRenderer.defaultQuads();
 		points = new PointRenderer();
 		triangles = new TriangleRenderer();
 		lines = new LineRenderer();
@@ -38,6 +42,14 @@ public class Renderer {
 		triangles.draw(texture, textureType);
 		lines.draw(texture, textureType);
 		spheres.draw(texture, textureType);
+	}
+
+	public void draw() {
+		quads.draw();
+		points.draw();
+		triangles.draw();
+		lines.draw();
+		spheres.draw();
 	}
 	
 }

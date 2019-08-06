@@ -8,21 +8,21 @@ import org.lwjgl.opengl.*;
 
 public class VertexArray {
 	
-	int id;
-	ArrayList<Buffer> buffers = new ArrayList<Buffer>();
+	private int id;
+	private ArrayList<Buffer> buffers = new ArrayList<Buffer>();
 
 	public VertexArray() {
 		id = GL30.glGenVertexArrays();
 		bind();
 	}
 
-	void addBuffer(Buffer buffer) {
+	public void addBuffer(Buffer buffer) {
 		bind();
 		buffer.bind();
 		buffers.add(buffer);
 	}
 
-	void addBuffer(Buffer buffer, int index) {
+	public void addBuffer(Buffer buffer, int index) {
 		bind();
 		buffer.bind();
 
@@ -31,15 +31,15 @@ public class VertexArray {
 		buffers.add(buffer);
 	}
 	
-	Buffer getBuffer(int index) {
+	public Buffer getBuffer(int index) {
 		return buffers.get(index);
 	}
 
-	void bind() {
+	public void bind() {
 		GL30.glBindVertexArray(id);
 	}
 
-	void unbind() {
+	public void unbind() {
 		GL30.glBindVertexArray(0);
 	}
 	

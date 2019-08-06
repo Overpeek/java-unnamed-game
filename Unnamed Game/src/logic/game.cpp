@@ -149,7 +149,7 @@ void Game::init() {
 void Game::rapidUpdate() {
 }
 
-void Game::render(float corrector) {
+void Game::render(float preupdate_scale) {
 	//return;
 	if (!m_window) return;
 	m_window->clear();
@@ -169,10 +169,10 @@ void Game::render(float corrector) {
 			}
 		}
 #else
-		m_map->submitToRenderer(m_worldrenderer.get(), -m_player->getX() - m_player->getVelX() * corrector / UPDATES_PER_SECOND, -m_player->getY() - m_player->getVelY() * corrector / UPDATES_PER_SECOND, corrector);
+		m_map->submitToRenderer(m_worldrenderer.get(), -m_player->getX() - m_player->getVelX() * preupdate_scale / UPDATES_PER_SECOND, -m_player->getY() - m_player->getVelY() * preupdate_scale / UPDATES_PER_SECOND, preupdate_scale);
 #endif
 
-		m_player->submitToRenderer(m_worldrenderer.get(), -m_player->getX() - m_player->getVelX() * corrector / UPDATES_PER_SECOND, -m_player->getY() - m_player->getVelY() * corrector / UPDATES_PER_SECOND, corrector, renderScale());
+		m_player->submitToRenderer(m_worldrenderer.get(), -m_player->getX() - m_player->getVelX() * preupdate_scale / UPDATES_PER_SECOND, -m_player->getY() - m_player->getVelY() * preupdate_scale / UPDATES_PER_SECOND, preupdate_scale, renderScale());
 		m_gui->renderBlur(m_worldrenderer.get());
 		m_inventory->render(m_worldrenderer.get());
 	}

@@ -61,7 +61,7 @@ public:
 	static bool mainMenu;
 
 	static void init();
-	static void render(float corrector);
+	static void render(float preupdate_scale);
 	static void update();
 	static void close();
 	static void rapidUpdate();

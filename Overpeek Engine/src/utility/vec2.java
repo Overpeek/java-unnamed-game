@@ -44,6 +44,14 @@ public class vec2 {
 		return this;
 	}
 	
+	public vec2 addNew(vec2 other) {
+		return new vec2(this.x + other.x, this.y + other.y);
+	}
+	
+	public vec2 addNew(float x, float y) {
+		return new vec2(this.x + x, this.y + y);
+	}
+	
 	public vec2 mult(vec2 other) {
 		this.x *= other.x;
 		this.y *= other.y;
@@ -62,13 +70,43 @@ public class vec2 {
 		return this;
 	}
 	
+	public vec2 multNew(vec2 other) {
+		return new vec2(this.x * other.x, this.y * other.y);
+	}
+	
+	public vec2 multNew(float x, float y) {
+		return new vec2(this.x * x, this.y * y);
+	}
+	
+	public vec2 multNew(float val) {
+		return new vec2(this.x * val, this.y * val);
+	}
+	
 	public vec2 negate() {
 		return mult(-1.0f);
 	}
 	
+	public vec2 negateNew() {
+		return multNew(-1.0f);
+	}
+	
+	public vec2 normalize() {
+		float len = length();
+		if (len <= 0) return null;
+		mult(1.0f / len);
+		return this;			
+	}
+	
+	public vec2 normalizeNew() {
+		float len = length();
+		if (len <= 0) return null;
+		
+		return new vec2(x, y).mult(1.0f / len);			
+	}
+	
 	@Override
 	public String toString() {
-		return "(" + x + ", " + y + ")";
+		return "vec2[" + x + "," + y + "]";
 	}
 	
 }

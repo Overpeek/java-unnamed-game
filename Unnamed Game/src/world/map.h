@@ -65,10 +65,10 @@ class Map {
 
 		void hit(int x, int y, short dmg);
 		int getObjectTexture(int x, int y);
-		void submitToRenderer(oe::Renderer *renderer, float offX, float offY, float corrector);
-		void renderGhostObject(oe::Renderer *renderer, float x, float y, int id, float offX, float offY, float corrector);
+		void submitToRenderer(oe::Renderer *renderer, float offX, float offY, float preupdate_scale);
+		void renderGhostObject(oe::Renderer *renderer, float x, float y, int id, float offX, float offY, float preupdate_scale);
 		void debugCeilCreatures();
-		void update(float divider);
+		void update(float ups);
 
 		std::string getName() { return m_name; }
 

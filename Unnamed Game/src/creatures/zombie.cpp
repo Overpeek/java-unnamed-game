@@ -20,20 +20,20 @@ Zombie::Zombie(float x, float y) : Creature::Creature(x, y, 1, false) {
 	m_check_player_cooldown = 0;
 }
 
-void Zombie::update(int index, float divider) {
-	Creature::update(index, divider);
+void Zombie::update(int index, float ups) {
+	Creature::update(index, ups);
 
 }
 
-void Zombie::collide(float divider) {
-	Creature::collide(divider);
+void Zombie::collide(float ups) {
+	Creature::collide(ups);
 
 }
 
-void Zombie::ai(float divider) {
-	m_untilnexttarget -= 1.0 / divider;
-	m_wait -= 1.0 / divider;
-	m_check_player_cooldown -= 1.0 / divider;
+void Zombie::ai(float ups) {
+	m_untilnexttarget -= 1.0 / ups;
+	m_wait -= 1.0 / ups;
+	m_check_player_cooldown -= 1.0 / ups;
 	
 	if (m_check_player_cooldown <= 0) {
 		m_check_player_cooldown = oe::Random::random(0, 1);
@@ -55,7 +55,7 @@ void Zombie::ai(float divider) {
 			setHeading(Creature::acc_x, Creature::acc_y);
 		}
 		else {
-			m_hit_cooldown += 1.0 / divider;
+			m_hit_cooldown += 1.0 / ups;
 			if (m_hit_cooldown > 0.5) {
 				m_hit_cooldown = 0;
 				hit(0, 0);
@@ -95,12 +95,12 @@ void Zombie::ai(float divider) {
 		m_path = nullptr;
 	}
 	
-	if (m_path && !m_chasing) followTarget(divider);
+	if (m_path && !m_chasing) followTarget(ups);
 }
 
-void Zombie::followTarget(float divider) {
+void Zombie::followTarget(float ups) {
 	if (m_result == 0) {
-		m_result = m_path->runNSteps(200.0 / divider);
+		m_result = m_path->runNSteps(200.0 / ups);
 		m_wait = 20;
 		m_untilnexttarget = 100;
 		if (m_result != 0) {
@@ -118,7 +118,7 @@ void Zombie::followTarget(float divider) {
 		}
 	
 		if (m_bumping) {
-			m_stuck_timer += 1.0 / divider;
+			m_stuck_timer += 1.0 / ups;
 	
 			if (m_stuck_timer > 1) {
 				m_stuck_timer = 0;
@@ -153,8 +153,8 @@ void Zombie::followTarget(float divider) {
 	}
 }
 
-void Zombie::submitToRenderer(oe::Renderer* renderer, float renderOffsetX, float renderOffsetY, float corrector, float renderScale) {
-	Creature::submitToRenderer(renderer, renderOffsetX, renderOffsetY, corrector, renderScale);
+void Zombie::submitToRenderer(oe::Renderer* renderer, float renderOffsetX, float renderOffsetY, float preupdate_scale, float renderScale) {
+	Creature::submitToRenderer(renderer, renderOffsetX, renderOffsetY, preupdate_scale, renderScale);
 
 	if (m_path && m_result != 0 && Game::advancedDebugMode) m_path->debugRender(renderer, renderOffsetX, renderOffsetY);
 }

@@ -10,6 +10,7 @@ flat in int shader_id;
 uniform sampler2D unif_texture;
 uniform int unif_effect = 0;
 uniform float unif_t = 0;
+uniform float unif_effect_scale = 1.0f;
 
 float gauss_kernel[] = float[](0.035822f, 0.05879f, 0.086425f, 0.113806f, 0.13424f, 0.141836f, 0.13424f, 0.113806f, 0.086425f, 0.05879f, 0.035822f);
 
@@ -63,19 +64,18 @@ void main()
 		color += -texture(unif_texture, vec2(shader_uv.x + pixelSizeX, shader_uv.y - pixelSizeY));
 		color += -texture(unif_texture, vec2(shader_uv.x + pixelSizeX, shader_uv.y));
 		color += -texture(unif_texture, vec2(shader_uv.x + pixelSizeX, shader_uv.y + pixelSizeY));
-
-		//Black and white
-		color.x = color.y = color.z = (color.x + color.y + color.z) / 3;
-		// = color.x;
-		//color.z = color.x;
 	}
 	else if (unif_effect == 5) {
-		//color = texture(unif_texture, UV) * (sin(50 * (UV.x) + unif_t) + 1.0) / 2.0 * (sin(50 * (UV.y) + unif_t) + 1.0) / 2.0;
-		//color.a = 1.0;
+		float time = unif_t * unif_effect_scale;
+		float size = unif_effect_scale;
+		color = texture(unif_texture, vec2(shader_uv.x + sin(shader_uv.y * 20.0f + time) * size / 100.0f, shader_uv.y + sin(shader_uv.x * 10.0f + time) * size / 40.0f));
+		color.a = 1.0;
 	}
 	else {
 		//Normal
-		color = vec4(1.0f, 0.0f, 0.5f, 1.0f);
-		//color = texture(unif_texture, shader_uv);
+		//color = vec4(1.0f, 0.0f, 0.5f, 1.0f);
+		color = texture(unif_texture, shader_uv);
 	}
+
+	color *= shader_color;
 }

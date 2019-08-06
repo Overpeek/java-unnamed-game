@@ -18,6 +18,8 @@ import utility.vec4;
 
 public class Shader {
 	
+	private static Window window = null;
+
 	private int shaderProgram;
 
 	private int loadShader(int shadertype, String shaderText) {
@@ -104,7 +106,7 @@ public class Shader {
 							"layout(location = 0) out vec4 color;\n" +
 							"\n" +
 							"uniform sampler2D tex;\n" +
-							"uniform int usetex = 0;\n" +
+							"uniform int usetex = 1;\n" +
 							"\n" +
 							"void main()\n" +
 							"{\n" +
@@ -148,7 +150,7 @@ public class Shader {
 							"layout(location = 0) out vec4 color;\n" +
 							"\n" +
 							"uniform sampler2DArray tex;\n" +
-							"uniform int usetex = 0;\n" +
+							"uniform int usetex = 1;\n" +
 							"\n" +
 							"void main()\n" +
 							"{\n" +
@@ -189,14 +191,33 @@ public class Shader {
 		shader.programLog("Shader program linking failed!", shader.shaderProgram, GL20.GL_LINK_STATUS);
 
 		//Default projection matrix
-		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
-		shader.setUniformMat4("pr_matrix", pr);
+		shader.defaultOrthoMatrix();
 
 		//Free up data
 		GL20.glDeleteShader(vertexShader);
 		GL20.glDeleteShader(fragmentShader);
 		
 		return shader;
+	}
+	
+	//To get aspect for default ortho matrix
+	public static void setActiveWindow(Window _window) {
+		window = _window;
+	}
+	
+	/**
+	 * 	left: -aspect, right: aspect, top: -1.0, bottom: 1.0, if fails returns left: -1.0, right: 1.0, top: -1.0, bottom: 1.0
+	 * */
+	public void defaultOrthoMatrix() {
+		mat4 pr;
+		if (window == null) {
+			pr = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
+		}
+		else {
+			pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
+		}
+		
+		setUniformMat4("pr_matrix", pr);
 	}
 
 	/**
@@ -237,8 +258,7 @@ public class Shader {
 		shader.programLog("Shader program linking failed!", shader.shaderProgram, GL20.GL_LINK_STATUS);
 
 		//Default projection matrix
-		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
-		shader.setUniformMat4("pr_matrix", pr);
+		shader.defaultOrthoMatrix();
 
 		//Free up data
 		GL20.glDeleteShader(vertexShader);
