@@ -126,6 +126,9 @@ public class Zombie extends Creature {
 		}
 		
 		if (path != null && !chasing) followTarget(ups);
+
+		
+		setHeading(getAcc().x, getAcc().y);
 		
 	}
 

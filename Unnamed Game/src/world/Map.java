@@ -22,6 +22,11 @@ public class Map {
 			this.object = object;
 			this.objectHealth = hp;
 		}
+		
+		@Override
+		public String toString() {
+			return "MapTile[Tile: " + Database.getTile(tile).data_name + ", Object: " + Database.getObject(object).data_name + ", HP: " + objectHealth + "]";
+		}
 	};
 
 	private int processedTileCount = 0;
@@ -153,8 +158,8 @@ public class Map {
 	
 	public void update(float ups) {
 		
-		for (Creature creature : creatures) {
-			creature.update(ups);
+		for (int i = 0; i < creatures.size(); i++) {
+			creatures.get(i).update(ups);
 		}
 		player.update(ups);
 
@@ -179,6 +184,8 @@ public class Map {
 					itemDrop(x, y, drops.get(i).item);
 				}
 			}
+			
+			updateCloseTiles(x, y);
 		}
 		
 	}

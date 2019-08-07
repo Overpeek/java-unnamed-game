@@ -34,7 +34,6 @@ public class Game extends Application {
 	private Window window;
 	private Map map;
 	private Inventory inventory;
-	private boolean justPaused;
 	private Gui gui;
 	private Texture splashScreen;
 	private String loadedMapName;
@@ -199,7 +198,6 @@ public class Game extends Application {
 	@Override
 	public void init() {
 		paused = false;
-		justPaused = false;
 		
 		// Window
 		Logger.info("Creating window");
@@ -314,59 +312,57 @@ public class Game extends Application {
 	// Key press callback
 	@Override
 	public void keyPress(int key, int action) {
-		if (!gui.chatOpened()) {
-			if (action == Keys.PRESS) {
-				if (key == Keys.KEY_ESCAPE) { paused = !paused; justPaused = true; return; }
-				
-				// Cant press or open anything while typing to chat or paused
-				if (gui.chatOpened() || paused) return;
+		if (action == Keys.PRESS) {
+			if (key == Keys.KEY_ESCAPE) { paused = !paused; return; }
+			
+			// Cant press or open anything while typing to chat or paused
+			if (gui.chatOpened() || paused) return;
 
-				// Postshader
-				if (key == Keys.KEY_F7) { postprocess_shader.setUniform1i("unif_lens", 0); justPaused = true; return; }
-				if (key == Keys.KEY_F8) { postprocess_shader.setUniform1i("unif_lens", 1); justPaused = true; return; }
+			// Postshader
+			if (key == Keys.KEY_F7) { postprocess_shader.setUniform1i("unif_lens", 0); return; }
+			if (key == Keys.KEY_F8) { postprocess_shader.setUniform1i("unif_lens", 1); return; }
 
-				// Player keys
-				if (key == Keys.KEY_E) { map.getPlayer().setPos(new vec2(Math.round(map.getPlayer().getPos().x + 0.5f) - 0.5f, Math.round(map.getPlayer().getPos().y + 0.5f) - 0.5f)); return; }
+			// Player keys
+			if (key == Keys.KEY_E) { map.getPlayer().setPos(new vec2(Math.round(map.getPlayer().getPos().x + 0.5f) - 0.5f, Math.round(map.getPlayer().getPos().y + 0.5f) - 0.5f)); return; }
 
-				// Inventory
-				if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
-				if (key == Keys.KEY_ESCAPE) { inventory.setVisible(false); return; }
+			// Inventory
+			if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
+			if (key == Keys.KEY_ESCAPE) { inventory.setVisible(false); return; }
 
-				// Inventory slot selecting
-				if (key == Keys.KEY_1) { inventory.setSelectedSlot(0); return; }
-				if (key == Keys.KEY_2) { inventory.setSelectedSlot(1); return; }
-				if (key == Keys.KEY_3) { inventory.setSelectedSlot(2); return; }
-				if (key == Keys.KEY_4) { inventory.setSelectedSlot(3); return; }
-				if (key == Keys.KEY_5) { inventory.setSelectedSlot(4); return; }
+			// Inventory slot selecting
+			if (key == Keys.KEY_1) { inventory.setSelectedSlot(0); return; }
+			if (key == Keys.KEY_2) { inventory.setSelectedSlot(1); return; }
+			if (key == Keys.KEY_3) { inventory.setSelectedSlot(2); return; }
+			if (key == Keys.KEY_4) { inventory.setSelectedSlot(3); return; }
+			if (key == Keys.KEY_5) { inventory.setSelectedSlot(4); return; }
 
-				// Debug commands
-				// Activate debug and advanced debug modes
-				if (key == Keys.KEY_F1) {
-					debugMode = !debugMode; 
-					if (window.key(Keys.KEY_LEFT_SHIFT)) {
-						debugMode = true;
-						advancedDebugMode = true;
-					}
-					else advancedDebugMode = false;
-					return;
+			// Debug commands
+			// Activate debug and advanced debug modes
+			if (key == Keys.KEY_F1) {
+				debugMode = !debugMode; 
+				if (window.key(Keys.KEY_LEFT_SHIFT)) {
+					debugMode = true;
+					advancedDebugMode = true;
 				}
-
-				// Debug ceil creaures
-				if (key == Keys.KEY_F2) {
-					map.debugCeilCreatures();
-				}
-
-				// Get FPS
-				if (key == Keys.KEY_F3) { Logger.info("Fps: " + gameloop.getFps()); return; }
-				
-				// Clear inventoy
-				if (key == Keys.KEY_F4) { inventory.clear(); return; }
-				
-				// Add creature at player
-				if (key == Keys.KEY_F5) { map.addCreature(map.newCreature(map.getPlayer().getPos().x, map.getPlayer().getPos().y + 5.0f, "zombie")); return; }
+				else advancedDebugMode = false;
+				return;
 			}
-		}
 
+			// Debug ceil creaures
+			if (key == Keys.KEY_F2) {
+				map.debugCeilCreatures();
+			}
+
+			// Get FPS
+			if (key == Keys.KEY_F3) { Logger.info("Fps: " + gameloop.getFps()); return; }
+			
+			// Clear inventoy
+			if (key == Keys.KEY_F4) { inventory.clear(); return; }
+			
+			// Add creature at player
+			if (key == Keys.KEY_F5) { map.addCreature(map.newCreature(map.getPlayer().getPos().x, map.getPlayer().getPos().y + 5.0f, "zombie")); return; }
+		}
+			
 		gui.keyPress(key, action);
 	}
 
@@ -374,8 +370,7 @@ public class Game extends Application {
 	// Mouse button press callback
 	@Override
 	public void buttonPress(int button, int action) {
-		//  TODO Auto-generated method stub
-		
+		map.getPlayer().buttonPress(button, action);
 	}
 
 
@@ -436,6 +431,10 @@ public class Game extends Application {
 	
 	public Map getMap() {
 		return map;
+	}
+	
+	public Gui getGui() {
+		return gui;
 	}
 	
 	public float guiScale() {

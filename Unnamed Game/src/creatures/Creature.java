@@ -114,8 +114,6 @@ public abstract class Creature {
 	protected void commonUpdate(float ups) {
 		float oneOverups = 1.0f / ups;
 		
-		setHeading(getAcc().x, getAcc().y);
-		
 		ai(ups);
 		
 		//Vectorplate
@@ -279,16 +277,8 @@ public abstract class Creature {
 			in_radius_creatures.get(i).setHealth(in_radius_creatures.get(i).getHealth() - getData().meleeDamage);
 		}
 
-		//Tile hitting
-		//Map.MapTile tmp = Main.game.getMap().getTile(Math.round(hitx), Math.round(hity));
-		//if (tmp != null) {
-		//	if (Database.getObject(tmp.object).destroyable) {
-		//		Main.game.getMap().hit(Math.round(hitx), Math.round(hity), (int) getData().meleeDamage);
-		//	}
-		//}
-
 		//Swing noise
-		Database.getSound("hit");
+		Database.getSound("hit").audio.play();
 	}
 	
 	public void setHeading(float x, float y) {
@@ -296,16 +286,18 @@ public abstract class Creature {
 		if (Math.abs(x) > Math.abs(y)) {
 			if (x < 0) {
 				heading = 2;
-			}
-			else {
+			} else if (x == 0) {
+				return;
+			} else {
 				heading = 3;
 			}
 		}
 		else {
 			if (y < 0) {
 				heading = 0;
-			}
-			else {
+			} else if (y == 0) {
+				return;
+			} else {
 				heading = 1;
 			}
 		}
