@@ -1,18 +1,14 @@
 package audio;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayList;
 
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.stb.*;
 
 import utility.DataIO;
-import utility.Logger;
 
 import static org.lwjgl.openal.ALC10.*;
 import static org.lwjgl.openal.ALC.*;

@@ -13,11 +13,9 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL40;
 import org.lwjgl.opengl.GL42;
 
 import utility.Loader;
-import utility.Logger;
 
 public class Texture {
 	
@@ -164,7 +162,6 @@ public class Texture {
 		//GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
 
 		data.clear();
-		
     	
     	return returned;
     }

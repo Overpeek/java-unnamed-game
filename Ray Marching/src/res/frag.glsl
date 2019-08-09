@@ -9,7 +9,7 @@ flat in int shader_id;
 uniform mat4 vw_matrix = mat4(1.0);
 
 #define pi 3.14159
-#define cameraFov pi / 2.0
+#define cameraFov pi / 2.0f
 float EPSILON = 0.001;
 
 uniform float time = 0.0;
@@ -89,138 +89,161 @@ float smoothMin(float a, float b) {
 	return min(a, b) - h*h*h*k/6.0;
 }
 
-vec4 getColorAndDst(vec3 point) {
-	//float d0 = sdSphere(point - vec3( sin(time), 0.0f,  0.0f), 0.3f);
-	//float d1 = sdSphere(point - vec3(-0.5f, 0.0f,  0.5f), 0.3f);
-	//float d2 = sdSphere(point - vec3( 0.5f, 0.0f, -0.5f), 0.3f);
-	//float d3 = sdSphere(point - vec3(-0.5f, 0.0f, -0.5f), 0.3f);
-	//float d4 = sdBox(point - vec3(0.0f, -0.6f, 0.0f), vec3(0.1f, 0.5f, 0.5f));
-	//float d5 = sdBox(point - vec3(0.0f, 0.6f, 0.0f), vec3(0.1f, 0.5f, 0.5f));
-	float d6 = opRep(point, vec3(10.0f, 10.0f, 10.0f));// mandelbulb(point);
-	//float d6 = mandelbulb(point);
-	//float closest = min(d0, min(d1, min(d2, min(d3, min(d4, min(d5, d6))))));
-	float closest = d6;
-
-	vec3 col = vec3(1.0, 1.0, 1.0);
-
-	return vec4(col, closest);
-}
-
-float distToObjs(vec3 point) {
-	return getColorAndDst(point).w;
-}
-
-vec3 estimateNormal(vec3 p) {
-	float d = distToObjs(p);
-	vec2 e = vec2(d / 2.0f, 0.0);
-	vec3 n = d - vec3(
-			distToObjs(p-e.xyy),
-			distToObjs(p-e.yxy),
-			distToObjs(p-e.yyx));
-
-    return normalize(n);
-}
-
 float map(float value, float low1, float high1, float low2, float high2) {
 	return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
-}
-
-float testSeeLight(vec3 p) {
-	int raySteps = 64;
-	bool pathToLight = true;
-	vec3 lightDirection = vec3(light.x - p.x, light.y - p.y, light.z - p.z);
-	vec3 normal = normalize(estimateNormal(p));
-	p += normal * EPSILON * 2.0;
-
-	for (int j = 0; j < raySteps; j++) {
-		float dist = distToObjs(vec3(p.x, p.y, p.z));
-		float dstToLight = length(lightDirection);
-		float travel = min(dist, dstToLight);
-
-		//Hit something, no light access
-		if (dist < EPSILON) {
-			pathToLight = false;
-			break;
-		}
-
-		//Distance to light is the smallest
-		if (dstToLight < EPSILON) {
-			pathToLight = true;
-			break;
-		}
-
-		p += normalize(lightDirection) * travel;
-	}
-
-	if (!pathToLight) return 0.0;
-
-	return 10.0f / pow(length(lightDirection), 2.0);
 }
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-vec4 rayMarch(vec3 pos, vec3 dir, int steps, float maxDistance) {
-	float distanceOrigin = 0.0;
-	//						light	dist	br
-	vec4 returndata = vec4(	0, 		0, 		0, 0);
-	vec3 rayColor = vec3(1.0, 1.0, 1.0);
-	float rayBrightness = 0.0;
-	int bounces = 0;
-	int maxBounces = 8;
-	vec3 lightDirection = normalize(vec3(light.x - pos.x, light.y - pos.y, light.z - pos.z));
-	vec3 lastHit;
-	int stepsUsed = 0;
-	bool hit = false;
+/*
+ * 0 - sphere
+ * 1 - box
+ * */
+float distanceToObject(int objectType, vec3 rayPosition, vec3 objectPosition, vec3 size) {
+	switch(objectType) {
+	case 0:
+		return sdSphere(rayPosition - objectPosition, size.x);
+		break;
+	case 1:
+		return sdBox(rayPosition - objectPosition, size);
+		break;
 
-	for (int j = 0; j < steps; j++) {
-		//stepsUsed++;
-		float dist = distToObjs(pos);
+	default:
+		break;
+	}
+}
+
+struct object {
+
+	int objectType;
+	int index;
+	vec3 position;
+	vec3 size;
+	vec3 color;
+
+} objects[4];
+
+float getDistToObject(object obj, vec3 position) {
+	return distanceToObject(obj.objectType, position, obj.position, obj.size);
+}
+
+object getClosestObject(vec3 position) {
+	float distance = getDistToObject(objects[0], position);
+	int index = 0;
+
+	float thisDst = getDistToObject(objects[1], position);
+	if (distance > thisDst){
+		index = 1;
+		distance = thisDst;
+	}
+
+	thisDst = getDistToObject(objects[2], position);
+	if (distance > thisDst){
+		index = 2;
+		distance = thisDst;
+	}
+
+	thisDst = getDistToObject(objects[3], position);
+	if (distance > thisDst){
+		index = 3;
+		distance = thisDst;
+	}
+
+	return objects[index];
+}
+
+float getDistToClosestObject(vec3 position) {
+	return getDistToObject(getClosestObject(position), position);
+}
+
+vec3 estimateNormal(vec3 p) {
+	float d = getDistToClosestObject(p);
+	vec2 e = vec2(d / 2.0f, 0.0);
+	vec3 n = d - vec3(
+			getDistToClosestObject(p-e.xyy),
+			getDistToClosestObject(p-e.yxy),
+			getDistToClosestObject(p-e.yyx));
+
+    return normalize(n);
+}
+
+struct rayData
+{
+	vec3 position;
+	vec3 direction;
+	vec3 color;
+
+	int bounceCount;
+	int lastHitObject;
+
+	float distance;
+};
+
+rayData rayMarch(rayData ray, int maxSteps, float maxDistance) {
+	const int maxBounces = 8;
+	float distanceOrigin = 0.0;
+
+	for (int j = 0; j < maxSteps; j++) {
+		object closestObj = getClosestObject(ray.position);
+		float dist = getDistToObject(closestObj, ray.position);
 
 		//If over max dist
 		if (distanceOrigin > maxDistance) {
-			hit = false;
-			break;
+			ray.color *= texture(skybox, normalize(ray.direction)).rgb;
+			return ray;
 		}
 
 		//If near surface
 		if (dist < EPSILON) {
-			hit = true;
-			break;
+
+			if (ray.lastHitObject != closestObj.index) {
+				ray.bounceCount++;
+				ray.lastHitObject = closestObj.index;
+				ray.color *= closestObj.color;
+
+				//Reflect before stop
+				ray.position -= ray.direction * EPSILON;
+				vec3 surfaceRandomness = vec3(rand(ray.position.xy)) / 50.0f * 0.0f;
+				vec3 normal = normalize(estimateNormal(ray.position) + surfaceRandomness);
+				ray.direction = reflect(ray.direction, normal);
+			}
+
+			return ray;
 		}
 
-		pos += dir * dist;
+		ray.position += ray.direction * dist;
 		distanceOrigin += dist;
 	}
-	returndata = vec4(pos.xyz, int(hit));
 
-	return returndata;
+	return ray;
 }
 
 void main()
 {
-	float rayX = map(gl_FragCoord.x, 0.0, 800.0, -cameraFov / 2.0, cameraFov / 2.0);
-	float rayY = map(gl_FragCoord.y, 0.0, 800.0, -cameraFov / 2.0, cameraFov / 2.0);
+	objects[0] = object(0, 0, vec3(-0.5f, 0.5f,  0.5f), vec3(0.1f, 0.2f, 0.3f), vec3(1.0f, 0.5f, 0.5f));
+	objects[1] = object(1, 1, vec3(-0.1f, 0.0f,  0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
+	objects[2] = object(1, 2, vec3( 0.1f, 0.0f, -0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
+	objects[3] = object(1, 3, vec3( 0.0f, 0.1f,  0.0f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
+
+	float aspect = 16.0f / 9.0f;
+	float rayX = map(gl_FragCoord.x, 0.0, 1600.0, -cameraFov / 2.0 * aspect, cameraFov / 2.0 * aspect);
+	float rayY = map(gl_FragCoord.y, 0.0, 900.0, -cameraFov / 2.0, cameraFov / 2.0);
 	vec3 directionVector = (vw_matrix * normalize(vec4(-rayX, -rayY, -1.0, 0.0))).xyz;
-	vec3 rayOrigin = vec3(camera.x, camera.y, camera.z);
+	vec3 rayColor = vec3(1.1);
+	vec3 rayOrigin = camera.xyz;
 
-	vec3 rayColor = vec3(1.0);
+	rayData ray = rayData(rayOrigin, directionVector, rayColor, 0, -1, 0.0f);
 
+	for (int i = 0; i < 8; ++i) {
+		ray = rayMarch(ray, 128, 1000.0);
 
-
-	for (int i = 0; i < 3; ++i) {
-		vec4 rayData = rayMarch(rayOrigin, directionVector, 128, 1000.0);
-
-		if (rayData.w == 1) { //ray hit something
-			//rayColor *= getColorAndDst(rayData.xyz).xyz;
-			rayOrigin = rayData.xyz;
-			rayOrigin -= directionVector * EPSILON;
-			vec3 normal = normalize(estimateNormal(rayOrigin));
-
-			directionVector = reflect(directionVector, normal);
+		if (ray.bounceCount > 0) { //ray hit something
+			ray.bounceCount = 0;
+			continue;
 		} else { //ray did not hit anything
-			rayColor = texture(skybox, normalize(vec3(directionVector.x, -directionVector.y, directionVector.z))).rgb;
+			ray.color *= texture(skybox, normalize(directionVector)).rgb;
 			break;
 		}
 	}
@@ -270,5 +293,5 @@ void main()
 
 
 
-	color = vec4(rayColor, 1.0);
+	color = vec4(ray.color, 1.0);
 }

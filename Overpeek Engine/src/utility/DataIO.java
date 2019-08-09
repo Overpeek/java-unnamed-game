@@ -1,7 +1,9 @@
 package utility;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
@@ -12,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
 
 import org.json.JSONObject;
 
@@ -112,6 +116,34 @@ public class DataIO {
 		
 		return array;
 	}
+	
+	public static byte[] compress(byte[] input) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            OutputStream out = new DeflaterOutputStream(baos);
+            out.write(input);
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        
+        return baos.toByteArray();
+    }
+
+    public static byte[] decompress(byte[] input) {
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            OutputStream out = new InflaterOutputStream(baos);
+            out.write(input);
+            out.close();
+            
+            return baos.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 	
 	public static JSONObject loadJSONObject(String path) {
 		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile(path)).toString();

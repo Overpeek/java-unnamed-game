@@ -1,20 +1,5 @@
-import java.awt.Font;
-
-import graphics.GlyphTexture;
-import graphics.Renderer;
-import graphics.Shader;
-import graphics.TextLabelTexture;
-import graphics.Window;
-import utility.Application;
-import utility.Button;
-import utility.Callback;
-import utility.Colors;
-import utility.GameLoop;
-import utility.Keys;
-import utility.mat4;
-import utility.vec2;
-import utility.vec3;
-import utility.vec4;
+import graphics.*;
+import utility.*;
 
 public class Main extends Application {
 	
@@ -29,43 +14,32 @@ public class Main extends Application {
 	vec2 windowPosBeforeHold;
 	vec2 cursorPosBeforeHold;
 	boolean holding = false;
-	TextLabelTexture text;
 	GlyphTexture glyphs;
 	
 	
 	@Override
 	public void update() {
-		for (int x = 0; x < w; x++) {
-			for (int y = 0; y < h; y++) {
-				curves[x][y].update();
-			}
-		}
-		text.rebake("Test jWäÅ. FPS: " + gameloop.getFps());
 	}
 
 	int n = 0;
 	@Override
 	public void render(float preupdate_scale) {
-		renderer.spheres.clear();
-		renderer.points.clear();
-		renderer.lines.clear();
+		if (window.shouldClose()) gameloop.stop();
+		
+		window.clear();
+		renderer.clear();
 
-		//renderer.spheres.submit(new vec3(0.0f, 0.0f, 0.0f), new vec2(0.5f, 0.5f), 32, 0, new vec4(1.0f, 1.0f, 1.0f, 0.5f), new vec4(1.0f));
-		//renderer.points.submit(new vec3(0.0f, 0.7f, 0.0f), new vec2(0.5f, 0.5f), 0, Colors.WHITE);
 		for (int x = 0; x < w; x++) {
 			for (int y = 0; y < h; y++) {
+				curves[x][y].update();
 				curves[x][y].draw(renderer);
 			}
 		}
-
-		single_shader.setUniform1i("usetex", 1);
-		text.queueDraw(new vec3(-1.0f, 0.0f, 0.0f), new vec2(0.1f));
-		TextLabelTexture.drawQueue();
 		
 		single_shader.setUniform1i("usetex", 0);
-		renderer.spheres.draw(0, 0);
-		renderer.points.draw(0, 0);
-		renderer.lines.draw(0, 0);
+		renderer.draw();
+		window.update();
+		window.input();
 	}
 
 	@Override
@@ -76,8 +50,8 @@ public class Main extends Application {
 
 	@Override
 	public void init() {
-		window = new Window(800, 800, "Lissajous Curve", Window.WINDOW_DEBUGMODE); //Window.WINDOW_TRANSPARENT | Window.WINDOW_BORDERLESS | Window.WINDOW_MULTISAMPLE_X8);
-		window.clearColor(new vec4(0.2f, 0.2f, 0.2f, 1.0f));
+		window = new Window(800, 800, "Lissajous Curve", Window.WINDOW_TRANSPARENT | Window.WINDOW_BORDERLESS | Window.WINDOW_MULTISAMPLE_X8);
+		window.clearColor(new vec4(0.0f, 0.0f, 0.0f, 0.0f));
 		window.setSwapInterval(0);
 		window.setCurrentApp(this);
 		window.addButton(new Button(1.0f - 0.03f, -1.0f, 0.03f, 0.03f, Colors.RED, 1, new Callback() {
@@ -103,9 +77,6 @@ public class Main extends Application {
 		multi_shader.setUniform1i("usetex", 1);
 		multi_shader.setUniformMat4("pr_matrix", pr_matrix);
 		
-		glyphs = GlyphTexture.loadFont(new Font("arial", Font.PLAIN, 64));
-		TextLabelTexture.initialize(window, glyphs, single_shader);
-		text = TextLabelTexture.bakeToTexture("Test");
 		single_shader.enable();
 		
 		curves = new Curve[w][h];
@@ -148,12 +119,10 @@ public class Main extends Application {
 	@Override
 	public void mousePos(float x, float y) {
 		if (holding) {
-			vec2 cursormove = cursorPosBeforeHold.mult(-1.0f, -1.0f).add(x, y);
-			windowPosBeforeHold = windowPosBeforeHold.add(cursormove.mult(window.getWidth() / 2.0f, window.getHeight() / 2.0f));
+			vec2 cursormove = cursorPosBeforeHold.multNew(-1.0f, -1.0f).addNew(x, y);
+			windowPosBeforeHold = windowPosBeforeHold.addNew(cursormove.multNew(window.getWidth() / 2.0f, window.getHeight() / 2.0f));
 			window.setWindowPos(windowPosBeforeHold);
 		}
-
-		
 	}
 
 	@Override
@@ -170,9 +139,14 @@ public class Main extends Application {
 	
 	
 	
+	public static Main game;
+	
+	public static Main getMain() {
+		
+	}
 
 	public static void main(String[] args) {
-		new Thread(new GameLoop(144, new Main()).enableAutoManage()).start();
+		new Thread(new GameLoop(144, new Main())).start();
 	}
 	
 }

@@ -19,11 +19,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL42;
-import org.lwjglx.debug.org.eclipse.jetty.io.IdleTimeout;
 
-import utility.Debug;
 import utility.Loader;
-import utility.Logger;
 
 public class GlyphTexture {
 
@@ -167,19 +164,6 @@ public class GlyphTexture {
 		GL12.glTexSubImage3D(GL30.GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, returned.maxWidth, returned.maxHeight, 225, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
 		
 		data.clear();
-
-//		Glyph startGlyph = returned.getGlyphData('A');
-//		//returned.topToBottomHeight = 0;
-//		int highest_point = startGlyph.y;
-//		int lowest_point = startGlyph.y + startGlyph.height;
-//		for (int i = 32; i < 256; i++) {
-//    	    if (i == 127) continue;
-//			Glyph glyph = returned.getGlyphData((char) i);
-//			int tempHeight = glyph.y;
-//			
-//			highest_point = Math.min(tempHeight, highest_point); //because up is negative
-//			lowest_point = Math.max(tempHeight + glyph.height, lowest_point); //and down is positive
-//		}
 		
 		return returned;
     }

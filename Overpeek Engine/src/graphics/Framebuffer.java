@@ -1,19 +1,9 @@
 package graphics;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.*;
 
 import utility.Colors;
 import utility.Logger;
@@ -76,34 +66,34 @@ public class Framebuffer {
 	}
 	
 	public void clear() {
-		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GL11.glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 	}
 	
 	public void clear(vec4 c) {
-		glClearColor(c.x, c.y, c.z, c.w);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GL11.glClearColor(c.x, c.y, c.z, c.w);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		resetClearColor();
 	}
 	
 	public void clear(float r, float g, float b, float a) {
-		glClearColor(r, g, b, a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GL11.glClearColor(r, g, b, a);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		resetClearColor();
 	}
 	
 	public void clearColor(vec4 c) {
-		glClearColor(c.x, c.y, c.z, c.w);
+		GL11.glClearColor(c.x, c.y, c.z, c.w);
 		clearColor = c;
 	}
 	
 	public void clearColor(float r, float g, float b, float a) {
-		glClearColor(r, g, b, a);
+		GL11.glClearColor(r, g, b, a);
 		clearColor = new vec4(r, g, b, a);
 	}
 	
 	private void resetClearColor() {
-		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+		GL11.glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 	}
 	
 	public void delete() {

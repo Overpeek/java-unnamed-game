@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.*;
 
 import utility.Loader;
 import utility.Logger;

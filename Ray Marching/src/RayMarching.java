@@ -91,8 +91,9 @@ public class RayMarching extends Application {
 
 	@Override
 	public void init() {
-		window = new Window(800, 800, "Ray Marching - Eemeli Lehtonen", Window.WINDOW_DEBUGMODE);
+		window = new Window(1600, 900, "Ray Marching - Eemeli Lehtonen", 0);
 		window.setCurrentApp(this);
+		window.setSwapInterval(1);
 		renderer = new Renderer();
 		window.clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
@@ -103,7 +104,7 @@ public class RayMarching extends Application {
 		normal_shader = Shader.loadFromSources("/res/texture-single.vert.glsl", "/res/texture-single.frag.glsl", true);
 		normal_shader.setUniformMat4("pr_matrix", pr);
 		GlyphTexture glyphs = GlyphTexture.loadFont(new Font("arial", Font.BOLD, 64));
-		TextLabelTexture.initialize(window, glyphs, normal_shader);
+		TextLabelTexture.initialize(window, glyphs);
 		fps_text_label = TextLabelTexture.bakeToTexture("FPS: 0");
 		String sources[] = {
 			"/res/right.png",
@@ -142,7 +143,7 @@ public class RayMarching extends Application {
 		cameraLookingX += x;
 		cameraLookingY += y;
 		
-		window.setCursor(400.0f, 400.0f);
+		window.setCursor(800.0f, 450.0f);
 	}
 
 	@Override

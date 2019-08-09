@@ -4,8 +4,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import graphics.Window;
-
 public class Logger {
 	
 	public static final String ANSI_RESET = "\u001B[0m";
@@ -27,55 +25,25 @@ public class Logger {
 	public static void error(Object log) {
 		out(log.toString(), type.ERROR);
 	}
-	public static void error(double log) {
-		out("" + log, type.ERROR);
-	}
-	public static void error(int log) {
-		out("" + log, type.ERROR);
-	}
 	
 	//Critical
 	public static void crit(Object log) {
 		out(log.toString(), type.CRITICAL);
-	}
-	public static void crit(double log) {
-		out("" + log, type.CRITICAL);
-	}
-	public static void crit(int log) {
-		out("" + log, type.CRITICAL);
 	}
 	
 	//Debug
 	public static void debug(Object log) {
 		out(log.toString(), type.DEBUG);
 	}
-	public static void debug(double log) {
-		out("" + log, type.DEBUG);
-	}
-	public static void debug(int log) {
-		out("" + log, type.DEBUG);
-	}
 	
 	//Warning
 	public static void warn(Object log) {
 		out(log.toString(), type.WARNING);
 	}
-	public static void warn(double log) {
-		out("" + log, type.WARNING);
-	}
-	public static void warn(int log) {
-		out("" + log, type.WARNING);
-	}
 	
 	//Info
 	public static void info(Object log) {
 		out(log.toString(), type.INFO);
-	}
-	public static void info(double log) {
-		out("" + log, type.INFO);
-	}
-	public static void info(int log) {
-		out("" + log, type.INFO);
 	}
 	
 	

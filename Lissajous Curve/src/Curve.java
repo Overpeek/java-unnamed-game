@@ -1,11 +1,5 @@
-import graphics.Renderer;
-import graphics.VertexData;
-import utility.Logger;
-import utility.Maths;
-import utility.SimplexNoise_octave;
-import utility.vec2;
-import utility.vec3;
-import utility.vec4;
+import graphics.*;
+import utility.*;
 
 public class Curve {
 
@@ -26,11 +20,13 @@ public class Curve {
 		tail = new vec2[tail_len];
 		t = 0.0f;
 		current_pos = new vec2(0.0f);
-		octavenoise = new SimplexNoise_octave((int) (4738 * hz.x - 89350 * hz.y));
+		//int seed = (int) (4738 * hz.x - 89350 * hz.y);
+		int seed = (int) System.currentTimeMillis();
+		octavenoise = new SimplexNoise_octave(seed);
 	}
 	
 	public void update() {
-		t += 0.02f;
+		t = Main.;
 		//current_pos = new vec2(
 		//		(float)(Math.cos(t * hz.x) * size), 
 		//		(float)(Math.sin(t * hz.y) * size)
