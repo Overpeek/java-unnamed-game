@@ -59,6 +59,7 @@ import org.lwjgl.opengl.GLUtil;
 
 import utility.Application;
 import utility.Button;
+import utility.GUIWindow;
 import utility.Loader;
 import utility.Logger;
 import utility.Logger.type;
@@ -110,6 +111,8 @@ public class Window {
 	private float cursorX, cursorY;
 	private float scroll_total;
 	private float scroll_delta;
+	
+	public Shader shader;
 	
 	
 	public void setCurrentApp(Application app) {
@@ -303,8 +306,12 @@ public class Window {
 		else if (polygonmode == POLYGON_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		
+		// GL version
+		Logger.debug("OpenGL version: " + glGetString(GL11.GL_VERSION));
+		
 		defaultRenderer = new Renderer();
 		button_objects = new ArrayList<Button>();
+		shader = Shader.multiTextureShader();
 		Shader.setActiveWindow(this);
 	}
 	

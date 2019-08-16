@@ -104,6 +104,10 @@ public class vec2 {
 		return new vec2(x, y).mult(1.0f / len);			
 	}
 	
+	public vec3 asVec3(float z) {
+		return new vec3(x, y, z);
+	}
+	
 	@Override
 	public String toString() {
 		return "vec2[" + x + "," + y + "]";

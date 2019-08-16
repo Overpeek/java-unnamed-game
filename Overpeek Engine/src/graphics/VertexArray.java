@@ -42,5 +42,9 @@ public class VertexArray {
 	public void unbind() {
 		GL30.glBindVertexArray(0);
 	}
+
+	public void delete() {
+		GL15.glDeleteBuffers(id);
+	}
 	
 }

@@ -19,6 +19,12 @@ public class Shader {
 	private static Window window = null;
 
 	private int shaderProgram;
+	
+	
+	
+	public int getProgram() {
+		return shaderProgram;
+	}
 
 	private int loadShader(int shadertype, String shaderText) {
 		int shaderId;
@@ -197,6 +203,33 @@ public class Shader {
 		
 		return shader;
 	}
+
+	/**
+	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * */
+	public static Shader loadFromSources(String compute, boolean usePath) {
+		Shader shader = new Shader();
+		
+		//Compute shader
+		int computeShader = 0;
+		if (usePath)
+			computeShader =  shader.loadShaderFile(GL43.GL_COMPUTE_SHADER, compute);
+		else
+			computeShader =  shader.loadShader(GL43.GL_COMPUTE_SHADER, compute);
+		
+		//Shader program
+		shader.shaderProgram = GL20.glCreateProgram();
+		GL20.glAttachShader(shader.shaderProgram, computeShader);
+		GL20.glLinkProgram(shader.shaderProgram);
+
+		//Get shader program linking error
+		shader.programLog("Shader program linking failed!", shader.shaderProgram, GL20.GL_LINK_STATUS);
+
+		//Free up data
+		GL20.glDeleteShader(computeShader);
+		
+		return shader;
+	}
 	
 	//To get aspect for default ortho matrix
 	public static void setActiveWindow(Window _window) {
@@ -208,7 +241,7 @@ public class Shader {
 	 * */
 	public void defaultOrthoMatrix() {
 		mat4 pr;
-		if (window == null) {
+		if (window != null) {
 			pr = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
 		}
 		else {

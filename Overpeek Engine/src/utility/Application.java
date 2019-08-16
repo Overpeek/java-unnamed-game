@@ -6,6 +6,13 @@ public abstract class Application {
 	
 	public GameLoop gameloop;
 	public Window window;
+	
+	
+	
+	public void start(int ups) {
+		gameloop = new GameLoop(ups, this);
+        (new Thread(gameloop)).start();
+	}
 
 	public abstract void update();
 	

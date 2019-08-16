@@ -6,6 +6,7 @@ import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
 import utility.Colors;
+import utility.Console;
 import utility.Keys;
 import utility.Logger;
 import utility.Maths;
@@ -68,6 +69,10 @@ public class Gui {
 	private TextLabelTexture button_label_0;
 	private TextLabelTexture button_label_1;
 	private TextLabelTexture button_label_2;
+	
+	private Console consoleWindow;
+	
+	
 
 	public Gui(float maxHealth, float maxStamina, float healthGainRate, float staminaGainRate) {
 		frame_logger = new float[GUI_FRAME_LOGGER_SIZE];
@@ -110,6 +115,8 @@ public class Gui {
 			text_lines[i] = "";
 			text_chat_label[i] = TextLabelTexture.bakeToTexture(text_lines[i]);
 		}
+		
+		consoleWindow = new Console(new vec2(0.0f, 0.0f), new vec2(0.5f, 0.5f));
 
 		gui_shader = Shader.multiTextureShader();
 		blur_renderer = new Renderer();
@@ -337,6 +344,8 @@ public class Gui {
 		
 		// Chat
 		drawChat();
+		
+		consoleWindow.draw();
 		
 		gui_shader.enable();
 		blur_renderer.draw(TextureLoader.getTexture());

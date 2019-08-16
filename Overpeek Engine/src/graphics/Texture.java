@@ -85,6 +85,23 @@ public class Texture {
 		GL11.glTexImage2D(type, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
 		return returned;
     }
+
+	public static Texture rgba32f(int width, int height) {
+    	Texture returned = new Texture();
+    	returned.type = GL11.GL_TEXTURE_2D;
+    	returned.texture = GL11.glGenTextures();
+    	returned.width = width;
+    	returned.height = height;
+    	returned.depth = 1;
+    	GL11.glBindTexture(GL11.GL_TEXTURE_2D, returned.texture);
+    	
+    	GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+    	GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+    	
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA32F, width, height, 0, GL11.GL_RGBA, GL11.GL_FLOAT, (ByteBuffer)null);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		return returned;
+	}
     
     /**
      * Types: (GL_2D, GL_2D_ARRAY, GL_3D, GL_CUBE)

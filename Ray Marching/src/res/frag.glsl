@@ -208,6 +208,8 @@ rayData rayMarch(rayData ray, int maxSteps, float maxDistance) {
 				vec3 surfaceRandomness = vec3(rand(ray.position.xy)) / 50.0f * 0.0f;
 				vec3 normal = normalize(estimateNormal(ray.position) + surfaceRandomness);
 				ray.direction = reflect(ray.direction, normal);
+			} else {
+				continue;
 			}
 
 			return ray;

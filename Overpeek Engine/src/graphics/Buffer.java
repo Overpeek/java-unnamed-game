@@ -9,9 +9,9 @@ import org.lwjgl.opengl.GL20;
 
 public class Buffer {
 
-	int id;
-	int type;
-	int componentCount;
+	private int id;
+	private int type;
+	private int componentCount;
 	
 	public static boolean oneIsMapped;
 	public boolean thisIsMapped;
@@ -118,6 +118,10 @@ public class Buffer {
 
 		bind();
 		GL15.glBufferSubData(type, 0, buffermap);
+	}
+
+	public void delete() {
+		GL15.glDeleteBuffers(id);
 	}
 	
 }

@@ -59,7 +59,7 @@ public class Framebuffer {
 
 		int fboStatus = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
 		if (fboStatus != GL30.GL_FRAMEBUFFER_COMPLETE)
-			Logger.out("Framebuffer not complete: " + fboStatus, Logger.type.ERROR);
+			Logger.error("Framebuffer not complete: " + fboStatus);
 		
 		returned.unbind();
 		return returned;
