@@ -8,8 +8,8 @@ import utility.vec3;
 
 public class Inventory {
 
-	private String itemIds[][] = new String[Settings.INVENTORY_WIDTH][Settings.INVENTORY_HEIGHT + 1];
-	private int itemCounts[][] = new int[Settings.INVENTORY_WIDTH][Settings.INVENTORY_HEIGHT + 1];
+	private String itemIds[][] = new String[CompiledSettings.INVENTORY_WIDTH][CompiledSettings.INVENTORY_HEIGHT + 1];
+	private int itemCounts[][] = new int[CompiledSettings.INVENTORY_WIDTH][CompiledSettings.INVENTORY_HEIGHT + 1];
 	private int selectedSlot = 0;
 	private boolean visible = false;
 
@@ -18,9 +18,9 @@ public class Inventory {
 	}
 
 	public void init() {
-		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+		for (int x = 0; x < CompiledSettings.INVENTORY_WIDTH; x++)
 		{
-			for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
+			for (int y = 0; y < CompiledSettings.INVENTORY_HEIGHT + 1; y++)
 			{
 				itemIds[x][y] = null;
 				itemCounts[x][y] = 0;
@@ -141,9 +141,9 @@ public class Inventory {
 	}
 	
 	public void clear() {
-		for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
+		for (int y = 0; y < CompiledSettings.INVENTORY_HEIGHT + 1; y++)
 		{
-			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+			for (int x = 0; x < CompiledSettings.INVENTORY_WIDTH; x++)
 			{
 				itemIds[x][y] = null;
 				itemCounts[x][y] = 0;
@@ -160,9 +160,9 @@ public class Inventory {
 	}
 
 	public boolean addItem(String id, int n) {
-		for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
+		for (int y = 0; y < CompiledSettings.INVENTORY_HEIGHT + 1; y++)
 		{
-			for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+			for (int x = 0; x < CompiledSettings.INVENTORY_WIDTH; x++)
 			{
 				//oe::Logger::out("inv ", n);
 				if (itemIds[x][y] == null || itemIds[x][y] == id) {
@@ -185,9 +185,9 @@ public class Inventory {
 	}
 
 	public void dropAll() {
-		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)
+		for (int x = 0; x < CompiledSettings.INVENTORY_WIDTH; x++)
 		{
-			for (int y = 0; y < Settings.INVENTORY_HEIGHT + 1; y++)
+			for (int y = 0; y < CompiledSettings.INVENTORY_HEIGHT + 1; y++)
 			{
 				if (itemIds[x][y] != null) {
 					dropItem(x, y, -1);

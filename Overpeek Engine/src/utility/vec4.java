@@ -41,6 +41,15 @@ public class vec4 {
 		this.w = 0.0f;
 	}
 	
+	public vec4 random(float min, float max) {
+		this.x = Maths.random(min, max);
+		this.y = Maths.random(min, max);
+		this.z = Maths.random(min, max);
+		this.w = Maths.random(min, max);
+		
+		return this;
+	}
+	
 	public float length() {
 		return (float) Math.sqrt(x*x + y*y + z*z + w*w);
 	}

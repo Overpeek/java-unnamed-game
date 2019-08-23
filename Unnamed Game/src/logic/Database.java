@@ -1,6 +1,7 @@
 package logic;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
@@ -27,6 +28,7 @@ import logic.Database.Creature_Data.Drop;
 import logic.TextureLoader.MultitextureReturnData;
 import utility.DataIO;
 import utility.Logger;
+import utility.SaveManager;
 import utility.vec4;
 
 //Good source https://www.redblobgames.com/maps/terrain-from-noise/
@@ -266,7 +268,7 @@ public class Database {
 	}
 
 	private static void loadAllMods() {
-		String modsFolder = Main.game.getDataPath() + "mods/";
+		String modsFolder = SaveManager.getSaveLocation("mods");
 
 		FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("N/A", "jar");
 		File file = new File(modsFolder);
@@ -346,7 +348,7 @@ public class Database {
 	}
 
 	public static void loadItem(Item_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded item: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		items.put(data.data_name, data);
@@ -374,7 +376,7 @@ public class Database {
 	}
 
 	public static void loadTile(Tile_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded tile: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		tiles.put(data.data_name, data);
@@ -411,7 +413,7 @@ public class Database {
 	}
 
 	public static void loadObject(Object_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded object: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		objects.put(data.data_name, data);
@@ -462,7 +464,7 @@ public class Database {
 	}
 
 	public static void loadBiome(Biome_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded biome: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		biomes.put(data.data_name, data);
@@ -516,7 +518,7 @@ public class Database {
 	}
 
 	public static void loadCreature(Creature_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded creature: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		creatures.put(data.data_name, data);
@@ -545,7 +547,7 @@ public class Database {
 	}
 
 	public static void loadParticle(Particle_Data data) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded particle: " + data.toString());
 		loadedVanillaGameobjectCount++;
 		particles.put(data.data_name, data);
@@ -563,7 +565,7 @@ public class Database {
 	}
 
 	public static void loadSound(Audio audio, String name, String data_name) {
-		if (Settings.SHOW_DEBUG_MESSAGES)
+		if (CompiledSettings.SHOW_DEBUG_MESSAGES)
 			Logger.debug("Loaded sound: " + data_name);
 		loadedVanillaGameobjectCount++;
 		sounds.put(data_name, new Sound_Data(name, data_name, audio));
@@ -571,21 +573,21 @@ public class Database {
 	}
 
 	// Save data
-	public static void writeData(byte[] data, String path) {
-		DataIO.writeByte(Main.game.getSavePath() + path, data);
+	public static void writeData(byte[] data, String path) throws IOException {
+		DataIO.writeByte(SaveManager.getSaveLocation(path), data);
 	}
 
-	public static void writeDataBuffer(ByteBuffer data, String path) {
-		DataIO.writeByteBuffer(Main.game.getSavePath() + path, data);
+	public static void writeDataBuffer(ByteBuffer data, String path) throws IOException {
+		DataIO.writeByteBuffer(SaveManager.getSaveLocation(path), data);
 	}
 
 	// Load data
-	public static byte[] readData(String path) {
-		return DataIO.readByte(Main.game.getSavePath() + path);
+	public static byte[] readData(String... path) throws IOException {
+		return DataIO.readByte(SaveManager.getSaveLocation(path));
 	}
 
-	public static ByteBuffer readDataBuffer(String path) {
-		return DataIO.readByteBuffer(Main.game.getSavePath() + path);
+	public static ByteBuffer readDataBuffer(String... path) throws IOException {
+		return DataIO.readByteBuffer(SaveManager.getSaveLocation(path));
 	}
 
 	// --------------

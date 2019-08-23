@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import graphics.Renderer;
 import logic.Main;
 import logic.Pathfinder;
-import logic.Settings;
+import logic.CompiledSettings;
 import utility.Logger;
 import utility.Maths;
 import utility.vec2;
@@ -104,10 +104,10 @@ public class Zombie extends Creature {
 			curtarget_y = Maths.random(-16.0f, 16.0f);
 		
 		
-			int startnode_x = (int) Math.floor(Maths.clamp(getPos().x, 0.0f, (float)Settings.MAP_SIZE_TILES));
-			int startnode_y = (int) Math.floor(Maths.clamp(getPos().y, 0.0f, (float)Settings.MAP_SIZE_TILES));
-			int endnode_x = (int) Math.floor(Maths.clamp(getPos().x + curtarget_x, 0.0f, (float)Settings.MAP_SIZE_TILES));
-			int endnode_y = (int) Math.floor(Maths.clamp(getPos().y + curtarget_y, 0.0f, (float)Settings.MAP_SIZE_TILES));
+			int startnode_x = (int) Math.floor(Maths.clamp(getPos().x, 0.0f, (float)CompiledSettings.MAP_SIZE_TILES));
+			int startnode_y = (int) Math.floor(Maths.clamp(getPos().y, 0.0f, (float)CompiledSettings.MAP_SIZE_TILES));
+			int endnode_x = (int) Math.floor(Maths.clamp(getPos().x + curtarget_x, 0.0f, (float)CompiledSettings.MAP_SIZE_TILES));
+			int endnode_y = (int) Math.floor(Maths.clamp(getPos().y + curtarget_y, 0.0f, (float)CompiledSettings.MAP_SIZE_TILES));
 		
 			path = new Pathfinder(startnode_x, startnode_y, endnode_x, endnode_y, 10);
 			if (path.failed) {

@@ -8,7 +8,7 @@ import logic.Database.Creature_Data;
 import logic.Main;
 import logic.Particle;
 import logic.ParticleManager;
-import logic.Settings;
+import logic.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
 import utility.vec3;
@@ -99,10 +99,10 @@ public abstract class Creature {
 	protected void commonDraw(Renderer renderer, float preupdate_scale) {
 		int heading_texture = getData().texture + heading;
 		vec3 pos = new vec3(
-				(getPos().x + getVel().x * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
-				(getPos().y + getVel().y * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				(getPos().x + getVel().x * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
+				(getPos().y + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
 				0.0f);
-		vec2 size = new vec2(Settings.TILE_SIZE);
+		vec2 size = new vec2(CompiledSettings.TILE_SIZE);
 		pos.mult(Main.game.renderScale());
 		size.mult(Main.game.renderScale());
 
@@ -257,7 +257,7 @@ public abstract class Creature {
 		}
 		swingX *= Main.game.renderScale();
 		swingY *= Main.game.renderScale();
-		vec3 swing_pos = new vec3(getPos().x + swingX, getPos().y + swingY, 0.0f).mult(Settings.TILE_SIZE);
+		vec3 swing_pos = new vec3(getPos().x + swingX, getPos().y + swingY, 0.0f).mult(CompiledSettings.TILE_SIZE);
 		ParticleManager.add(new Particle(swing_pos.vec2(), "swing", heading));
 		
 
@@ -307,9 +307,9 @@ public abstract class Creature {
 		if (Main.game.advancedDebugMode) return false;
 		//LineABXY from this enemy to x,y
 
-		for (int x = -Settings.MAP_WORK_DST; x < Settings.MAP_WORK_DST; x++)
+		for (int x = -CompiledSettings.MAP_WORK_DST; x < CompiledSettings.MAP_WORK_DST; x++)
 		{
-			for (int y = -Settings.MAP_WORK_DST; y < Settings.MAP_WORK_DST; y++)
+			for (int y = -CompiledSettings.MAP_WORK_DST; y < CompiledSettings.MAP_WORK_DST; y++)
 			{
 				Map.MapTile tile = Main.game.getMap().getTile((int) (x + Math.floor(getPos().x)), (int) (y + Math.floor(getPos().y)));
 

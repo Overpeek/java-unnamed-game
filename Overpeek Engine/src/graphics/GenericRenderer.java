@@ -1,10 +1,15 @@
 package graphics;
 
+import java.nio.FloatBuffer;
+
 import utility.vec2;
 import utility.vec3;
 import utility.vec4;
 
 public interface GenericRenderer {
+	
+	public abstract GenericRenderer construct();
+	public abstract GenericRenderer construct(FloatBuffer initialBuffer);
 	
 	public abstract void begin();
 	public abstract void end();

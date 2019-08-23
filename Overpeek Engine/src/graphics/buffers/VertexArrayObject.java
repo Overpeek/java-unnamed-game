@@ -1,4 +1,4 @@
-package graphics;
+package graphics.buffers;
 
 import org.lwjgl.opengl.GL20;
 
@@ -6,23 +6,23 @@ import java.util.ArrayList;
 
 import org.lwjgl.opengl.*;
 
-public class VertexArray {
+public class VertexArrayObject extends Buffer {
 	
 	private int id;
-	private ArrayList<Buffer> buffers = new ArrayList<Buffer>();
+	private ArrayList<VertexBufferObject> buffers = new ArrayList<VertexBufferObject>();
 
-	public VertexArray() {
+	public VertexArrayObject() {
 		id = GL30.glGenVertexArrays();
 		bind();
 	}
 
-	public void addBuffer(Buffer buffer) {
+	public void addBuffer(VertexBufferObject buffer) {
 		bind();
 		buffer.bind();
 		buffers.add(buffer);
 	}
 
-	public void addBuffer(Buffer buffer, int index) {
+	public void addBuffer(VertexBufferObject buffer, int index) {
 		bind();
 		buffer.bind();
 
@@ -31,18 +31,22 @@ public class VertexArray {
 		buffers.add(buffer);
 	}
 	
-	public Buffer getBuffer(int index) {
+	public VertexBufferObject getBuffer(int index) {
 		return buffers.get(index);
 	}
 
+	
+	@Override
 	public void bind() {
 		GL30.glBindVertexArray(id);
 	}
 
+	@Override
 	public void unbind() {
 		GL30.glBindVertexArray(0);
 	}
 
+	@Override
 	public void delete() {
 		GL15.glDeleteBuffers(id);
 	}

@@ -11,12 +11,15 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterOutputStream;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DataIO {
@@ -42,54 +45,44 @@ public class DataIO {
 		return databuffer;
 	}
 	
-	public static byte[] readByte(String path) {
+	public static byte[] readByte(String path) throws IOException {
 		Path fileLocation = Paths.get(path);
-		byte[] data;
-		try {
-			data = Files.readAllBytes(fileLocation);
-			return data;
-		} catch (IOException e) {
-			Logger.warn("Couldn't read file \"" + path + "\"");
-		}
-		
-		return null;
+		return Files.readAllBytes(fileLocation);
 	}
 	
-	public static ByteBuffer readByteBuffer(String path) {
+	public static ByteBuffer readByteBuffer(String path) throws IOException {
 		byte[] bytes = readByte(path);
-		if (bytes != null) ByteBuffer.wrap(bytes);
-		return null;
+		if (bytes == null) return null;
+		
+		return ByteBuffer.wrap(bytes);
 	}
 	
-	public static void writeByte(String path, byte[] data) {
+	public static void writeByte(String path, byte[] data) throws IOException {
 		Path fileLocation = Paths.get(path);
-		try {
-			Files.write(fileLocation, data);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		fileLocation.toFile().getParentFile().mkdirs();
+		Files.write(fileLocation, data, StandardOpenOption.CREATE);
 	}
 
-	public static void writeByteBuffer(String path, ByteBuffer data) {
+	public static void writeByteBuffer(String path, ByteBuffer data) throws IOException {
 		writeByte(path, data.array());
 	}
 	
-	public static void writeInt(String path, int[] data) {
+	public static void writeInt(String path, int[] data) throws IOException {
 		ByteBuffer byteBuf = ByteBuffer.allocateDirect(data.length * 4);
 		byteBuf.asIntBuffer().put(data);
 		writeByte(path, byteBuf.array());
 	}
 	
-	public static void writeChar(String path, char[] data) {
+	public static void writeChar(String path, char[] data) throws IOException {
 		ByteBuffer byteBuf = ByteBuffer.allocateDirect(data.length * 4);
 		byteBuf.asCharBuffer().put(data);
 		writeByte(path, byteBuf.array());
 	}
 	
-	public static int[] readInt(String path) {
+	public static int[] readInt(String path) throws IOException {
 		byte bytes[] = readByte(path);
 		if (bytes == null) return null;
+		
 		IntBuffer intBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
 		int[] array = new int[intBuf.remaining()];
 		intBuf.get(array);
@@ -97,9 +90,10 @@ public class DataIO {
 		return array;
 	}
 	
-	public static float[] readFloat(String path) {
+	public static float[] readFloat(String path) throws IOException {
 		byte bytes[] = readByte(path);
 		if (bytes == null) return null;
+		
 		FloatBuffer intBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asFloatBuffer();
 		float[] array = new float[intBuf.remaining()];
 		intBuf.get(array);
@@ -107,9 +101,10 @@ public class DataIO {
 		return array;
 	}
 	
-	public static char[] readChar(String path) {
+	public static char[] readChar(String path) throws IOException {
 		byte bytes[] = readByte(path);
 		if (bytes == null) return null;
+		
 		CharBuffer charBuf = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).asCharBuffer();
 		char[] array = new char[charBuf.remaining()];
 		charBuf.get(array);
@@ -117,37 +112,38 @@ public class DataIO {
 		return array;
 	}
 	
-	public static byte[] compress(byte[] input) {
+	public static byte[] compress(byte[] input) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            OutputStream out = new DeflaterOutputStream(baos);
-            out.write(input);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        OutputStream out = new DeflaterOutputStream(baos);
+        out.write(input);
+        out.close();
         
         return baos.toByteArray();
     }
 
-    public static byte[] decompress(byte[] input) {
+    public static byte[] decompress(byte[] input) throws IOException {
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            OutputStream out = new InflaterOutputStream(baos);
-            out.write(input);
-            out.close();
-            
-            return baos.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        OutputStream out = new InflaterOutputStream(baos);
+        out.write(input);
+        out.close();
+        
+        return baos.toByteArray();
     }
 	
-	public static JSONObject loadJSONObject(String path) {
+	public static JSONObject loadJSONObject(String path) throws JSONException {
 		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile(path)).toString();
 		return new JSONObject(source);
 	}
+	
+//	public static java.nio.Buffer readFileToBuffer(String path) {
+//		byte[] bytes = readByte(path);
+//		if (bytes == null) return null;
+//		
+//		return ByteBuffer.wrap(bytes);
+//	}
+//
+//	public static void writeBufferToFile(String path, java.nio.Buffer data) {
+//		writeByte(path, ((ByteBuffer(data))data).array());
+//	}
 	
 }

@@ -1,12 +1,14 @@
 package creatures;
 
+import java.io.IOException;
+
 import org.json.JSONObject;
 
 import graphics.Renderer;
 import logic.Database;
 import logic.Inventory;
 import logic.Main;
-import logic.Settings;
+import logic.CompiledSettings;
 import utility.DataIO;
 import utility.Keys;
 import utility.Logger;
@@ -28,7 +30,7 @@ public class Player extends Creature {
 		inventory = new Inventory();
 		clipmode = true;
 		god = false;
-		return commonConstruct(Settings.MAP_SIZE_TILES / 2.0f, Settings.MAP_SIZE_TILES / 2.0f, "player");
+		return commonConstruct(CompiledSettings.MAP_SIZE_TILES / 2.0f, CompiledSettings.MAP_SIZE_TILES / 2.0f, "player");
 	}
 
 	@Override
@@ -71,21 +73,24 @@ public class Player extends Creature {
 	
 	public void buttonPress(int button, int action) {
 		
-		if (button == Keys.MOUSE_BUTTON_LEFT && action == Keys.PRESS) {
+		if (!Main.game.getGui().chatOpened()) { // no interacting when typing
 
-			vec2 cursor = Main.game.getWindow().getCursorFast();
-			cursor.x /= Settings.TILE_SIZE;
-			cursor.y /= Settings.TILE_SIZE;
-			vec2 tile_on_map = new vec2(
-					(float)((int)getPos().x - Math.floor(getPos().x + cursor.x)),
-					(float)((int)getPos().y - Math.floor(getPos().y + cursor.y))
-					).mult(-1.0f);
-			tile_on_map.x += Math.floor(getPos().x);
-			tile_on_map.y += Math.floor(getPos().y);
-			ghost_object_location = tile_on_map;
-			
-			Main.game.getMap().hit((int)tile_on_map.x, (int)tile_on_map.y, (int)getData().meleeDamage);
-			hit();
+			if (button == Keys.MOUSE_BUTTON_LEFT && action == Keys.PRESS) {
+
+				vec2 cursor = Main.game.getWindow().getCursorFast();
+				cursor.x /= CompiledSettings.TILE_SIZE;
+				cursor.y /= CompiledSettings.TILE_SIZE;
+				vec2 tile_on_map = new vec2(
+						(float)((int)getPos().x - Math.floor(getPos().x + cursor.x)),
+						(float)((int)getPos().y - Math.floor(getPos().y + cursor.y))
+						).mult(-1.0f);
+				tile_on_map.x += Math.floor(getPos().x);
+				tile_on_map.y += Math.floor(getPos().y);
+				ghost_object_location = tile_on_map;
+				
+				Main.game.getMap().hit((int)tile_on_map.x, (int)tile_on_map.y, (int)getData().meleeDamage);
+				hit();
+			}
 			
 		}
 		
@@ -93,19 +98,20 @@ public class Player extends Creature {
 
 	@Override
 	public void update(float ups) {
-		float playerSpeed = Database.getCreature("player").walkSpeed;
 
-		if (Main.game.getWindow().key(Keys.KEY_LEFT_SHIFT)) playerSpeed *= 2.0f;
-		if (Main.game.getWindow().key(Keys.KEY_LEFT_CONTROL)) playerSpeed /= 2.0f;
-		if (Main.game.getWindow().key(Keys.KEY_TAB)) playerSpeed *= 50.0f;
-		if (Main.game.getWindow().key(Keys.KEY_S)) { setAcc(new vec2( getAcc().x,  playerSpeed)); }
-		if (Main.game.getWindow().key(Keys.KEY_D)) { setAcc(new vec2( playerSpeed,  getAcc().y)); }
-		if (Main.game.getWindow().key(Keys.KEY_W)) { setAcc(new vec2( getAcc().x, -playerSpeed)); }
-		if (Main.game.getWindow().key(Keys.KEY_A)) { setAcc(new vec2(-playerSpeed,  getAcc().y)); }
-		
-
-		vec2 cursor = Main.game.getWindow().getCursorFast();
-		setHeading(cursor.x, cursor.y);
+		if (!Main.game.getGui().chatOpened()) { // no interacting when typing
+			float playerSpeed = Database.getCreature("player").walkSpeed;
+			if (Main.game.getWindow().key(Keys.KEY_LEFT_SHIFT)) playerSpeed *= 2.0f;
+			if (Main.game.getWindow().key(Keys.KEY_LEFT_CONTROL)) playerSpeed /= 2.0f;
+			if (Main.game.getWindow().key(Keys.KEY_TAB)) playerSpeed *= 50.0f;
+			if (Main.game.getWindow().key(Keys.KEY_S)) { setAcc(new vec2( getAcc().x,  playerSpeed)); }
+			if (Main.game.getWindow().key(Keys.KEY_D)) { setAcc(new vec2( playerSpeed,  getAcc().y)); }
+			if (Main.game.getWindow().key(Keys.KEY_W)) { setAcc(new vec2( getAcc().x, -playerSpeed)); }
+			if (Main.game.getWindow().key(Keys.KEY_A)) { setAcc(new vec2(-playerSpeed,  getAcc().y)); }
+			
+			vec2 cursor = Main.game.getWindow().getCursorFast();
+			setHeading(cursor.x, cursor.y);
+		}
 		
 		commonUpdate(ups);
 	}
@@ -131,7 +137,15 @@ public class Player extends Creature {
 	public boolean load() {
 		inventory.load();
 
-		float playerData[] = DataIO.readFloat(Settings.SAVE_PATH + "player.data");
+		float playerData[] = null;
+		try {
+			playerData = DataIO.readFloat(CompiledSettings.SAVE_PATH + "player.data");
+		} catch(IOException e) {
+			Logger.error(e.getMessage());
+		}
+		
+		
+		
 		if (playerData == null) {
 			setSpawnPoint((int) getPos().x, (int) getPos().y);
 			return false;

@@ -5,7 +5,7 @@ import graphics.Renderer;
 import graphics.VertexData;
 import logic.Database;
 import logic.Main;
-import logic.Settings;
+import logic.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
 import utility.vec3;
@@ -25,10 +25,10 @@ public class Item extends Creature {
 	@Override
 	public void draw(Renderer renderer, float preupdate_scale) {
 		vec3 pos = new vec3(
-				(getPos().x + getVel().x * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
-				(getPos().x + getVel().y * preupdate_scale / Settings.UPDATES_PER_SECOND - 0.5f) * Settings.TILE_SIZE, 
+				(getPos().x + getVel().x * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
+				(getPos().x + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
 				0.0f);
-		vec2 size = new vec2(Settings.TILE_SIZE);
+		vec2 size = new vec2(CompiledSettings.TILE_SIZE);
 		pos.mult(Main.game.renderScale());
 		size.mult(Main.game.renderScale());
 

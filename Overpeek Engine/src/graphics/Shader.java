@@ -3,6 +3,7 @@ package graphics;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 
 import org.lwjgl.opengl.*;
 
@@ -51,7 +52,7 @@ public class Shader {
 			
 			reader.close();
 		} catch (Exception e) {
-			Logger.out("Shader file could not be loaded! (" + path +")", Logger.type.ERROR);
+			Logger.error("Shader file could not be loaded! (" + path +")");
 		}
 		
 		return loadShader(shadertype, shaderSource.toString());
@@ -63,7 +64,7 @@ public class Shader {
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetShaderInfoLog(shaderId);
-			Logger.out(text + "\n" + infoLogString, Logger.type.ERROR);
+			Logger.error(text + "\n" + infoLogString);
 		}
 	}
 
@@ -73,7 +74,7 @@ public class Shader {
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetProgramInfoLog(program);
-			Logger.out(text + "\n" + infoLogString, Logger.type.ERROR);
+			Logger.error(text + "\n" + infoLogString);
 		}
 	}
 	
@@ -299,22 +300,38 @@ public class Shader {
 		return shader;
 	}
 	
-	private Shader() {}
+	private Shader() {
+		uniforms = new HashMap<String, Integer>();
+	}
 
 
-	public void enable() { GL20.glUseProgram(shaderProgram); }
-	public void disable() { GL20.glUseProgram(0); }
+	public void bind() { GL20.glUseProgram(shaderProgram); }
+	public void unbind() { GL20.glUseProgram(0); }
 	
-	public int getUniformLocation(String name) { return GL20.glGetUniformLocation(shaderProgram, name); }
+	private HashMap<String, Integer> uniforms;
 	
-	public void setUniform1f(String name, float value) { enable(); GL20.glUniform1f(getUniformLocation(name), value); }
-	public void setUniform2f(String name, vec2 value) { enable(); GL20.glUniform2f(getUniformLocation(name), value.x, value.y); }
-	public void setUniform3f(String name, vec3 value) { enable(); GL20.glUniform3f(getUniformLocation(name), value.x, value.y, value.z); }
-	public void setUniform4f(String name, vec4 value) { enable(); GL20.glUniform4f(getUniformLocation(name), value.x, value.y, value.z, value.w); }
-	public void setUniform1i(String name, int value) { enable(); GL20.glUniform1i(getUniformLocation(name), value); }
-	public void setUniform2i(String name, vec2 value) { enable(); GL20.glUniform2i(getUniformLocation(name), (int)value.x, (int)value.y); }
-	public void setUniform3i(String name, vec3 value) { enable(); GL20.glUniform3i(getUniformLocation(name), (int)value.x, (int)value.y, (int)value.z); }
-	public void setUniform4i(String name, vec4 value) { enable(); GL20.glUniform4i(getUniformLocation(name), (int)value.x, (int)value.y, (int)value.z, (int)value.w); }
-	public void setUniformMat4(String name, mat4 value) { enable();	GL20.glUniformMatrix4fv(getUniformLocation(name), false, value.getAsBuffer()); }
+	private int getUniformLocation(String name) { return GL20.glGetUniformLocation(shaderProgram, name); }
+	private int getKey(String name) {
+		bind();
+		
+		if (uniforms.containsKey(name)) {
+			return uniforms.get(name);
+		} else {
+			int key = getUniformLocation(name);
+			uniforms.put(name, key);
+			return key;
+		}
+		
+	}
+	
+	public void setUniform1f(String name, float value) { GL20.glUniform1f(getKey(name), value); }
+	public void setUniform2f(String name, vec2 value) { GL20.glUniform2f(getKey(name), value.x, value.y); }
+	public void setUniform3f(String name, vec3 value) { GL20.glUniform3f(getKey(name), value.x, value.y, value.z); }
+	public void setUniform4f(String name, vec4 value) { GL20.glUniform4f(getKey(name), value.x, value.y, value.z, value.w); }
+	public void setUniform1i(String name, int value) { GL20.glUniform1i(getKey(name), value); }
+	public void setUniform2i(String name, vec2 value) { GL20.glUniform2i(getKey(name), (int)value.x, (int)value.y); }
+	public void setUniform3i(String name, vec3 value) { GL20.glUniform3i(getKey(name), (int)value.x, (int)value.y, (int)value.z); }
+	public void setUniform4i(String name, vec4 value) { GL20.glUniform4i(getKey(name), (int)value.x, (int)value.y, (int)value.z, (int)value.w); }
+	public void setUniformMat4(String name, mat4 value) { GL20.glUniformMatrix4fv(getKey(name), false, value.getAsBuffer()); }
 	
 }

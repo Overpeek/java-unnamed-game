@@ -13,6 +13,30 @@ import graphics.Window;
 
 public class Debug {
 	
+	public static class Timer {
+		
+		private long startNS = 0;
+
+		
+		
+		public Timer() {
+			startNS = System.nanoTime();
+		}
+		
+		public int nanoseconds() {
+			return (int) (System.nanoTime() - startNS);
+		}
+		
+		public float microseconds() {
+			return nanoseconds() / 1000.0f;
+		}
+		
+		public float milliseconds() {
+			return microseconds() / 1000.0f;
+		}
+		
+	}
+	
 	public static void debugFreeze(Window window, GameLoop loop) {
 		while(true) {
 			if (window != null && loop != null) {
@@ -47,24 +71,6 @@ public class Debug {
 	    frame.add(panel); 
 	    frame.pack();
 	    frame.setVisible(true);
-	}
-	
-	
-	private static long startMS = 0;
-	public static void startTimer() {
-		startMS = System.currentTimeMillis();
-	}
-	
-	public static int getElapsedMS() {
-		return (int) (System.currentTimeMillis() - startMS);
-	}
-	
-	public static void printElapsedMS(String description) {
-		Logger.debug(description + (getElapsedMS()) + "ms");
-	}
-	
-	public static void printElapsedMS() {
-		printElapsedMS("Operation took ");
 	}
 	
 }

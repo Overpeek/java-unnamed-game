@@ -1,11 +1,42 @@
 package graphics;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
+import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_DEBUG_CONTEXT;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_SAMPLES;
+import static org.lwjgl.glfw.GLFW.GLFW_TRANSPARENT_FRAMEBUFFER;
+import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
+import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwHideWindow;
+import static org.lwjgl.glfw.GLFW.glfwIconifyWindow;
+import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCharCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPos;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwShowWindow;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
 import static org.lwjgl.opengl.GL11.GL_DONT_CARE;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_INVALID_ENUM;
@@ -20,7 +51,6 @@ import static org.lwjgl.opengl.GL11.GL_POINT;
 import static org.lwjgl.opengl.GL11.GL_RENDERER;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -39,7 +69,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -58,11 +87,8 @@ import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLUtil;
 
 import utility.Application;
-import utility.Button;
-import utility.GUIWindow;
 import utility.Loader;
 import utility.Logger;
-import utility.Logger.type;
 import utility.Maths;
 import utility.vec2;
 import utility.vec4;
@@ -96,8 +122,8 @@ public class Window {
 	private int fullscreen; 
 	private int multisample;
 	private Application active_Application;
-	private Renderer defaultRenderer;
-	private ArrayList<Button> button_objects;
+	//private Renderer defaultRenderer;
+	//private ArrayList<Button> button_objects;
 	private vec4 clearColor;
 	
 	private boolean debug_mode = true;
@@ -112,7 +138,7 @@ public class Window {
 	private float scroll_total;
 	private float scroll_delta;
 	
-	public Shader shader;
+	//public Shader shader;
 	
 	
 	public void setCurrentApp(Application app) {
@@ -139,7 +165,7 @@ public class Window {
 			if (active_Application != null) active_Application.keyPress(key, action);
 			
 			if (key >= keys.length || key < 0) {
-				Logger.out("Unknown key: " + key, type.WARNING);
+				Logger.warn("Unknown key: " + key);
 				return;
 			}
 			if (action == GLFW_PRESS) { keys[key] = true; singleKeys[key] = true; }
@@ -156,15 +182,15 @@ public class Window {
 			if (active_Application != null) active_Application.buttonPress(button, action);
 			
 			if (button >= buttons.length || button < 0) {
-				Logger.out("Unknown button: " + button, type.WARNING);
+				Logger.warn("Unknown button: " + button);
 				return;
 			}
 			if (action == GLFW_PRESS) { buttons[button] = true; singleButtons[button] = true; }
 			if (action == GLFW_RELEASE) { buttons[button] = false; }
 			
-			for (Button b : button_objects) {
-				b.checkPressed(cursorX, cursorY, button);
-			}
+//			for (Button b : button_objects) {
+//				b.checkPressed(cursorX, cursorY, button);
+//			}
 	    }
 		
 	};
@@ -208,10 +234,11 @@ public class Window {
 		
 	};
 	
-	public Window(int width, int height, String title, int mods) {
+	public Window(int width, int height, String title, Application app, int mods) {
 		this.title = title;
 		this.width = width;
 		this.height = height;
+		setCurrentApp(app);
 		
 		
 		//Flags
@@ -309,9 +336,9 @@ public class Window {
 		// GL version
 		Logger.debug("OpenGL version: " + glGetString(GL11.GL_VERSION));
 		
-		defaultRenderer = new Renderer();
-		button_objects = new ArrayList<Button>();
-		shader = Shader.multiTextureShader();
+//		defaultRenderer = new Renderer();
+//		button_objects = new ArrayList<Button>();
+//		shader = Shader.multiTextureShader();
 		Shader.setActiveWindow(this);
 	}
 	
@@ -323,15 +350,15 @@ public class Window {
 		glfwHideWindow(window);
 	}
 	
-	public void addButton(Button btn) {
-		button_objects.add(btn);
-	}
-	
-	private void drawButtons() {
-		for (Button b : button_objects) {
-			b.manualRender(defaultRenderer, this);
-		}
-	}
+//	public void addButton(Button btn) {
+//		button_objects.add(btn);
+//	}
+//	
+//	private void drawButtons() {
+//		for (Button b : button_objects) {
+//			b.manualRender(defaultRenderer, this);
+//		}
+//	}
 	
 	public boolean shouldClose() {
 		return glfwWindowShouldClose(window);
@@ -340,21 +367,21 @@ public class Window {
 	public void clear() {
 		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		defaultRenderer.clear();
+//		defaultRenderer.clear();
 	}
 	
 	public void clear(vec4 c) {
 		glClearColor(c.x, c.y, c.z, c.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		resetClearColor();
-		defaultRenderer.clear();
+//		defaultRenderer.clear();
 	}
 	
 	public void clear(float r, float g, float b, float a) {
 		glClearColor(r, g, b, a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		resetClearColor();
-		defaultRenderer.clear();
+//		defaultRenderer.clear();
 	}
 	
 	public void clearColor(vec4 c) {
@@ -384,8 +411,8 @@ public class Window {
 	}
 	
 	public void update() {
-		drawButtons();
-		defaultRenderer.draw(0, 0);
+//		drawButtons();
+//		defaultRenderer.draw(0, 0);
 		
 		if (debug_mode) checkGLErrors(true);
 		glfwSwapBuffers(window);

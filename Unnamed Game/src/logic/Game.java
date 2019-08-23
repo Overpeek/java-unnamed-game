@@ -2,18 +2,20 @@ package logic;
 
 import audio.Audio;
 import creatures.Player;
-import graphics.Framebuffer;
 import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
 import graphics.Texture;
 import graphics.Window;
+import graphics.buffers.Framebuffer;
 import utility.Application;
 import utility.Colors;
+import utility.Debug.Timer;
 import utility.GameLoop;
 import utility.Keys;
 import utility.Logger;
+import utility.SaveManager;
 import utility.mat4;
 import utility.vec2;
 import utility.vec3;
@@ -36,7 +38,6 @@ public class Game extends Application {
 	private Inventory inventory;
 	private Gui gui;
 	private Texture splashScreen;
-	private String loadedMapName;
 	
 	public boolean paused;
 	public boolean advancedDebugMode;
@@ -48,14 +49,13 @@ public class Game extends Application {
 	// Main update loop
 	@Override
 	public void update() {
-		if (Settings.DEBUG_REGEN_WORLD) loadWorld(Settings.WORLD_NAME, true); // Debug regen world
-
+		if (true) return;
 		postprocess_time += 0.1f;
 		postprocess_shader.setUniform1f("unif_t", postprocess_time);
 		
 		if (paused) return;
-		map.update(Settings.UPDATES_PER_SECOND);
-		gui.update(Settings.UPDATES_PER_SECOND);
+		map.update(CompiledSettings.UPDATES_PER_SECOND);
+		gui.update(CompiledSettings.UPDATES_PER_SECOND);
 		Database.modUpdates();
 	}
 
@@ -66,7 +66,11 @@ public class Game extends Application {
 	public void render(float preupdate_scale) {
 		if (window == null || window.shouldClose()) gameloop.stop();
 		window.clear();
-		
+	 	map.draw(preupdate_scale);
+		gui.draw();
+		window.update();
+		window.input();
+		if (true) return;
 		// Logger.debug("Camera position: " + camera_pos);
 
 		// world_renderer.clear();
@@ -108,7 +112,6 @@ public class Game extends Application {
 // 		blur_renderer.points.draw(TextureLoader.getTexture());
 // 		normal_renderer.points.draw(TextureLoader.getTexture());
 // 		
-		gui_shader.enable();
 // 		
 		gui_shader.setUniform1i("usetex", 1); 
 		TextLabelTexture.drawQueue(true);
@@ -201,7 +204,7 @@ public class Game extends Application {
 		
 		// Window
 		Logger.info("Creating window");
-		window = new Window(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT, Settings.WINDOW_DEFAULT_TITLE, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
+		window = new Window(CompiledSettings.WINDOW_WIDTH, CompiledSettings.WINDOW_HEIGHT, CompiledSettings.WINDOW_DEFAULT_TITLE, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
 		window.setSwapInterval(0);
 		window.setIcon("/res/texture/icon.png");
 		window.setBackFaceCulling(false);
@@ -218,6 +221,7 @@ public class Game extends Application {
 		loadDescription = TextLabelTexture.bakeToTexture("Loading");
 		gui_renderer = new Renderer();
 		splashScreen = Texture.loadTextureAtlas(256, 1, 1, 1, "/res/texture/splash.png");
+		SaveManager.init(CompiledSettings.GAME_NAME);
 		
 		// Splash screen
 		window.unhide();
@@ -254,7 +258,7 @@ public class Game extends Application {
 		ParticleManager.init();
 
 		// Start async map loading
-		loadWorld(Settings.WORLD_NAME, true);
+		loadWorld(CompiledSettings.WORLD_NAME, true);
 		
 		// Main menu
 		MainMenu.init(gui_renderer, gui_shader, postprocess_shader, glyphs);
@@ -275,7 +279,6 @@ public class Game extends Application {
 	// If not found, create one
 	public void loadWorld(String name, boolean create) {
 		AsyncMapLoader loader = new AsyncMapLoader();
-		loadedMapName = name;
 		map = new Map();
 		loader.loadMap(map, name);
 		new Thread(loader).start();
@@ -285,7 +288,7 @@ public class Game extends Application {
 			//Check loadstate and send it to loading screen
 			float state = loader.queryLoadState();
 			if (state == 1.0f) { map = loader.getLoadedMap(); return; } //  Load finished
-			if (state == -1) { loadedMapName = null; break; } //  Load failed
+			if (state == -1) { break; } //  Load failed
 			drawLoadingScreen(gui_renderer, state, "Loading map");		
 			
 		}
@@ -300,7 +303,7 @@ public class Game extends Application {
 				//Check loadstate and send it to loading screen
 				float state = loader.queryLoadState();
 				if (state == 1.0f) { map = loader.getLoadedMap(); return; } // Create finished
-				if (state == -1) { loadedMapName = null; break; } // Create failed
+				if (state == -1) { break; } // Create failed
 				drawLoadingScreen(gui_renderer, state, "Creating map");			
 			}
 			
@@ -312,11 +315,15 @@ public class Game extends Application {
 	// Key press callback
 	@Override
 	public void keyPress(int key, int action) {
+		boolean chatWasOpened = gui.chatOpened();
+		gui.keyPress(key, action);
+		if (chatWasOpened) return;
+		
 		if (action == Keys.PRESS) {
 			if (key == Keys.KEY_ESCAPE) { paused = !paused; return; }
 			
 			// Cant press or open anything while typing to chat or paused
-			if (gui.chatOpened() || paused) return;
+			if (paused) return;
 
 			// Postshader
 			if (key == Keys.KEY_F7) { postprocess_shader.setUniform1i("unif_lens", 0); return; }
@@ -326,7 +333,7 @@ public class Game extends Application {
 			if (key == Keys.KEY_E) { map.getPlayer().setPos(new vec2(Math.round(map.getPlayer().getPos().x + 0.5f) - 0.5f, Math.round(map.getPlayer().getPos().y + 0.5f) - 0.5f)); return; }
 
 			// Inventory
-			if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
+			//if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
 			if (key == Keys.KEY_ESCAPE) { inventory.setVisible(false); return; }
 
 			// Inventory slot selecting
@@ -408,19 +415,6 @@ public class Game extends Application {
 		gui.typing(character, 0);
 	}
 	
-	public String getResourcePath() {
-		return "/res/";
-	}
-	
-	public String getDataPath() {
-		return Settings.SAVE_PATH + "/";
-	}
-	
-	public String getSavePath() {
-		// "C:/Users/eemel/AppData/Roaming/Unnamed Game" for windows
-		return Settings.SAVE_PATH + "/" + loadedMapName + "/";
-	}
-	
 	public GlyphTexture getGlyphs() {
 		return glyphs;
 	}
@@ -476,8 +470,13 @@ public class Game extends Application {
 
 
 	public void saveWorld() {
-		// TODO Auto-generated method stub
+		gui.addChatLine("Saving..., expect some lag");
+		Logger.info("Saving...");
+		Timer timer = new Timer();
+
+		map.save();
 		
+		gui.addChatLine("Save complete (in " + timer.microseconds() + " microseconds)");
 	}
 	
 }

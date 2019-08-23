@@ -225,13 +225,13 @@ rayData rayMarch(rayData ray, int maxSteps, float maxDistance) {
 void main()
 {
 	objects[0] = object(0, 0, vec3(-0.5f, 0.5f,  0.5f), vec3(0.1f, 0.2f, 0.3f), vec3(1.0f, 0.5f, 0.5f));
-	objects[1] = object(1, 1, vec3(-0.1f, 0.0f,  0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
-	objects[2] = object(1, 2, vec3( 0.1f, 0.0f, -0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
-	objects[3] = object(1, 3, vec3( 0.0f, 0.1f,  0.0f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 1.0f, 1.0f));
+	objects[1] = object(1, 1, vec3(-0.1f, 0.0f,  0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(1.0f, 0.0f, 0.0f));
+	objects[2] = object(1, 2, vec3( 0.1f, 0.0f, -0.1f), vec3(0.2f, 0.2f, 0.2f), vec3(0.0f, 1.0f, 0.0f));
+	objects[3] = object(1, 3, vec3( 0.0f, 0.1f,  0.0f), vec3(0.2f, 0.2f, 0.2f), vec3(0.0f, 0.0f, 1.0f));
 
-	float aspect = 16.0f / 9.0f;
-	float rayX = map(gl_FragCoord.x, 0.0, 1600.0, -cameraFov / 2.0 * aspect, cameraFov / 2.0 * aspect);
-	float rayY = map(gl_FragCoord.y, 0.0, 900.0, -cameraFov / 2.0, cameraFov / 2.0);
+	float aspect = 6.0f / 6.0f;
+	float rayX = map(gl_FragCoord.x, 0.0, 600.0, -cameraFov / 2.0 * aspect, cameraFov / 2.0 * aspect);
+	float rayY = map(gl_FragCoord.y, 0.0, 600.0, -cameraFov / 2.0, cameraFov / 2.0);
 	vec3 directionVector = (vw_matrix * normalize(vec4(-rayX, -rayY, -1.0, 0.0))).xyz;
 	vec3 rayColor = vec3(1.1);
 	vec3 rayOrigin = camera.xyz;

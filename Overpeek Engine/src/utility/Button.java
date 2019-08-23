@@ -60,7 +60,7 @@ public class Button {
 			renderer.quads.submit(new vec3(x, y, 0.0f), new vec2(w, h), 0, c);
 			break;
 		case 1:
-			renderer.spheres.submit(new vec3(x + w / 2.0f, y + w / 2.0f, 0.0f), new vec2(w, h).mult(0.5f), 32, 0, c);
+			renderer.spheres.submit(new vec3(x + w / 2.0f, y + w / 2.0f, 0.0f), new vec2(w, h).mul(0.5f), 32, 0, c);
 			break;
 
 		default:

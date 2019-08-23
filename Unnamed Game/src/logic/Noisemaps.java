@@ -13,15 +13,15 @@ public class Noisemaps {
 	public Noisemaps(int seed) {
 
 		mapnoise = new SimplexNoise_octave(seed);
-		mapnoise.setFreq(Settings.MAP_FREQ);
+		mapnoise.setFreq(CompiledSettings.MAP_FREQ);
 		biomenoise1 = new SimplexNoise_octave(seed + 1);
-		biomenoise1.setFreq(Settings.MAP_BIOME_FREQ);
+		biomenoise1.setFreq(CompiledSettings.MAP_BIOME_FREQ);
 		biomenoise2 = new SimplexNoise_octave(seed + 2);
-		biomenoise2.setFreq(Settings.MAP_BIOME_FREQ);
+		biomenoise2.setFreq(CompiledSettings.MAP_BIOME_FREQ);
 		plantnoise1 = new SimplexNoise_octave(seed + 3);
-		plantnoise1.setFreq(Settings.MAP_PLANT1_FREQ);
+		plantnoise1.setFreq(CompiledSettings.MAP_PLANT1_FREQ);
 		plantnoise2 = new SimplexNoise_octave(seed + 4);
-		plantnoise2.setFreq(Settings.MAP_PLANT2_FREQ);
+		plantnoise2.setFreq(CompiledSettings.MAP_PLANT2_FREQ);
 		
 	}
 	

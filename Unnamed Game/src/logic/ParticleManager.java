@@ -31,7 +31,7 @@ public class ParticleManager {
 	
 	public static void draw(Renderer renderer) {
 		for(Particle p : particles) {
-			float size = Main.game.renderScale() * Settings.TILE_SIZE;
+			float size = Main.game.renderScale() * CompiledSettings.TILE_SIZE;
 			renderer.quads.submit(new vec3(p.pos.x - size/2.0f, p.pos.y - size/2.0f, 0.5f), new vec2(size), p.texture, Colors.WHITE);
 		}
 	}

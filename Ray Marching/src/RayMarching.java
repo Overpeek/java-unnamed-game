@@ -1,15 +1,14 @@
-import java.awt.Font;
-
-import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
-import graphics.TextLabelTexture;
+//import graphics.TextLabelTexture;
 import graphics.Texture;
 import graphics.Window;
+import graphics.Renderer.Type;
+import graphics.primitives.Primitive.Primitives;
+import graphics.primitives.Quad;
 import utility.Application;
 import utility.Colors;
 import utility.Keys;
-import utility.Logger;
 import utility.mat4;
 import utility.vec2;
 import utility.vec3;
@@ -36,7 +35,7 @@ public class RayMarching extends Application {
 	Renderer renderer;
 	Shader raymarch_shader;
 	Shader normal_shader;
-	TextLabelTexture fps_text_label;
+	//TextLabelTexture fps_text_label;
 	Texture skybox;
 
 	@Override
@@ -67,20 +66,18 @@ public class RayMarching extends Application {
 		raymarch_shader.setUniform1f("power", power);
 		raymarch_shader.setUniform1f("time", time);
 		raymarch_shader.setUniform1i("iterations", Math.round(iteratios));
-		
-		Logger.info("Power: " + power + ", Iterations: " + Math.round(iteratios));
 	}
 
 	@Override
 	public void render(float preupdate_scale) {
 		// TODO Auto-generated method stub
-		raymarch_shader.enable();
-		renderer.quads.submit(new vec3(-1.0f, -1.0f, 0.0f), new vec2(2.0f, 2.0f), 0, Colors.BLACK);
-		renderer.quads.draw(skybox);
+		raymarch_shader.bind();
+		skybox.bind();
+		renderer.draw();
 
-		normal_shader.enable();
-		fps_text_label.rebake("FPS: " + gameloop.getFps());
-		fps_text_label.queueDraw(new vec3(-1.0f, -1.0f, 0.0f), new vec2(0.1f, 0.1f));
+		normal_shader.bind();
+//		fps_text_label.rebake("FPS: " + gameloop.getFps());
+//		fps_text_label.queueDraw(new vec3(-1.0f, -1.0f, 0.0f), new vec2(0.1f, 0.1f));
 	}
 
 	@Override
@@ -91,21 +88,21 @@ public class RayMarching extends Application {
 
 	@Override
 	public void init() {
-		window = new Window(1600, 900, "Ray Marching - Eemeli Lehtonen", 0);
+		window = new Window(600, 600, "Ray Marching - Eemeli Lehtonen", 0);
 		window.setCurrentApp(this);
 		window.setSwapInterval(1);
-		renderer = new Renderer();
-		window.clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		renderer = new Renderer(Primitives.Quad, Type.Dynamic, Type.Static);
+		renderer.submit(new Quad(new vec2(-1.0f, -1.0f), new vec2(2.0f, 2.0f), 0, Colors.WHITE));
 		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
 		raymarch_shader = Shader.loadFromSources("/res/vert.glsl", "/res/frag.glsl", true);
 		raymarch_shader.setUniformMat4("pr_matrix", pr);
-		raymarch_shader.disable();
+		raymarch_shader.unbind();
 		
 		normal_shader = Shader.loadFromSources("/res/texture-single.vert.glsl", "/res/texture-single.frag.glsl", true);
 		normal_shader.setUniformMat4("pr_matrix", pr);
-		GlyphTexture glyphs = GlyphTexture.loadFont(new Font("arial", Font.BOLD, 64));
-		TextLabelTexture.initialize(window, glyphs);
-		fps_text_label = TextLabelTexture.bakeToTexture("FPS: 0");
+		//GlyphTexture glyphs = GlyphTexture.loadFont(new Font("arial", Font.BOLD, 64));
+		//TextLabelTexture.initialize(window, glyphs);
+//		fps_text_label = TextLabelTexture.bakeToTexture("FPS: 0");
 		String sources[] = {
 			"/res/right.png",
 		    "/res/left.png",

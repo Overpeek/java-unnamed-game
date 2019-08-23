@@ -7,15 +7,20 @@ public class Maths {
 	private static Random rand;
 	private static SimplexNoise_octave noise;
 	
+	public static final float PI = 3.141592653589793238462643383f;
 	
 	
-	public static void seed(float seed) {
-		rand = new Random((long) seed);
+	public static void seed(long seed) {
+		rand = new Random(seed);
 		noise = new SimplexNoise_octave((int) seed);
 	}
 	
+	public static void seed() {
+		seed(System.currentTimeMillis());
+	}
+	
 	public static float random(float min, float max) {
-		if (rand == null) seed(0);
+		if (rand == null) seed();
 		
 		return map(rand.nextFloat(), 0.0f, 1.0f, min, max);
 	}
@@ -25,7 +30,7 @@ public class Maths {
 	}
 	
 	public static float noise(float x, float y, float min, float max) {
-		if (noise == null) seed(0);
+		if (noise == null) seed();
 		
 		return map((float) noise.noise(x + 0.01f, y + 0.01f, 0.01f), -1.0f, 1.0f, min, max);
 	}
@@ -35,6 +40,22 @@ public class Maths {
 		if (value <= min) value = min;
 		
 		return value;
+	}
+	
+	public static float cos(float value) {
+		return (float) Math.cos(value);
+	}
+	
+	public static float sin(float value) {
+		return (float) Math.sin(value);
+	}
+	
+	public static float tan(float value) {
+		return (float) Math.tan(value);
+	}
+	
+	public static float abs(float value) {
+		return Math.abs(value);
 	}
 	
 	public static boolean isInRange(float value, float min, float max) {

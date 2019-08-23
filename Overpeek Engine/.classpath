@@ -49,5 +49,6 @@
 	<classpathentry kind="lib" path="lib/sources/lwjgl-stb-sources.jar"/>
 	<classpathentry kind="lib" path="lib/sources/lwjglx-debug-1.0.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/libraries/json-20180813.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jbox2d-library"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -347,7 +347,7 @@ public class Gui {
 		
 		consoleWindow.draw();
 		
-		gui_shader.enable();
+		gui_shader.bind();
 		blur_renderer.draw(TextureLoader.getTexture());
 		normal_renderer.draw(TextureLoader.getTexture());
 	}
@@ -501,7 +501,7 @@ public class Gui {
 			for (int i = 0; i < argumentList.length; i++) {
 				
 				argumentList[i] = list.get(i);
-				Logger.debug("arg[" + i + "] = " + argumentList[i]);
+				//Logger.debug("arg[" + i + "] = " + argumentList[i]);
 				
 			}
 
