@@ -102,6 +102,10 @@ public class Renderer {
 		this(primitiveType, Type.Dynamic, Type.Static, max_primitives);
 	}
 
+	/*
+	 * same as Renderer(Primitives primitiveType, Type arrayRenderType, Type indexRenderType, int max_primitives)
+	 * with arguments Renderer(Primitives.Quad, Type.Dynamic, Type.Static, 2<<18)
+	 * **/
 	public Renderer() {
 		this(Primitives.Quad, Type.Dynamic, Type.Static, 2<<18);
 	}

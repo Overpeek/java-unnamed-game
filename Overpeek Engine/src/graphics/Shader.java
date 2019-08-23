@@ -21,13 +21,34 @@ public class Shader {
 
 	private int shaderProgram;
 	
+	public static class ShaderException extends Throwable {
+
+		private static final long serialVersionUID = -5087362677998217797L;
+		
+		private String shaderLog;
+		
+		
+		
+		public ShaderException(String shaderLog) {
+			this.shaderLog = shaderLog;
+		}
+		
+		@Override
+		public void printStackTrace() {
+			Logger.crit(shaderLog);
+			Logger.crit("Stack trace:");
+			super.printStackTrace();
+		}
+		
+	}
+	
 	
 	
 	public int getProgram() {
 		return shaderProgram;
 	}
 
-	private int loadShader(int shadertype, String shaderText) {
+	private int loadShader(int shadertype, String shaderText) throws ShaderException {
 		int shaderId;
 		shaderId = GL20.glCreateShader(shadertype);
 		GL20.glShaderSource(shaderId, shaderText);
@@ -38,7 +59,7 @@ public class Shader {
 		return shaderId;
 	}
 
-	private int loadShaderFile(int shadertype, String path) {
+	private int loadShaderFile(int shadertype, String path) throws ShaderException {
 		//Load and compile
 		StringBuilder shaderSource = new StringBuilder();
 		try {
@@ -58,23 +79,31 @@ public class Shader {
 		return loadShader(shadertype, shaderSource.toString());
 	}
 
-	private void shaderLog(String text, int shaderId, int type) {
+	private void shaderLog(String text, int shaderId, int type) throws ShaderException {
 		int success[] = new int[1];
 		GL20.glGetShaderiv(shaderId, type, success);
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetShaderInfoLog(shaderId);
+<<<<<<< Upstream, based on branch 'master' of https://github.com/Overpeek/java-unnamed-game.git
 			Logger.error(text + "\n" + infoLogString);
+=======
+			throw new ShaderException(text + "\n" + infoLogString);
+>>>>>>> 4fbda16 Shader improvements
 		}
 	}
 
-	private void programLog(String text, int program, int type) {
+	private void programLog(String text, int program, int type) throws ShaderException {
 		int success[] = new int[1];
 		GL20.glGetProgramiv(program, type, success);
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetProgramInfoLog(program);
+<<<<<<< Upstream, based on branch 'master' of https://github.com/Overpeek/java-unnamed-game.git
 			Logger.error(text + "\n" + infoLogString);
+=======
+			throw new ShaderException(text + "\n" + infoLogString);
+>>>>>>> 4fbda16 Shader improvements
 		}
 	}
 	
@@ -119,7 +148,13 @@ public class Shader {
 							"	else color = shader_color;\n" +
 							"}\n";
 		
-		return loadFromSources(vertsource, fragsource, false);
+		try {
+			return loadFromSources(vertsource, fragsource, false);
+		} catch (ShaderException e) {
+			// In theory, it is impossible for this to fail
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static Shader multiTextureShader() {
@@ -163,13 +198,19 @@ public class Shader {
 							"	else color = shader_color;\n" +
 							"}\n";
 		
-		return loadFromSources(vertsource, fragsource, false);
+		try {
+			return loadFromSources(vertsource, fragsource, false);
+		} catch (ShaderException e) {
+			// In theory, it is impossible for this to fail
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	/**
 	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
-	public static Shader loadFromSources(String vertex, String fragment, boolean usePath) {
+	public static Shader loadFromSources(String vertex, String fragment, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();
 		
 		//Vertex shader
@@ -208,7 +249,7 @@ public class Shader {
 	/**
 	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
-	public static Shader loadFromSources(String compute, boolean usePath) {
+	public static Shader loadFromSources(String compute, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();
 		
 		//Compute shader
@@ -255,7 +296,7 @@ public class Shader {
 	/**
 	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
-	public static Shader loadFromSources(String vertex, String fragment, String geometry, boolean usePath) {
+	public static Shader loadFromSources(String vertex, String fragment, String geometry, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();
 		
 		//Vertex shader
