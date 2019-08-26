@@ -13,6 +13,7 @@ import graphics.buffers.VertexArrayObject;
 import graphics.buffers.VertexBufferObject;
 import graphics.primitives.Primitive;
 import graphics.primitives.Primitive.Primitives;
+import graphics.primitives.VertexData;
 
 public class Renderer {
 	

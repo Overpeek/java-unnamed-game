@@ -4,8 +4,6 @@ import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.GL11;
 
-import graphics.VertexData;
-
 public abstract class Primitive {
 
 	

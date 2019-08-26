@@ -14,7 +14,8 @@ public class PhysicsCircle extends PhysicsObject {
 		super(physics, position, new vec2(radius), 0.0f, is_static);
 		
 		CircleShape shape = new CircleShape();
-		shape.setRadius(radius);
+		shape.m_radius = radius;
+		//shape.setRadius(radius);
 		
 		fixture = body.createFixture(shape, 1.0f);
 		fixture.setRestitution(0.1f);

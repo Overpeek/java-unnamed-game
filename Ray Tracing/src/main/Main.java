@@ -14,13 +14,11 @@ import graphics.Shader;
 import graphics.Shader.ShaderException;
 import graphics.Texture;
 import graphics.Window;
-import graphics.primitives.Primitive.Primitives;
 import graphics.primitives.Quad;
 import utility.Application;
 import utility.Colors;
 import utility.Debug.DebugSlider;
 import utility.Keys;
-import utility.Logger;
 import utility.vec2;
 import utility.vec3;
 
@@ -49,8 +47,6 @@ public class Main extends Application {
 	@Override
 	public void update() {
 		t = ds2.getSliderValue();
-		
-		Logger.debug("FPS: " + gameloop.getFps());
 
 		if (can_draw) {
 			compute.bind();

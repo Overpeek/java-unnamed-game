@@ -2,7 +2,7 @@ package creatures;
 
 
 import graphics.Renderer;
-import graphics.VertexData;
+import graphics.primitives.VertexData;
 import logic.Database;
 import logic.Main;
 import logic.CompiledSettings;

@@ -3,6 +3,7 @@ package mod;
 import org.json.JSONObject;
 
 import graphics.*;
+import graphics.primitives.VertexData;
 import logic.*;
 import utility.*;
 

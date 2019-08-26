@@ -1,4 +1,5 @@
 import graphics.*;
+import graphics.primitives.VertexData;
 import utility.*;
 
 public class Curve {

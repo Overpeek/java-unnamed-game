@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL43;
 
 import utility.Loader;
 import utility.Logger;
@@ -85,11 +87,7 @@ public class Shader {
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetShaderInfoLog(shaderId);
-<<<<<<< Upstream, based on branch 'master' of https://github.com/Overpeek/java-unnamed-game.git
-			Logger.error(text + "\n" + infoLogString);
-=======
 			throw new ShaderException(text + "\n" + infoLogString);
->>>>>>> 4fbda16 Shader improvements
 		}
 	}
 
@@ -99,11 +97,7 @@ public class Shader {
 		if (success[0] == 0)
 		{
 			String infoLogString = GL20.glGetProgramInfoLog(program);
-<<<<<<< Upstream, based on branch 'master' of https://github.com/Overpeek/java-unnamed-game.git
-			Logger.error(text + "\n" + infoLogString);
-=======
 			throw new ShaderException(text + "\n" + infoLogString);
->>>>>>> 4fbda16 Shader improvements
 		}
 	}
 	

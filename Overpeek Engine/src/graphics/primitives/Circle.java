@@ -1,6 +1,5 @@
 package graphics.primitives;
 
-import graphics.VertexData;
 import utility.Maths;
 import utility.vec2;
 import utility.vec4;

@@ -1,7 +1,7 @@
 package logic;
 
 import graphics.Renderer;
-import graphics.VertexData;
+import graphics.primitives.VertexData;
 import utility.Colors;
 import utility.vec2;
 import utility.vec3;

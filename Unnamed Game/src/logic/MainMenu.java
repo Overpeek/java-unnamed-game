@@ -4,7 +4,7 @@ import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
-import graphics.VertexData;
+import graphics.primitives.VertexData;
 import utility.Application;
 import utility.Colors;
 import utility.GameLoop;

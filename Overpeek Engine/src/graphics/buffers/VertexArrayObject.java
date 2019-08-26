@@ -1,10 +1,11 @@
 package graphics.buffers;
 
-import org.lwjgl.opengl.GL20;
-
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 public class VertexArrayObject extends Buffer {
 	

@@ -1,6 +1,7 @@
 package graphics;
 
 import graphics.primitives.Primitive.Primitives;
+import graphics.primitives.VertexData;
 import utility.vec2;
 import utility.vec4;
 

@@ -87,7 +87,7 @@ public class Physics {
 	}
 	
 	public Physics(vec2 gravity) {
-		world = new World(new Vec2(0.0f, 9.81f));
+		world = new World(new Vec2(0.0f, 9.81f), true);
 	}
 	
 	public vec2 worldToScreen(vec2 pos) { 

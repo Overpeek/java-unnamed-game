@@ -1,14 +1,15 @@
-package graphics;
+package graphics.primitives;
 
 import utility.vec2;
 import utility.vec4;
 
 public class VertexData {
 	
-	float x, y;
-	float u, v;
-	float i;
-	float r, g, b, a;
+	public float x;
+	public float y;
+	public float u, v;
+	public float i;
+	public float r, g, b, a;
 
 	public VertexData(float _x, float _y, float _u, float _v, float _i, float _r, float _g, float _b, float _a) {
 		x = _x;
