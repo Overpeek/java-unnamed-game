@@ -1,8 +1,10 @@
 package utility;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,6 +24,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DataIO {
+	
+	public static String readTextFile(String path) throws IOException {
+		//Load and compile
+		StringBuilder text = new StringBuilder();
+		InputStream is = Loader.loadRes(path);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		String line;
+		
+		while((line = reader.readLine()) != null) {
+			text.append(line).append("\n");
+		}
+		
+		reader.close();
+		
+		return text.toString();
+	}
 	
 	public static ByteBuffer readResourceFile(String path) {
 		InputStream is = Loader.loadRes(path);

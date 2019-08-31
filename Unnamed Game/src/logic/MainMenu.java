@@ -72,7 +72,7 @@ public class MainMenu extends Application {
 
 		//Main menu text
 		single_shader.setUniform1i("usetex", 1);
-		label.queueDrawCentered(new vec3(0.0f, 0.0f, 0.0f), new vec2(0.5f));
+		label.queueDrawCentered(new vec2(0.0f, 0.0f), new vec2(0.5f));
 		TextLabelTexture.drawQueue(false);
 
 		Main.game.getWindow().update();

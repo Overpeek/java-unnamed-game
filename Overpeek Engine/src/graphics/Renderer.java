@@ -111,6 +111,21 @@ public class Renderer {
 		this(Primitives.Quad, Type.Dynamic, Type.Static, 2<<18);
 	}
 	
+	public void submitOverride(Primitive primitive, int index) {
+		if(!vbo.isMapped()) {
+			ByteBuffer buf = vbo.mapBuffer();
+			arrayBufferData = buf.asFloatBuffer();
+			arrayBufferData.position(vertex_count * VertexData.componentCount);
+		}
+
+		int old_pos = arrayBufferData.position();
+		arrayBufferData.position(index * primitiveType.vertex_count * VertexData.componentCount);
+		for (int i = 0; i < primitive.vertexData.length; i++) {
+			arrayBufferData.put(primitive.vertexData[i].get());
+		}
+		arrayBufferData.position(old_pos);
+	}
+	
 	public void submit(VertexData vertex) {
 		if(!vbo.isMapped()) {
 			ByteBuffer buf = vbo.mapBuffer();
@@ -135,6 +150,10 @@ public class Renderer {
 		}
 		
 		vertex_count += primitiveType.vertex_count;
+	}
+	
+	public void overridePrimitiveCount(int newCount) {
+		vertex_count = primitiveType.vertex_count * VertexData.componentCount * newCount;
 	}
 	
 	public void clear() {

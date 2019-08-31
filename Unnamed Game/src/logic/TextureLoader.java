@@ -26,7 +26,6 @@ public class TextureLoader {
 	static private ByteBuffer textureBuffer;
 	static private int r;
 	static private Texture texture;
-	static private int type;
 	static private int current_layer;
 
 	public static Texture getTexture() {
@@ -55,7 +54,7 @@ public class TextureLoader {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			Logger.out("Couldn't load file: " + path, Logger.type.ERROR);
+			Logger.error("Couldn't load file: " + path);
 		}
 		
 		//Texture data

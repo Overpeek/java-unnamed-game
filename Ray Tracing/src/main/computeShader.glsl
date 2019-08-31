@@ -33,7 +33,7 @@ struct box {
 };
 
 struct sphere {
-	vec3 pos;
+	vec3 position;
 	float radius;
 	vec3 color;
 	float reflectivity;
@@ -43,7 +43,7 @@ struct sphere {
 const box boxes[] = {
 	//	position					size					color					reflectivity	intensivity
 	/* The ground */
-	{ 	vec3(-5.0, -0.1, -5.0), 	vec3(5.0, 0.0, 5.0), 	vec3(1.0, 1.0, 1.0), 	0.0, 			0.0 },
+	{ 	vec3(-5.0, -2.0, -5.0), 	vec3(5.0, -1.0, 5.0), 	vec3(1.0, 1.0, 1.0), 	0.0, 			0.0 },
 	/* Box in the middle */
 	{ 	vec3(-0.5, 0.0, -0.5), 		vec3(0.5, 1.0, 0.5), 	vec3(0.0, 1.0, 0.0), 	1.0, 			0.0 },
 	/* Box next to the middle */
@@ -68,7 +68,7 @@ struct rayData {
 	float energy;
 };
 
-vec2 intersectBox(inout rayData ray, const box b, out vec3 normal) {
+vec2 intersectBox(inout rayData ray, const box b) {
 	vec3 tMin = (b.min - ray.position) / ray.direction;
 	vec3 tMax = (b.max - ray.position) / ray.direction;
 	vec3 t1 = min(tMin, tMax);
@@ -76,6 +76,44 @@ vec2 intersectBox(inout rayData ray, const box b, out vec3 normal) {
 	float tNear = max(max(t1.x, t1.y), t1.z);
 	float tFar = min(min(t2.x, t2.y), t2.z);
 	return vec2(tNear, tFar);
+}
+
+bool isBetweenInclusive(float max, float min, float value) {
+    return value >= -1.0f && value <= 1.0f ? true : false;
+}
+
+bool isBetweenExclusive(float max, float min, float value) {
+    return value > -1.0f && value < 1.0f ? false : true;
+}
+
+float sign(float value) {
+	return value > 0 ? 1.0f : -1.0f;
+}
+
+vec3 boxNormal(vec3 position, const box b)
+{
+    vec3 boxCenter = (b.min + b.max) / 2.0f;
+    vec3 interRelative = normalize(position - boxCenter);
+
+    return interRelative;
+
+    vec3 absvec = abs(interRelative);
+
+    if(absvec.x > absvec.y && absvec.x > absvec.z) {
+    	interRelative.x = interRelative.x / absvec.x;
+    	interRelative.y = 0.0f;
+    	interRelative.z = 0.0f;
+    } else if(absvec.y > absvec.x && absvec.y > absvec.z) {
+    	interRelative.x = 0.0f;
+    	interRelative.y = interRelative.y / absvec.y;
+    	interRelative.z = 0.0f;
+    } else if(absvec.z > absvec.x && absvec.z > absvec.y) {
+    	interRelative.x = 0.0f;
+    	interRelative.y = 0.0f;
+    	interRelative.z = interRelative.z / absvec.z;
+    }
+
+    return interRelative;
 }
 
 vec2 intersectSphere(inout rayData ray, const sphere s, out vec3 normal)
@@ -115,13 +153,13 @@ bool intersectBoxes(inout rayData ray) {
 
 bool intersectEverything(inout rayData ray) {
 
-	vec2 lambda = intersectSphere(ray, sphere0);
-	if (lambda.x > 0.0 && lambda.x < lambda.y) {
-		ray.last_hit.lambda = lambda;
-		ray.last_hit.bi = i;
-
-		return true;
-	}
+//	vec2 lambda = intersectSphere(ray, sphere0);
+//	if (lambda.x > 0.0 && lambda.x < lambda.y) {
+//		ray.last_hit.lambda = lambda;
+//		ray.last_hit.bi = i;
+//
+//		return true;
+//	}
 
 	return false;
 
@@ -135,14 +173,14 @@ bool intersectLight(inout rayData ray) {
 	for (int i = 0; i < NUM_BOXES; i++) {
 		if (i == ray.last_hit.bi) continue; // skip if testing object that it just reflected off of
 
-		vec2 lambda = intersectEverything(ray, boxes[i]);
+		vec2 lambda = intersectBox(ray, boxes[i]);
 		if (lambda.x > 0.0 && lambda.x < lambda.y && lambda.x < smallest) {
 			ray.last_hit.lambda = lambda;
 			ray.last_hit.bi = i;
 			smallest = lambda.x;
 		}
 	}
-	vec2 lambda = intersectEverything(ray, light);
+	vec2 lambda = intersectBox(ray, light);
 	if (lambda.x > 0.0 && lambda.x < lambda.y && lambda.x < smallest) {
 		ray.last_hit.lambda = lambda;
 		ray.last_hit.bi = 2;
@@ -157,7 +195,7 @@ vec4 trace(rayData ray) {
 	const vec3 lightPosition = vec3(slider1, slider2, 0.0);
 	const float epsilon = 0.000001;
 	const int bounces = 8;
-	vec4 color = vec4(1.0, 1.0, 1.0, 0.0);
+	vec4 color = vec4(1.0, 1.0, 1.0, 0.2);
 	vec3 light_vector = normalize(lightPosition - ray.position);
 	vec3 normal_vector = vec3(0.0, 1.0, 0.0);
 
@@ -181,25 +219,14 @@ vec4 trace(rayData ray) {
 //				//color.rgb += vec3(1.0, 1.0, 1.0);
 //			}
 		}
-		if (intersectEverything(ray)) {
+		if (intersectBoxes(ray)) {
 			ray.position = mix(ray.position, ray.position + ray.direction, ray.last_hit.lambda.x);
 
-			vec3 tMin = boxes[ray.last_hit.bi].min;
-			vec3 tMax = boxes[ray.last_hit.bi].max;
+			normal_vector = boxNormal(ray.position, boxes[ray.last_hit.bi]);
+			color.xyz = normal_vector;
+			color.w = 1.0f;
+			break;
 
-			if (abs(ray.position.x - tMin.x) < epsilon) {
-				normal_vector = vec3(-1.0, 0.0, 0.0);
-			} else if (abs(ray.position.x - tMax.x) < epsilon) {
-				normal_vector = vec3(1.0, 0.0, 0.0);
-			} else if (abs(ray.position.y - tMin.y) < epsilon) {
-				normal_vector = vec3(0.0, -1.0, 0.0);
-			} else if (abs(ray.position.y - tMax.y) < epsilon) {
-				normal_vector = vec3(0.0, 1.0, 0.0);
-			} else if (abs(ray.position.z - tMin.z) < epsilon) {
-				normal_vector = vec3(0.0, 0.0, -1.0);
-			} else if (abs(ray.position.z - tMax.z) < epsilon) {
-				normal_vector = vec3(0.0, 0.0, 1.0);
-			}
 
 			ray.position += normal_vector * epsilon * 2.0f;
 			light_vector = normalize(lightPosition - ray.position);

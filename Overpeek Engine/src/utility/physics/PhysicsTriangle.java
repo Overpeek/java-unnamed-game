@@ -18,8 +18,8 @@ public class PhysicsTriangle extends PhysicsObject {
 		PolygonShape shape = new PolygonShape();
 		Vec2[] vertices = new Vec2[3];
 		vertices[0] = new Vec2(0.0f, -size.y / 2.0f);
-		vertices[1] = new Vec2(-size.x / 2.0f, size.y / 2.0f);
-		vertices[2] = new Vec2(size.x / 2.0f, size.y / 2.0f);
+		vertices[1] = new Vec2( size.x / 2.0f, size.y / 2.0f);
+		vertices[2] = new Vec2(-size.x / 2.0f, size.y / 2.0f);
 		shape.set(vertices, 3);
 		
 		fixture = body.createFixture(shape, 1.0f);

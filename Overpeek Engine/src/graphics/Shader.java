@@ -1,15 +1,13 @@
 package graphics;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43;
 
-import utility.Loader;
+import utility.DataIO;
 import utility.Logger;
 import utility.mat4;
 import utility.vec2;
@@ -62,23 +60,13 @@ public class Shader {
 	}
 
 	private int loadShaderFile(int shadertype, String path) throws ShaderException {
-		//Load and compile
-		StringBuilder shaderSource = new StringBuilder();
+		String source;
 		try {
-			InputStream is = Loader.loadRes(path);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-			String line;
-			
-			while((line = reader.readLine()) != null) {
-				shaderSource.append(line).append("\n");
-			}
-			
-			reader.close();
-		} catch (Exception e) {
-			Logger.error("Shader file could not be loaded! (" + path +")");
+			source = DataIO.readTextFile(path);
+		} catch (IOException e) {
+			throw new ShaderException("Shader source could not be loaded (" + path + ")");
 		}
-		
-		return loadShader(shadertype, shaderSource.toString());
+		return loadShader(shadertype, source);
 	}
 
 	private void shaderLog(String text, int shaderId, int type) throws ShaderException {

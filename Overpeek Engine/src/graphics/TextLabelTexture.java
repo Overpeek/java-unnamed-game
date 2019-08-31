@@ -1,6 +1,5 @@
 package graphics;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL13;
@@ -57,7 +56,6 @@ public class TextLabelTexture {
 	private static Window window;
 	private static Shader label_draw_shader;
 	private static Shader label_bake_shader;
-	private static FloatBuffer label_buffer;
 	private static Renderer label_bake;
 	private static Renderer label_draw;
 	private static GlyphTexture glyphs;
@@ -96,9 +94,9 @@ public class TextLabelTexture {
 
 			GL13.glActiveTexture(GL13.GL_TEXTURE0);
 			qd.tex.bind();
+			label_draw.clear();
 			label_draw.submit(new Quad(qd.pos, qd.size, 0, Colors.WHITE));
 			label_draw.draw();
-			label_buffer.clear();
 		}
 		drawQueue = new ArrayList<QueueData>();
 	}

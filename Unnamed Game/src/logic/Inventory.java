@@ -1,6 +1,7 @@
 package logic;
 
 import graphics.Renderer;
+import graphics.primitives.Quad;
 import graphics.primitives.VertexData;
 import utility.Colors;
 import utility.vec2;
@@ -121,12 +122,12 @@ public class Inventory {
 
 	private void renderOneSlot(Renderer renderer, float x, float y, float scale, String item, int itemcount) {
 		//All inventory slots
-		renderer.points.submitVertex(new VertexData(new vec3(x, y, 0.0f), new vec2(scale), 0, Colors.WHITE));
+		renderer.submit(new Quad(new vec2(x, y), new vec2(scale), 0, Colors.WHITE));
 	
 		//All inventory items
 		if (item.length() != 0) {
 			int item_texture = Database.getItem(item).texture;
-			renderer.points.submitVertex(new VertexData(new vec3(x, y, 0.0f), new vec2(scale), item_texture, Colors.WHITE));
+			renderer.submit(new Quad(new vec2(x, y), new vec2(scale), item_texture, Colors.WHITE));
 		}
 		//m_renderer->fontRenderer->renderText(
 		//	glm::vec3(x, y, 0.0f),

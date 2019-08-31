@@ -80,7 +80,7 @@ public class Zombie extends Creature {
 		}
 		if (chasing) {
 			vec2 dstToPlayer = new vec2(playerPos.x - getPos().x, playerPos.y - getPos().y);
-			vec2 dirToPlayer = dstToPlayer.normalizeNew();
+			vec2 dirToPlayer = dstToPlayer.normalizeLocal();
 			if (dstToPlayer.length() > 1.0f) {
 				getAcc().x += dirToPlayer.x * getData().walkSpeed;
 				getAcc().y += dirToPlayer.y * getData().walkSpeed;

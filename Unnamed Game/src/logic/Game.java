@@ -5,10 +5,12 @@ import creatures.Player;
 import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
+import graphics.Shader.ShaderException;
 import graphics.TextLabelTexture;
 import graphics.Texture;
 import graphics.Window;
 import graphics.buffers.Framebuffer;
+import graphics.primitives.Quad;
 import utility.Application;
 import utility.Colors;
 import utility.Debug.Timer;
@@ -18,7 +20,6 @@ import utility.Logger;
 import utility.SaveManager;
 import utility.mat4;
 import utility.vec2;
-import utility.vec3;
 import utility.vec4;
 import world.Map;
 
@@ -49,7 +50,6 @@ public class Game extends Application {
 	// Main update loop
 	@Override
 	public void update() {
-		if (true) return;
 		postprocess_time += 0.1f;
 		postprocess_shader.setUniform1f("unif_t", postprocess_time);
 		
@@ -66,11 +66,6 @@ public class Game extends Application {
 	public void render(float preupdate_scale) {
 		if (window == null || window.shouldClose()) gameloop.stop();
 		window.clear();
-	 	map.draw(preupdate_scale);
-		gui.draw();
-		window.update();
-		window.input();
-		if (true) return;
 		// Logger.debug("Camera position: " + camera_pos);
 
 		// world_renderer.clear();
@@ -92,16 +87,16 @@ public class Game extends Application {
  			postprocess_fb1.clear(0.0f, 0.0f, 0.0f, 1.0f);
  	 		map.draw(preupdate_scale); //Map to framebuffer
  	 		postprocess_fb1.unbind();
+ 	 		postprocess_shader.setUniform1i("unif_effect", 0);
 
  			// Multipass framebuffer
  			postprocess_shader.setUniform1f("unif_effect_scale", debugScrollInput);
  			postprocess_shader.setUniform1i("unif_effect", 1);
- 			Framebuffer.multipass(postprocess_fb1, postprocess_fb2, 8);
+ 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
  			postprocess_shader.setUniform1i("unif_effect", 2);
- 			Framebuffer.multipass(postprocess_fb1, postprocess_fb2, 8);
+ 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
  			
- 			postprocess_shader.setUniform1i("unif_effect", 0);
- 			postprocess_fb1.drawFullScreen(new vec4(0.7f, 0.7f, 0.7f, 1.0f));
+ 			postprocess_fb1.drawFullScreen(new vec2(-1.0f), new vec2(2.0f), new vec4(0.7f, 0.7f, 0.7f, 1.0f));
  		} else {
  	 		map.draw(preupdate_scale);
  		}
@@ -159,35 +154,37 @@ public class Game extends Application {
 	// Main cleanup
 	@Override
 	public void cleanup() {
+		Audio.clean();
 		Database.modCleanup();
 	}
 	
 	private TextLabelTexture loadDescription;
 	private void drawLoadingScreen(Renderer renderer, float state, String text) {
 		window.setSwapInterval(2); //  No need to run loading screen with full power lol
-		vec3 pos = new vec3(-0.5f, -0.5f, 0.0f);
+		vec2 pos = new vec2(-0.5f, -0.5f);
 		vec2 size = new vec2(1.0f, 1.0f);
 		window.clear(1.0f, 1.0f, 1.0f, 1.0f);
 		
 		// Back texture
 		gui_shader.setUniform1i("usetex", 1);
-		renderer.quads.clear();
-		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), size, 0, Colors.WHITE);
-		renderer.quads.draw(splashScreen);
+		splashScreen.bind();
+		renderer.clear();
+		renderer.submit(new Quad(pos, size, 0, Colors.WHITE));
+		renderer.draw();
 		
 		// Loading bar
 		gui_shader.setUniform1i("usetex", 0);
-		renderer.quads.clear();
-		pos = new vec3(-0.8f, 0.8f, 0.0f);
-		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), new vec2(1.6f, 0.1f), 0, Colors.BLACK);
-		pos = new vec3(-0.79f, 0.81f, 0.0f);
-		renderer.quads.submit(new vec3(pos.x, pos.y, pos.z), new vec2(state * 1.58f, 0.08f), 0, Colors.RED);
-		renderer.quads.draw(splashScreen);
+		renderer.clear();
+		pos = new vec2(-0.8f, 0.8f);
+		renderer.submit(new Quad(pos, new vec2(1.6f, 0.1f), 0, Colors.BLACK));
+		pos = new vec2(-0.79f, 0.81f);
+		renderer.submit(new Quad(pos, new vec2(state * 1.58f, 0.08f), 0, Colors.RED));
+		renderer.draw();
 		
 		// Description
 		if (text != null) {
 			loadDescription.rebake("$2" + text);
-			loadDescription.queueDraw(new vec3(-0.8f, 0.7f, 0.0f), new vec2(0.1f));
+			loadDescription.queueDraw(new vec2(-0.8f, 0.7f), new vec2(0.1f));
 			TextLabelTexture.drawQueue(true);
 		}
 		
@@ -204,7 +201,7 @@ public class Game extends Application {
 		
 		// Window
 		Logger.info("Creating window");
-		window = new Window(CompiledSettings.WINDOW_WIDTH, CompiledSettings.WINDOW_HEIGHT, CompiledSettings.WINDOW_DEFAULT_TITLE, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
+		window = new Window(CompiledSettings.WINDOW_WIDTH, CompiledSettings.WINDOW_HEIGHT, CompiledSettings.WINDOW_DEFAULT_TITLE, this, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
 		window.setSwapInterval(0);
 		window.setIcon("/res/texture/icon.png");
 		window.setBackFaceCulling(false);
@@ -240,12 +237,15 @@ public class Game extends Application {
 			drawLoadingScreen(gui_renderer, state, "Loading resources");			
 		}
 		TextureLoader.finish();
-		Framebuffer.initDrawing();
-		
 		
 		// Rest of the shaders
 		Logger.info("Creating all the shaders");
-		postprocess_shader = Shader.loadFromSources("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl", true);
+		try {
+			postprocess_shader = Shader.loadFromSources("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl", true);
+		} catch (ShaderException e) {
+			e.printStackTrace();
+			Logger.error("Critical shader could not be loaded");
+		}
 		Logger.info("All shaders created successfully!");
 
 		// Game stuff
@@ -386,25 +386,34 @@ public class Game extends Application {
 	public void resize(int width, int height) {
 		if (width == 0) width = window.getWidth();
 		if (height == 0) height = window.getHeight();
+		
+		float aspect = width / height;
 
 
 		if (postprocess_fb1 != null) postprocess_fb1.delete();
-		postprocess_fb1 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
+		postprocess_fb1 = new Framebuffer(window.getWidth(), window.getHeight());
 		if (postprocess_fb2 != null) postprocess_fb2.delete();
-		postprocess_fb2 = Framebuffer.createFramebuffer(window.getWidth(), window.getHeight());
+		postprocess_fb2 = new Framebuffer(window.getWidth(), window.getHeight());
 		postprocess_fb2.unbind();
 		
 		window.viewport();
 		
 		// Matrices
-		gui_shader.defaultOrthoMatrix();
-		postprocess_shader.defaultOrthoMatrix();
+		if (gui_shader != null) {
+			mat4 pr_matrix = new mat4().ortho(-aspect, aspect, 1.0f, -1.0f);
+			gui_shader.setUniformMat4("pr_matrix", pr_matrix);
+			gui_shader.defaultOrthoMatrix();
+			gui_shader.setUniform1i("usetex", 1);
+		}
+		if (postprocess_shader != null) {
+			mat4 pr_matrix = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
+			postprocess_shader.setUniformMat4("pr_matrix", pr_matrix);
+			postprocess_shader.setUniform1i("unif_effect", 0);
+			postprocess_shader.setUniform1i("usetex", 1);
+		}
 		//projection = new mat4().ortho(-1.0f, 1.0f, -1.0f, 1.0f);
 		
 		// Other
-		postprocess_shader.setUniform1i("unif_effect", 0);
-		postprocess_shader.setUniform1i("usetex", 1);
-		gui_shader.setUniform1i("usetex", 1);
 	}
 
 

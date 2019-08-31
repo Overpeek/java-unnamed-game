@@ -334,7 +334,7 @@ public class Map {
 //		world_renderer.clear();
 		
 		
-		vec3 camera_pos = new vec3(player.getPos().multNew(-CompiledSettings.TILE_SIZE), -1.0f);
+		vec3 camera_pos = new vec3(player.getPos().mulLocal(-CompiledSettings.TILE_SIZE), -1.0f);
 		mat4 vw_matrix = new mat4().move(camera_pos);
 		mat4 pr_matrix = new mat4().ortho(-Main.game.getWindow().getAspect(), Main.game.getWindow().getAspect(), 1.0f, -1.0f);
 		world_shader.setUniformMat4("vw_matrix", vw_matrix);

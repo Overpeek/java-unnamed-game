@@ -8,7 +8,6 @@ import graphics.Window;
 import graphics.primitives.Primitive.Primitives;
 import utility.Application;
 import utility.Keys;
-import utility.Logger;
 import utility.Maths;
 import utility.vec2;
 import utility.physics.Physics;
@@ -64,8 +63,8 @@ class Main extends Application {
 			}
 		}
 		
-		Logger.debug("FPS: " + gameloop.getFps());
-		physics.step(144.0f, 32);
+//		Logger.debug("FPS: " + gameloop.getFps());
+		physics.step(144.0f, 64);
 	}
 
 	float t = 0.0f;

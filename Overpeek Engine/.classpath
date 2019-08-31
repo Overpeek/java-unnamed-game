@@ -50,6 +50,6 @@
 	<classpathentry kind="lib" path="lib/sources/lwjglx-debug-1.0.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/libraries/json-20180813.jar"/>
 	<classpathentry kind="lib" path="lib/libraries/jbox2d-library-2.1.2.3-jar-with-dependencies.jar" sourcepath="lib/sources/jbox2d-library-2.1.2.3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/javadocs/jbox2d-library-2.1.2.3-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/libraries/slf4j-nop-1.7.28.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

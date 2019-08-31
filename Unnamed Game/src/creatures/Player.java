@@ -5,10 +5,10 @@ import java.io.IOException;
 import org.json.JSONObject;
 
 import graphics.Renderer;
+import logic.CompiledSettings;
 import logic.Database;
 import logic.Inventory;
 import logic.Main;
-import logic.CompiledSettings;
 import utility.DataIO;
 import utility.Keys;
 import utility.Logger;
@@ -83,7 +83,7 @@ public class Player extends Creature {
 				vec2 tile_on_map = new vec2(
 						(float)((int)getPos().x - Math.floor(getPos().x + cursor.x)),
 						(float)((int)getPos().y - Math.floor(getPos().y + cursor.y))
-						).mult(-1.0f);
+						).mul(-1.0f);
 				tile_on_map.x += Math.floor(getPos().x);
 				tile_on_map.y += Math.floor(getPos().y);
 				ghost_object_location = tile_on_map;

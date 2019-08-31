@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
+import graphics.primitives.Quad;
 import utility.Colors;
 import utility.Console;
 import utility.Keys;
@@ -12,7 +13,6 @@ import utility.Logger;
 import utility.Maths;
 import utility.mat4;
 import utility.vec2;
-import utility.vec3;
 import utility.vec4;
 import world.Map.MapTile;
 
@@ -125,11 +125,11 @@ public class Gui {
 	
 	private void drawFrameLogger() {
 		float textScale = 0.08f * Main.game.renderScale();
-		vec3 pos = new vec3(-Main.game.getWindow().getAspect(), 2.0f / 3.0f, 0.0f);
-		vec2 size = new vec2(GUI_FRAME_LOGGER_BAR_WIDTH * (GUI_FRAME_LOGGER_SIZE - 1), 0.005f).mult(Main.game.renderScale());
-		vec3 textPos = new vec3(-Main.game.getWindow().getAspect(), 2.0f / 3.0f - textScale * Main.game.renderScale(), 0.0f);
+		vec2 pos = new vec2(-Main.game.getWindow().getAspect(), 2.0f / 3.0f);
+		vec2 size = new vec2(GUI_FRAME_LOGGER_BAR_WIDTH * (GUI_FRAME_LOGGER_SIZE - 1), 0.005f).mul(Main.game.renderScale());
+		vec2 textPos = new vec2(-Main.game.getWindow().getAspect(), 2.0f / 3.0f - textScale * Main.game.renderScale());
 		vec2 textSize = new vec2(textScale * 0.8f);
-		normal_renderer.quads.submit(pos, size, 0, Colors.GREEN);
+		normal_renderer.submit(new Quad(pos, size, 0, Colors.GREEN));
 		if (selected_logger) { // Frame logger
 			// Top bar
 			String text = "F avg ms: " + (int) avg_frame;
@@ -139,17 +139,16 @@ public class Gui {
 			// Actual logger
 			for (int i = 0; i < GUI_FRAME_LOGGER_SIZE; i++) {
 				float bar_height = (frame_logger[i] / avg_frame) / 3.0f;
-				pos = new vec3(
+				pos = new vec2(
 						-Main.game.getWindow().getAspect() + (GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale() * i),
-						1.0f - bar_height, 
-						0.0f);
+						1.0f - bar_height);
 				size = new vec2(
 						GUI_FRAME_LOGGER_BAR_WIDTH * Main.game.renderScale(), 
 						bar_height);
 
 				float color_rg = Math.max(0.0f, 0.8f - bar_height);
 				vec4 barColor = new vec4(Math.max(0.0f, 1.0f - color_rg), color_rg, 0.0f, 1.0f);
-				normal_renderer.quads.submit(pos, size, 0, barColor);
+				normal_renderer.submit(new Quad(pos, size, 0, barColor));
 			}
 		} else { // Update logger
 					// Top bar
@@ -160,16 +159,15 @@ public class Gui {
 			// Actual logger
 			for (int i = 0; i < GUI_UPDATE_LOGGER_SIZE; i++) {
 				float bar_height = (update_logger[i] / avg_update) / 3.0f;
-				pos = new vec3(
+				pos = new vec2(
 						-Main.game.getWindow().getAspect() + (GUI_UPDATE_LOGGER_BAR_WIDTH * Main.game.renderScale() * i),
-						1.0f - bar_height, 
-						0.0f);
+						1.0f - bar_height);
 				size = new vec2(
 						GUI_UPDATE_LOGGER_BAR_WIDTH * Main.game.renderScale(), 
 						bar_height);
 
 				vec4 barColor = new vec4(Math.max(0.0f, bar_height - 0.5f), Math.max(0.0f, 0.5f - bar_height), 0.0f, 1.0f);
-				normal_renderer.quads.submit(pos, size, 0, barColor);
+				normal_renderer.submit(new Quad(pos, size, 0, barColor));
 			}
 		}
 	}
@@ -207,7 +205,7 @@ public class Gui {
 		float textScale = 0.08f * Main.game.renderScale();
 		float x = -Main.game.getWindow().getAspect();
 		vec2 size = new vec2(textScale);
-		vec3 pos = new vec3(x, -1.0f, 0.0f);
+		vec2 pos = new vec2(x, -1.0f);
 		
 		// Debug mode
 		if (Main.game.debugMode) {
@@ -216,7 +214,7 @@ public class Gui {
 			fps_label.rebake(text);
 			fps_label.queueDraw(pos, size);
 
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			text = "UPS: " + Main.game.getLoop().getUps();
 			ups_label.rebake(text);
 			ups_label.queueDraw(pos, size);
@@ -225,25 +223,25 @@ public class Gui {
 		// Advanced debug mode
 		if (Main.game.advancedDebugMode) {
 			// Advanced debug mode text
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			String text = "Position X: " + Main.game.getPlayer().getPos().x + ", Y: " + Main.game.getPlayer().getPos().y;
 			pos_label.rebake(text);
 			pos_label.queueDraw(pos, size);
 
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			renderer_label.queueDraw(pos, size);
 
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			gpu_label.queueDraw(pos, size);
 
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			float usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576.0f;
 			float maxMemory = Runtime.getRuntime().totalMemory() / 1048576.0f;
 			ram_label.rebake("Memory: " + usedMemory + "MB / " + maxMemory + "MB");
 			pos_label.rebake(text);
 			ram_label.queueDraw(pos, size);
 
-			pos.add(0.0f, textScale, 0.0f);
+			pos.add(0.0f, textScale);
 			cpu_label.queueDraw(pos, size);
 			
 			drawFrameLogger();
@@ -255,18 +253,17 @@ public class Gui {
 		if (chat_opened || chat_opened_timer > 0) {
 
 			if (chat_opened) {
-				vec3 pos = new vec3(-Main.game.getWindow().getAspect(), 1.0f - textScale, 0.0f);
+				vec2 pos = new vec2(-Main.game.getWindow().getAspect(), 1.0f - textScale);
 				vec2 size = new vec2(textScale);
 
 				// Text input line
-				normal_renderer.quads.submit(pos, new vec2(Main.game.getWindow().getAspect() * 2.0f, textScale), 0,
-						COLOR_CHAT_INPUT_BG);
+				normal_renderer.submit(new Quad(pos, new vec2(Main.game.getWindow().getAspect() * 2.0f, textScale), 0, COLOR_CHAT_INPUT_BG));
 				text_input_label.rebake(current_line);
 				text_input_label.queueDraw(pos, size);
 			}
 
 			for (int i = 0; i < MAX_TEXT_LINES; i++) {
-				vec3 pos = new vec3(-Main.game.getWindow().getAspect(), 1.0f - ((i + 3) * textScale), 0.0f);
+				vec2 pos = new vec2(-Main.game.getWindow().getAspect(), 1.0f - ((i + 3) * textScale));
 				vec2 size = new vec2(textScale);
 
 				text_chat_label[i].rebake(text_lines[i]);
@@ -286,22 +283,22 @@ public class Gui {
 
 			vec2 buttonTextScale = new vec2(0.1f * Main.game.renderScale());
 
-			pause_indicator_label.queueDrawCentered(new vec3(0.003f, -0.003f - 0.75f, 0.0f), buttonTextScale);
+			pause_indicator_label.queueDrawCentered(new vec2(0.003f, -0.003f - 0.75f), buttonTextScale);
 
 			for (int i = 0; i < 3; i++) {
 				float shade = 0.1f;
 				if (i == selectedButton)
 					shade = 0.2f;
-				vec3 pos = new vec3(0.0f - 0.4f, -0.50f - 0.05f + (i * 0.15f), 0.0f);
+				vec2 pos = new vec2(0.0f - 0.4f, -0.50f - 0.05f + (i * 0.15f));
 				vec2 size = new vec2(0.8f, 0.1f);
 
-				normal_renderer.quads.submit(pos, size, 0, new vec4(0.0f, 0.0f, 0.0f, shade));
+				normal_renderer.submit(new Quad(pos, size, 0, new vec4(0.0f, 0.0f, 0.0f, shade)));
 			}
 
 			buttonTextScale = new vec2(0.1f * Main.game.renderScale());
-			button_label_0.queueDrawCentered(new vec3(0.0f, -0.5f, 0.0f), buttonTextScale);
-			button_label_1.queueDrawCentered(new vec3(0.0f, -0.35f, 0.0f), buttonTextScale);
-			button_label_2.queueDrawCentered(new vec3(0.0f, -0.20f, 0.0f), buttonTextScale);
+			button_label_0.queueDrawCentered(new vec2(0.0f, -0.5f), buttonTextScale);
+			button_label_1.queueDrawCentered(new vec2(0.0f, -0.35f), buttonTextScale);
+			button_label_2.queueDrawCentered(new vec2(0.0f, -0.20f), buttonTextScale);
 		}
 	}
 	
@@ -309,17 +306,17 @@ public class Gui {
 		float renderScale = Main.game.renderScale();
 		float heightDifference = 0.06f * renderScale;
 		// Bar bg
-		vec3 pos = new vec3(Main.game.getWindow().getAspect(), -1.0f, 1.0f).add(-0.6f * renderScale, 0.1f * renderScale, 0.0f);
-		vec2 size = new vec2(0.5f, 0.05f).mult(Main.game.renderScale());
-		blur_renderer.quads.submit(pos, size, 0, Colors.BLACK); // HP
-		pos.add(0.0f, heightDifference, 0.0f);
-		blur_renderer.quads.submit(pos, size, 0, Colors.BLACK); // S
+		vec2 pos = new vec2(Main.game.getWindow().getAspect(), -1.0f).add(-0.6f * renderScale, 0.1f * renderScale);
+		vec2 size = new vec2(0.5f, 0.05f).mul(Main.game.renderScale());
+		blur_renderer.submit(new Quad(pos, size, 0, Colors.BLACK)); // HP
+		pos.add(0.0f, heightDifference);
+		blur_renderer.submit(new Quad(pos, size, 0, Colors.BLACK)); // S
 
-		pos = new vec3(Main.game.getWindow().getAspect(), -1.0f, 1.0f).add(-0.595f * renderScale, 0.105f * renderScale, 0.0f);
-		size = new vec2(0.49f * (Main.game.getPlayer().getHealth() / Main.game.getPlayer().getMaxHealth()), 0.04f).mult(Main.game.renderScale() * Main.game.guiScale());
-		blur_renderer.quads.submit(pos, size, 0, COLOR_HEALTH_BAR); // HP
-		pos.add(0.0f, heightDifference, 0.0f);
-		blur_renderer.quads.submit(pos, size, 0, COLOR_STAMINA_BAR); // S
+		pos = new vec2(Main.game.getWindow().getAspect(), -1.0f).add(-0.595f * renderScale, 0.105f * renderScale);
+		size = new vec2(0.49f * (Main.game.getPlayer().getHealth() / Main.game.getPlayer().getMaxHealth()), 0.04f).mul(Main.game.renderScale() * Main.game.guiScale());
+		blur_renderer.submit(new Quad(pos, size, 0, COLOR_HEALTH_BAR)); // HP
+		pos.add(0.0f, heightDifference);
+		blur_renderer.submit(new Quad(pos, size, 0, COLOR_STAMINA_BAR)); // S
 	}
 	
 	public void draw() {
@@ -348,8 +345,9 @@ public class Gui {
 		consoleWindow.draw();
 		
 		gui_shader.bind();
-		blur_renderer.draw(TextureLoader.getTexture());
-		normal_renderer.draw(TextureLoader.getTexture());
+		TextureLoader.getTexture().bind();
+		blur_renderer.draw();
+		normal_renderer.draw();
 	}
 
 	public void shiftChatUp() {

@@ -24,8 +24,16 @@ public class Maths {
 		
 		return map(rand.nextFloat(), 0.0f, 1.0f, min, max);
 	}
+	
+	public static float normalRandom() {
+		if (rand == null) seed();
+		
+		return (float) rand.nextGaussian();
+	}
 
 	public static float map(float value, float low1, float high1, float low2, float high2) {
+		if (low1 == high1 || low2 == high2) return 0.0f;
+		
 		return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
 	}
 	
@@ -63,6 +71,14 @@ public class Maths {
 			return true;
 		
 		return false;
+	}
+	
+	public static float ReLU(float value) {
+		return value > 0.0f ? value : 0.0f;
+	}
+	
+	public static float DeriveReLU(float value) {
+		return value > 0.0f ? 1.0f : 0.0f;
 	}
 	
 }

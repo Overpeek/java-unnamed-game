@@ -28,7 +28,7 @@ public abstract class PhysicsObject {
 	    bodyDef.angle = angle;
 	    bodyDef.allowSleep = true;
 	    bodyDef.type = is_static ? BodyType.STATIC : BodyType.DYNAMIC;
-	    this.body = physics.getWorld().createBody(bodyDef);	    
+	    this.body = physics.getWorld().createBody(bodyDef);
 	}
 	
 	public Body getBody() {

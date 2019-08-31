@@ -3,12 +3,15 @@ package logic;
 import java.util.ArrayList;
 
 import graphics.Renderer;
+import graphics.primitives.Primitive.Primitives;
+import graphics.primitives.VertexData;
 import utility.Logger;
 import utility.vec2;
-import utility.vec3;
 import utility.vec4;
 
 public class Pathfinder {
+	
+	private static Renderer debugRenderer = null;
 	
 	public boolean path_found;
 	public boolean failed;
@@ -174,24 +177,26 @@ public class Pathfinder {
 		return result;
 	}
 
-	public void debugRender(Renderer renderer, float offx, float offy) {
+	public void debugRender(float offx, float offy) {
+		if (debugRenderer == null) debugRenderer = new Renderer(Primitives.Line);
+		
 		Node curNode = curnode;
 		vec4 lineColor = new vec4(1.0f, 0.5f, 0.0f, 1.0f);
 
-		vec3 pos = new vec3((curNode.x + offx + 0.5f), (curNode.y + offy + 0.5f), 0.0f).mult(CompiledSettings.TILE_SIZE);
-		renderer.lines.submit(pos, new vec2(0.0f), 0, lineColor);
+		vec2 pos = new vec2((curNode.x + offx + 0.5f), (curNode.y + offy + 0.5f)).mul(CompiledSettings.TILE_SIZE);
+		debugRenderer.submit(new VertexData(pos, new vec2(0.0f), 0, lineColor));
 		
 		while (curNode != startnode) {
-			pos = new vec3((curNode.x + offx + 0.5f), (curNode.y + offy + 0.5f), 0.0f).mult(CompiledSettings.TILE_SIZE);
+			pos = new vec2((curNode.x + offx + 0.5f), (curNode.y + offy + 0.5f)).mul(CompiledSettings.TILE_SIZE);
 
-			renderer.lines.submit(pos, new vec2(0.0f), 0, lineColor);
-			renderer.lines.submit(pos, new vec2(0.0f), 0, lineColor);
+			debugRenderer.submit(new VertexData(pos, new vec2(0.0f), 0, lineColor));
+			debugRenderer.submit(new VertexData(pos, new vec2(0.0f), 0, lineColor));
 
 			curNode = curNode.parent;
 		}
 
-		pos = new vec3((startnode.x + offx + 0.5f), (startnode.y + offy + 0.5f), 0.0f).mult(CompiledSettings.TILE_SIZE);
-		renderer.lines.submit(pos, new vec2(0.0f), 0, lineColor);
+		pos = new vec2((startnode.x + offx + 0.5f), (startnode.y + offy + 0.5f)).mul(CompiledSettings.TILE_SIZE);
+		debugRenderer.submit(new VertexData(pos, new vec2(0.0f), 0, lineColor));
 	}
 
 	public ArrayList<vec2> retrace() {

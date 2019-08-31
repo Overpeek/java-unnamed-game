@@ -126,8 +126,8 @@ public class Framebuffer extends Buffer {
 		unbindAll();
 	}
 	
-	public void drawFullScreen(vec4 color) {
-		renderer.submit(new Quad(new vec2(-1.0f), new vec2(2.0f), 0, color));
+	public void drawFullScreen(vec2 pos, vec2 size, vec4 color) {
+		renderer.submit(new Quad(pos, size, 0, color));
 		texture.bind();
 		renderer.draw();
 		renderer.clear();
@@ -138,16 +138,16 @@ public class Framebuffer extends Buffer {
 	 * First one has to have image already
 	 * Last used is always the first one
 	 * **/
-	public static void multipass(Framebuffer first, Framebuffer second, int count) {
+	public static void multipass(vec2 pos, vec2 size, Framebuffer first, Framebuffer second, int count) {
 		for (int i = 0; i < count; i++) {
 			second.bind();
 			second.clear();
-			first.drawFullScreen(Colors.WHITE);
+			first.drawFullScreen(pos, size, Colors.WHITE);
 			second.unbind();
 
 			first.bind();
 			first.clear();
-			second.drawFullScreen(Colors.WHITE);
+			second.drawFullScreen(pos, size, Colors.WHITE);
 			first.unbind();
 		}
 	}

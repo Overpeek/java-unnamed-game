@@ -3,12 +3,13 @@ package creatures;
 import java.util.ArrayList;
 
 import graphics.Renderer;
+import graphics.primitives.Quad;
+import logic.CompiledSettings;
 import logic.Database;
 import logic.Database.Creature_Data;
 import logic.Main;
 import logic.Particle;
 import logic.ParticleManager;
-import logic.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
 import utility.vec3;
@@ -98,15 +99,14 @@ public abstract class Creature {
 	
 	protected void commonDraw(Renderer renderer, float preupdate_scale) {
 		int heading_texture = getData().texture + heading;
-		vec3 pos = new vec3(
+		vec2 pos = new vec2(
 				(getPos().x + getVel().x * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
-				(getPos().y + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
-				0.0f);
+				(getPos().y + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE);
 		vec2 size = new vec2(CompiledSettings.TILE_SIZE);
-		pos.mult(Main.game.renderScale());
-		size.mult(Main.game.renderScale());
+		pos.mul(Main.game.renderScale());
+		size.mul(Main.game.renderScale());
 
-		renderer.quads.submit(pos, size, heading_texture, Colors.WHITE);
+		renderer.submit(new Quad(pos, size, heading_texture, Colors.WHITE));
 	}
 	
 	protected void commonMeleeAi(float ups) {}
@@ -138,7 +138,7 @@ public abstract class Creature {
 		//Positions
 		getVel().add( getAcc() );
 		//setOld_pos( getPos() );
-		getPos().add( getVel().mult(oneOverups) );
+		getPos().add( getVel().mul(oneOverups) );
 		//getVel().mult( 1.0f - (oneOverups / 10.0f) );
 		setAcc( new vec2(0.0f) );
 		
@@ -204,8 +204,8 @@ public abstract class Creature {
 						y_to_move = ((float)tiley - PLAYER_HEIGHT / 2.0f) - getPos().y;
 					}
 	
-					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mult(1.0f, 0.0f); }
-					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mult(0.0f, 1.0f); }
+					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mul(1.0f, 0.0f); }
+					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mul(0.0f, 1.0f); }
 				}
 			}
 		}
@@ -257,7 +257,7 @@ public abstract class Creature {
 		}
 		swingX *= Main.game.renderScale();
 		swingY *= Main.game.renderScale();
-		vec3 swing_pos = new vec3(getPos().x + swingX, getPos().y + swingY, 0.0f).mult(CompiledSettings.TILE_SIZE);
+		vec3 swing_pos = new vec3(getPos().x + swingX, getPos().y + swingY, 0.0f).mul(CompiledSettings.TILE_SIZE);
 		ParticleManager.add(new Particle(swing_pos.vec2(), "swing", heading));
 		
 
@@ -270,7 +270,7 @@ public abstract class Creature {
 			vec2 directionVector = new vec2(
 					in_radius_creatures.get(i).getPos().x - getPos().x, 
 					in_radius_creatures.get(i).getPos().y - getPos().y);
-			directionVector.normalizeNew();
+			directionVector.normalizeLocal();
 		
 			in_radius_creatures.get(i).getAcc().x += directionVector.x / 10.0f * (getData().knockback);
 			in_radius_creatures.get(i).getAcc().y += directionVector.y / 10.0f * (getData().knockback);
