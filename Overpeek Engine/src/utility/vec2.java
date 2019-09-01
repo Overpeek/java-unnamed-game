@@ -147,7 +147,7 @@ public class vec2 {
 	
 	/*
 	 * Advanced functions
-	 * **/
+	 * */
 	
 	public vec2 abs() {
 		x = Maths.abs(x);
@@ -182,11 +182,37 @@ public class vec2 {
 		return new vec2(x, y).mul(1.0f / len);			
 	}
 	
+	public vec2 mostSignificant() {
+		if (Maths.abs(x) > Maths.abs(y)) {
+			y = 0.0f;
+		} else  {
+			x = 0.0f;
+		}
+		return this;
+	}
+	
+	public vec2 mostSignificantLocal() {
+		vec2 cloned = clone();
+		if (Maths.abs(cloned.x) > Maths.abs(cloned.y)) {
+			cloned.y = 0.0f;
+		} else  {
+			cloned.x = 0.0f;
+		}
+		return cloned;
+	}
+	
 	
 	
 	/*
 	 * Static functions
 	 * **/
+	
+	public static vec2 lerp(vec2 a, vec2 b, float t) {
+		vec2 returned = new vec2();
+		returned.x = a.x + t * (b.x - a.x);
+		returned.y = a.y + t * (b.y - a.y);
+		return returned;
+	}
 	
 	public static vec2 rotate(vec2 center, vec2 point, float angle) {
 		float s = Maths.sin(angle);

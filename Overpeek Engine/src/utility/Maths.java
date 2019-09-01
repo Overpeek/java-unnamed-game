@@ -81,4 +81,19 @@ public class Maths {
 		return value > 0.0f ? 1.0f : 0.0f;
 	}
 	
+	public static int mostSignificant(float... values) {
+		float[] cloned = values;
+		int index = 0;
+		float most_significant = 0.0f;
+		for (int i = 0; i < cloned.length; i++) {
+			if (Maths.abs(cloned[i]) > most_significant) {
+				index = i;
+				most_significant = Maths.abs(cloned[i]);
+			}
+		}
+		
+		return index;
+	}
+	
+	
 }

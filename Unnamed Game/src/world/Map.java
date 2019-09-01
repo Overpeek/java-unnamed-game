@@ -2,14 +2,27 @@ package world;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import creatures.*;
+import creatures.Creature;
+import creatures.Item;
+import creatures.Player;
 import graphics.Renderer;
 import graphics.Shader;
-import logic.*;
-import logic.Database.*;
-import utility.*;
+import logic.CompiledSettings;
+import logic.Database;
+import logic.Database.Biome_Data;
+import logic.Main;
+import logic.Noisemaps;
+import logic.ParticleManager;
+import logic.TextureLoader;
+import utility.Logger;
+import utility.Maths;
+import utility.SaveManager;
+import utility.mat4;
+import utility.vec2;
+import utility.vec3;
 
 public class Map {
 
@@ -52,16 +65,22 @@ public class Map {
 	private ArrayList<Creature> creatures;
 	private Player player;
 	
-
 	
-	public Map() {
+	
+	public MapTile[][] getTiles() {
+		return tiles;
+	}
+	
+	public Map(boolean game) {
 		creatures = new ArrayList<Creature>();
 		name = "null";
-		
-		world_shader = Shader.multiTextureShader();
-		world_renderer = new Renderer();
-		
-		player = (Player) new Player().construct(0, 0, null);
+
+		if (game) {
+			if (world_shader == null) world_shader = Shader.multiTextureShader();
+			if (world_renderer == null) world_renderer = new Renderer();
+			
+			player = (Player) new Player().construct(0, 0, null);
+		}
 	}
 	
 	public boolean create(String _name, int seed) {
@@ -100,106 +119,130 @@ public class Map {
 	public void save() {
 		Logger.info("Saving world");
 		
-		//Load tiles
+		// Load tiles
 		int size = MapTile.sizeof;
 		ByteBuffer tile_data = ByteBuffer.allocate(CompiledSettings.MAP_SIZE_TILES * CompiledSettings.MAP_SIZE_TILES * size);
+		IntBuffer as_int_buffer = tile_data.asIntBuffer();
 		for (int x = 0; x < CompiledSettings.MAP_SIZE_TILES; x++)
 		{
 			for (int y = 0; y < CompiledSettings.MAP_SIZE_TILES; y++)
 			{
-				tile_data.asIntBuffer().put(tiles[x][y].getSaveData());
+				as_int_buffer.put(tiles[x][y].getSaveData());
 			}
 		}
 
 
-		//Load creatures
-//		final int bytesPerCreature = 4 + 4 + 4 + 4;
-//		ByteBuffer creature_data = ByteBuffer.allocate(creatures.size() * bytesPerCreature);
-//		for (int i = 0; i < creatures.size(); i++) {
-//			creature_data.putFloat(creatures.get(i).getPos().x);
-//			creature_data.putFloat(creatures.get(i).getPos().y);
-//			creature_data.putInt(Database.getCreature(creatures.get(i).getId()).index);
-//			creature_data.putInt((creatures.get(i).isItem() == false) ? 0 : 1);
-//		}
-		
-		//Compress data
-		//TODO
-		
-		//Write datafloat playerData[] = null;
-		try {
-			Database.writeDataBuffer(tile_data, "world-data/tiles.dat");
-		} catch(IOException e) {
-			Logger.error(e.getMessage());
+		// Load creatures
+		final int bytesPerCreature = 4 + 4 + 4 + 4;
+		ByteBuffer creature_data = ByteBuffer.allocate(creatures.size() * bytesPerCreature);
+		for (int i = 0; i < creatures.size(); i++) {
+			creature_data.putFloat(creatures.get(i).getPos().x);
+			creature_data.putFloat(creatures.get(i).getPos().y);
+			creature_data.putInt(Database.getCreature(creatures.get(i).getId()).index);
+			creature_data.putInt((creatures.get(i).isItem() == false) ? 0 : 1);
 		}
-		//Database.writeDataBuffer(creature_data, "/world-data/creatures.dat");
+		
+		// Compress data
+		byte[] compressed_tile_data = null;
+		byte[] compressed_creature_data = null;
+		try {
+			compressed_tile_data = SaveManager.compress(tile_data.array());
+			compressed_creature_data = SaveManager.compress(creature_data.array());
+		} catch (IOException e) {
+			e.printStackTrace();
+			Logger.crit("Couldn't compress the save! Saving uncompressed.");
+		}
+		tile_data = ByteBuffer.wrap(compressed_tile_data);
+		creature_data = ByteBuffer.wrap(compressed_creature_data);
+		
+		// Write data
+		Database.writeByteBuffer(tile_data, "saves", name, "world-data", "tiles.ung");
+		Database.writeByteBuffer(creature_data, "saves", name, "world-data", "creatures.ung");
 		
 		Logger.info("World saved");
 	}
 
 	public boolean load(String name2) {
-		return false;
-//		Logger.info("Loading world...  ");
-//		name = name2;
-//
-//		ByteBuffer tile_data = Database.readDataBuffer("/world-data/tiles.dat");
-//		ByteBuffer creature_data = Database.readDataBuffer("/world-data/creatures.dat");
-//
-//
-//		////Uncompress tiledata
-//		//unsigned long uncompressedSize = MAP_SIZE * MAP_SIZE * 3 * sizeof(short);
-//		//Byte* uncompressedTiles = new Byte[uncompressedSize];
-//		//int state = uncompress(uncompressedTiles, &uncompressedSize, tile_data, tile_data_size);
-//		//if (state != Z_OK) {
-//		//	oe::Logger::out("Error uncompressing save file! ", state, oe::error);
-//		//}
-//		//short int *tileData = (short int*)uncompressedTiles;
-//
-//		
-//		//Load tiles
-//		if (tile_data == null) {
-//			Logger.warn("Couldn't load world \"" + name + "\"");
-//			return false;
-//		}
-//		unload();
-//		processedTileCount = 0;
-//		for (int x = 0; x < Settings.MAP_SIZE_TILES; x++)
-//		{
-//			for (int y = 0; y < Settings.MAP_SIZE_TILES; y++)
-//			{
-//				tiles[x][y] = new MapTile(
-//					tile_data.getInt(),
-//					tile_data.getInt(),
-//					tile_data.getInt()
-//				);
-//				processedTileCount++;
-//			}
-//		}
-//
-//
-//		//Load creatures
-//		if (creature_data != null) {
-//			while(true) {
-//				try {
-//					float x = creature_data.getFloat();
-//					float y = creature_data.getFloat();
-//					String id = Database.getCreature(creature_data.getInt()).data_name;
-//					boolean item = (creature_data.getInt() != 0);
-//					
-//					Creature newCreature;
-//					if (item) {
-//						newCreature = new Item().construct(x, y, id);
-//					} else {
-//						newCreature = newCreature(x, y, id);
-//					}
-//					
-//					addCreature(newCreature);
-//				} catch (Exception e) {
-//					break; //All creatures loaded
-//				}
-//			}
-//		}
-//		
-//		return true;
+		Logger.info("Loading world...  ");
+		name = name2;
+
+		ByteBuffer tile_data = null;
+		ByteBuffer creature_data = null;
+		try {
+			tile_data = Database.readByteBuffer("saves", name, "world-data", "tiles.ung");
+			creature_data = Database.readByteBuffer("saves", name, "world-data", "creatures.ung");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		if (tile_data == null) {
+			Logger.warn("Couldn't load world \"" + name + "\"");
+			return false;
+		}
+		if (creature_data == null) {
+			Logger.warn("0 creatures?");
+		}
+
+
+		// Decompress data
+		byte[] uncompressed_tile_data = null;
+		byte[] uncompressed_creature_data = null;
+		try {
+			uncompressed_tile_data = SaveManager.decompress(tile_data.array());
+			uncompressed_creature_data = SaveManager.decompress(creature_data.array());
+			tile_data = ByteBuffer.wrap(uncompressed_tile_data);
+			creature_data = ByteBuffer.wrap(uncompressed_creature_data);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Logger.crit("Couldn't decompress the save! Trying to load uncompressed... (Might fail if wasn't saved uncompressed)");
+		}
+		
+		//Load tiles
+		unload();
+		processedTileCount = 0;
+		tiles = new MapTile[CompiledSettings.MAP_SIZE_TILES][CompiledSettings.MAP_SIZE_TILES];
+		chunks = new RenderChunk[CompiledSettings.MAP_SIZE_CHUNKS][CompiledSettings.MAP_SIZE_CHUNKS];
+		for (int x = 0; x < CompiledSettings.MAP_SIZE_TILES; x++)
+		{
+			for (int y = 0; y < CompiledSettings.MAP_SIZE_TILES; y++)
+			{
+				int tile = tile_data.getInt();
+				int object = tile_data.getInt();
+				int health = tile_data.getInt();
+				tiles[x][y] = new MapTile(
+					tile,
+					object,
+					health
+				);
+				processedTileCount++;
+			}
+		}
+
+
+		//Load creatures
+		if (creature_data != null) {
+			while(true) {
+				try {
+					float x = creature_data.getFloat();
+					float y = creature_data.getFloat();
+					String id = Database.getCreature(creature_data.getInt()).data_name;
+					boolean item = (creature_data.getInt() != 0);
+					
+					Creature newCreature;
+					if (item) {
+						newCreature = new Item().construct(x, y, id);
+					} else {
+						newCreature = newCreature(x, y, id);
+					}
+					
+					addCreature(newCreature);
+				} catch (Exception e) {
+					break; //All creatures loaded
+				}
+			}
+		}
+		
+		return true;
 	}
 
 	boolean unload() {
@@ -331,8 +374,6 @@ public class Map {
 	 * shader must have vw_matrix uniform as view matrix
 	 * */
 	public void draw(float preupdate_scale) {
-//		world_renderer.clear();
-		
 		
 		vec3 camera_pos = new vec3(player.getPos().mulLocal(-CompiledSettings.TILE_SIZE), -1.0f);
 		mat4 vw_matrix = new mat4().move(camera_pos);
@@ -344,18 +385,19 @@ public class Map {
 		for (RenderChunk[] chunks2 : chunks) { for (RenderChunk chunk : chunks2) {
 			chunk.drawChunkMesh();
 		}}
-//		
-//		//All visible creatures
-//		for (Creature creature : creatures) {
-//			creature.draw(world_renderer, preupdate_scale);
-//		}
-//		player.draw(world_renderer, preupdate_scale);
-//		
-//		//All particles
-//		ParticleManager.draw(world_renderer);
-//		
-//		
-//		world_renderer.draw(TextureLoader.getTexture());
+		
+		//All visible creatures
+		for (Creature creature : creatures) {
+			creature.draw(world_renderer, preupdate_scale);
+		}
+		player.draw(world_renderer, preupdate_scale);
+		
+		//All particles
+		ParticleManager.draw(world_renderer);
+		
+		TextureLoader.getTexture().bind();
+		world_renderer.draw();
+		world_renderer.clear();
 	}
 	
 	public void updateCloseTiles(int x, int y) {

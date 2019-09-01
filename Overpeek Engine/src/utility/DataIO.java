@@ -1,11 +1,9 @@
 package utility;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
@@ -17,8 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterOutputStream;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,23 +70,28 @@ public class DataIO {
 		return ByteBuffer.wrap(bytes);
 	}
 	
-	public static void writeByte(String path, byte[] data) throws IOException {
+	public static void writeByte(String path, byte[] data) {
 		Path fileLocation = Paths.get(path);
 		fileLocation.toFile().getParentFile().mkdirs();
-		Files.write(fileLocation, data, StandardOpenOption.CREATE);
+		try {
+			Files.write(fileLocation, data, StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			e.printStackTrace();
+			Logger.error("This is a bug");
+		}
 	}
 
-	public static void writeByteBuffer(String path, ByteBuffer data) throws IOException {
+	public static void writeByteBuffer(String path, ByteBuffer data) {
 		writeByte(path, data.array());
 	}
 	
-	public static void writeInt(String path, int[] data) throws IOException {
+	public static void writeInt(String path, int[] data) {
 		ByteBuffer byteBuf = ByteBuffer.allocateDirect(data.length * 4);
 		byteBuf.asIntBuffer().put(data);
 		writeByte(path, byteBuf.array());
 	}
 	
-	public static void writeChar(String path, char[] data) throws IOException {
+	public static void writeChar(String path, char[] data) {
 		ByteBuffer byteBuf = ByteBuffer.allocateDirect(data.length * 4);
 		byteBuf.asCharBuffer().put(data);
 		writeByte(path, byteBuf.array());
@@ -128,24 +129,6 @@ public class DataIO {
 		
 		return array;
 	}
-	
-	public static byte[] compress(byte[] input) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        OutputStream out = new DeflaterOutputStream(baos);
-        out.write(input);
-        out.close();
-        
-        return baos.toByteArray();
-    }
-
-    public static byte[] decompress(byte[] input) throws IOException {
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        OutputStream out = new InflaterOutputStream(baos);
-        out.write(input);
-        out.close();
-        
-        return baos.toByteArray();
-    }
 	
 	public static JSONObject loadJSONObject(String path) throws JSONException {
 		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile(path)).toString();

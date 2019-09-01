@@ -68,10 +68,7 @@ public class Renderer {
 		vao = new VertexArrayObject();
 		vbo = new VertexBufferObject(arrayBufferData, VertexData.componentCount, arrayRenderType);
 		ibo = new IndexBufferObject(indexBufferData, indexRenderType);
-		vbo.attrib(0, 2, VertexData.sizeof, VertexData.attribPos);
-		vbo.attrib(1, 2, VertexData.sizeof, VertexData.attribUV);
-		vbo.attrib(2, 1, VertexData.sizeof, VertexData.attribTex);
-		vbo.attrib(3, 4, VertexData.sizeof, VertexData.attribCol);
+		VertexData.configVBO(vbo);
 		vao.addBuffer(vbo);
 	}
 
@@ -153,7 +150,7 @@ public class Renderer {
 	}
 	
 	public void overridePrimitiveCount(int newCount) {
-		vertex_count = primitiveType.vertex_count * VertexData.componentCount * newCount;
+		vertex_count = primitiveType.vertex_count * newCount;
 	}
 	
 	public void clear() {

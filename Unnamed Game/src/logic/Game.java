@@ -39,6 +39,7 @@ public class Game extends Application {
 	private Inventory inventory;
 	private Gui gui;
 	private Texture splashScreen;
+	private MainMenu mainMenu;
 	
 	public boolean paused;
 	public boolean advancedDebugMode;
@@ -53,10 +54,15 @@ public class Game extends Application {
 		postprocess_time += 0.1f;
 		postprocess_shader.setUniform1f("unif_t", postprocess_time);
 		
-		if (paused) return;
-		map.update(CompiledSettings.UPDATES_PER_SECOND);
-		gui.update(CompiledSettings.UPDATES_PER_SECOND);
-		Database.modUpdates();
+		if (mainMenu.inMenu) mainMenu.update(CompiledSettings.UPDATES_PER_SECOND);
+		if (!mainMenu.inMenu) {
+			
+			if (paused) return;
+			map.update(CompiledSettings.UPDATES_PER_SECOND);
+			gui.update(CompiledSettings.UPDATES_PER_SECOND);
+			Database.modUpdates();
+			
+		}
 	}
 
 	
@@ -66,86 +72,35 @@ public class Game extends Application {
 	public void render(float preupdate_scale) {
 		if (window == null || window.shouldClose()) gameloop.stop();
 		window.clear();
-		// Logger.debug("Camera position: " + camera_pos);
+		if (mainMenu.inMenu) mainMenu.render(preupdate_scale);
+		if (!mainMenu.inMenu) {
+			// World tiles
+	 		if (paused) {
+	 			postprocess_fb1.bind();
+	 			postprocess_fb1.clear(0.0f, 0.0f, 0.0f, 1.0f);
+	 	 		map.draw(preupdate_scale); //Map to framebuffer
+	 	 		postprocess_fb1.unbind();
+	 	 		postprocess_shader.setUniform1i("unif_effect", 0);
 
-		// world_renderer.clear();
-		// world_renderer.submitVertex(new VertexData(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, Database.objects.get(tile).texture, 1.0f, 1.0f, 1.0f, 1.0f));
-		// label.rebake("OBJ: " + Database.objects.get(tile).name + ", " + Database.objects.get(tile).texture, glyphs);
-		// resize(window.getWidth(), window.getHeight());
-		// world_renderer.drawAsPoints(TextureLoader.getTextureId(), TextureLoader.getTextureType());
-		// 
-		// single_texture_shader.enable();
-		// world_renderer.submitBakedText(new vec3(-1.0f, -1.0f, 0.0f), new vec2(0.2f, 0.2f), label, Colors.WHITE);
+	 			// Multipass framebuffer
+	 			postprocess_shader.setUniform1f("unif_effect_scale", debugScrollInput);
+	 			postprocess_shader.setUniform1i("unif_effect", 1);
+	 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
+	 			postprocess_shader.setUniform1i("unif_effect", 2);
+	 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
+	 			
+	 			postprocess_fb1.drawFullScreen(new vec2(-1.0f), new vec2(2.0f), new vec4(0.7f, 0.7f, 0.7f, 1.0f));
+	 		} else {
+	 	 		map.draw(preupdate_scale);
+	 		}
 
-
-
+	 		// GUI
+			gui.draw();
+			
+			gui_shader.setUniform1i("usetex", 1); 
+			TextLabelTexture.drawQueue(true);
+		}
 		
-		
-		// World tiles
- 		if (paused) {
- 			postprocess_fb1.bind();
- 			postprocess_fb1.clear(0.0f, 0.0f, 0.0f, 1.0f);
- 	 		map.draw(preupdate_scale); //Map to framebuffer
- 	 		postprocess_fb1.unbind();
- 	 		postprocess_shader.setUniform1i("unif_effect", 0);
-
- 			// Multipass framebuffer
- 			postprocess_shader.setUniform1f("unif_effect_scale", debugScrollInput);
- 			postprocess_shader.setUniform1i("unif_effect", 1);
- 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
- 			postprocess_shader.setUniform1i("unif_effect", 2);
- 			Framebuffer.multipass(new vec2(-1.0f), new vec2(2.0f), postprocess_fb1, postprocess_fb2, 8);
- 			
- 			postprocess_fb1.drawFullScreen(new vec2(-1.0f), new vec2(2.0f), new vec4(0.7f, 0.7f, 0.7f, 1.0f));
- 		} else {
- 	 		map.draw(preupdate_scale);
- 		}
-
-		gui.draw();
-// 		// 
-// 		point_shader.enable();
-// 		blur_renderer.points.draw(TextureLoader.getTexture());
-// 		normal_renderer.points.draw(TextureLoader.getTexture());
-// 		
-// 		
-		gui_shader.setUniform1i("usetex", 1); 
-		TextLabelTexture.drawQueue(true);
-		
-
-		// single_texture_shader.enable();
-		// label.draw(new vec3(-window.getAspect(), -1.0f, 0.0f), new vec2(0.2f, 0.2f), Colors.WHITE);
-		
-		// // Gui
-		// m_gui->renderNoBlur(m_guirenderer.get());
-  // 
-		// // Flush
-		// if (!paused) {
-		// 	m_worldrenderer->draw(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true);
-		// }
-		// else if (justPaused) {
-		// 	m_worldrenderer->drawToFramebuffer(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true, false);
-		// 	m_postshader->enable();
-		// 	for (int i = 0; i < 16; i++) {
-		// 		m_postshader->setUniform1i("unif_effect", 1);
-		// 		m_worldrenderer->drawFramebufferToFramebuffer(m_postshader.get(), "unif_texture", true);
-		// 		m_postshader->setUniform1i("unif_effect", 2);
-		// 		m_worldrenderer->drawFramebufferToFramebuffer(m_postshader.get(), "unif_texture", false);
-		// 	}
-		// 	m_postshader->setUniform1i("unif_effect", 0);
-		// 	m_worldrenderer->drawFramebuffer(m_postshader.get(), "unif_texture", false);
-		// }
-		// else if (paused) {
-		// 	m_postshader->enable();
-		// 	m_postshader->setUniform1i("unif_effect", 0);
-		// 	m_worldrenderer->drawFramebuffer(m_postshader.get(), "unif_texture", false);
-		// }
-		// 
-		// m_guirenderer->draw(m_shader.get(), m_pointshader.get(), oe::TextureManager::getTexture(0), true);
-  // 
-		// // Other
-		// justPaused = false;
-  // 
-  // 
 		window.update();
 		window.input();
 	}
@@ -184,7 +139,7 @@ public class Game extends Application {
 		// Description
 		if (text != null) {
 			loadDescription.rebake("$2" + text);
-			loadDescription.queueDraw(new vec2(-0.8f, 0.7f), new vec2(0.1f));
+			loadDescription.submit(new vec2(-0.8f, 0.7f), new vec2(0.1f));
 			TextLabelTexture.drawQueue(true);
 		}
 		
@@ -256,53 +211,48 @@ public class Game extends Application {
 			Database.getCreature("player").staminagain
 		);
 		ParticleManager.init();
-
-		// Start async map loading
-		loadWorld(CompiledSettings.WORLD_NAME, true);
 		
 		// Main menu
-		MainMenu.init(gui_renderer, gui_shader, postprocess_shader, glyphs);
-		new MainMenu();
-		// window.setCurrentApp(this);
+		mainMenu = new MainMenu(window, postprocess_shader);
 
 		// Reset window
 		resize(window.getWidth(), window.getHeight());
 
 		// Ready
 		Logger.info("Game ready! Running update- and renderloops");
-		
-		// /
-		map.generateAllMeshes();
 	}
 
 	// Load world with name
 	// If not found, create one
 	public void loadWorld(String name, boolean create) {
 		AsyncMapLoader loader = new AsyncMapLoader();
-		map = new Map();
-		loader.loadMap(map, name);
-		new Thread(loader).start();
-		while (true) {
-			if (window.shouldClose()) gameloop.stop(); //  Can close even while loading! This is revolutionary
-			
-			//Check loadstate and send it to loading screen
-			float state = loader.queryLoadState();
-			if (state == 1.0f) { map = loader.getLoadedMap(); return; } //  Load finished
-			if (state == -1) { break; } //  Load failed
-			drawLoadingScreen(gui_renderer, state, "Loading map");		
-			
+		map = new Map(true);
+		
+		if (!create) { // load
+			loader.loadMap(map, name);
+			new Thread(loader).start();
+			while (true) {
+				if (window.shouldClose()) gameloop.stop(); //  Can close even while loading! This is revolutionary
+				
+				//Check loadstate and send it to loading screen
+				float state = loader.queryLoadState();
+				if (state == 1.0f) { map = loader.getLoadedMap(); loader.finish(); return; } //  Load finished
+				if (state == -1) { break; } //  Load failed
+				drawLoadingScreen(gui_renderer, state, "Loading map");		
+				
+			}
+			Logger.warn("Couldn't load world \"" + name + "\"");	
 		}
-		Logger.warn("Couldn't load world \"" + name + "\"");	
 
-		if (create) {
-			loader.createMap(map, name, 0);
+		if (create) { // create
+			loader.createMap(map, name, CompiledSettings.INITIAL_RANDOM_SEED);
 			new Thread(loader).start();
 			while (true) {
 				if (window.shouldClose()) gameloop.stop(); //  Can close even while loading! This is revolutionary
 
 				//Check loadstate and send it to loading screen
 				float state = loader.queryLoadState();
-				if (state == 1.0f) { map = loader.getLoadedMap(); return; } // Create finished
+				if (state == 1.0f) { map = loader.getLoadedMap(); loader.finish(); return; } // Create finished
 				if (state == -1) { break; } // Create failed
 				drawLoadingScreen(gui_renderer, state, "Creating map");			
 			}
@@ -310,74 +260,92 @@ public class Game extends Application {
 			Logger.error("Couldn't create world \"" + name + "\" with seed \"" + 0 + "\"");
 		}
 	}
+	
+	public void closeWorld(boolean save) {
+		if (save) {
+			saveWorld();
+		}
+
+		mainMenu.inMenu = true;
+	}
 
 	
 	// Key press callback
 	@Override
 	public void keyPress(int key, int action) {
-		boolean chatWasOpened = gui.chatOpened();
-		gui.keyPress(key, action);
-		if (chatWasOpened) return;
-		
-		if (action == Keys.PRESS) {
-			if (key == Keys.KEY_ESCAPE) { paused = !paused; return; }
+		mainMenu.keyPress(key, action);
+		if (!mainMenu.inMenu) {
 			
-			// Cant press or open anything while typing to chat or paused
-			if (paused) return;
+			boolean chatWasOpened = gui.chatOpened();
+			gui.keyPress(key, action);
+			if (chatWasOpened) return;
+			
+			if (action == Keys.PRESS) {
+				if (key == Keys.KEY_ESCAPE) { paused = !paused; return; }
+				
+				// Cant press or open anything while typing to chat or paused
+				if (paused) return;
 
-			// Postshader
-			if (key == Keys.KEY_F7) { postprocess_shader.setUniform1i("unif_lens", 0); return; }
-			if (key == Keys.KEY_F8) { postprocess_shader.setUniform1i("unif_lens", 1); return; }
+				// Postshader
+				if (key == Keys.KEY_F7) { postprocess_shader.setUniform1i("unif_lens", 0); return; }
+				if (key == Keys.KEY_F8) { postprocess_shader.setUniform1i("unif_lens", 1); return; }
 
-			// Player keys
-			if (key == Keys.KEY_E) { map.getPlayer().setPos(new vec2(Math.round(map.getPlayer().getPos().x + 0.5f) - 0.5f, Math.round(map.getPlayer().getPos().y + 0.5f) - 0.5f)); return; }
+				// Player keys
+				if (key == Keys.KEY_E) { map.getPlayer().setPos(new vec2(Math.round(map.getPlayer().getPos().x + 0.5f) - 0.5f, Math.round(map.getPlayer().getPos().y + 0.5f) - 0.5f)); return; }
 
-			// Inventory
-			//if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
-			if (key == Keys.KEY_ESCAPE) { inventory.setVisible(false); return; }
+				// Inventory
+				//if (key == Keys.KEY_R) { inventory.setVisible(!inventory.isVisible()); return; }
+				if (key == Keys.KEY_ESCAPE) { inventory.setVisible(false); return; }
 
-			// Inventory slot selecting
-			if (key == Keys.KEY_1) { inventory.setSelectedSlot(0); return; }
-			if (key == Keys.KEY_2) { inventory.setSelectedSlot(1); return; }
-			if (key == Keys.KEY_3) { inventory.setSelectedSlot(2); return; }
-			if (key == Keys.KEY_4) { inventory.setSelectedSlot(3); return; }
-			if (key == Keys.KEY_5) { inventory.setSelectedSlot(4); return; }
+				// Inventory slot selecting
+				if (key == Keys.KEY_1) { inventory.setSelectedSlot(0); return; }
+				if (key == Keys.KEY_2) { inventory.setSelectedSlot(1); return; }
+				if (key == Keys.KEY_3) { inventory.setSelectedSlot(2); return; }
+				if (key == Keys.KEY_4) { inventory.setSelectedSlot(3); return; }
+				if (key == Keys.KEY_5) { inventory.setSelectedSlot(4); return; }
 
-			// Debug commands
-			// Activate debug and advanced debug modes
-			if (key == Keys.KEY_F1) {
-				debugMode = !debugMode; 
-				if (window.key(Keys.KEY_LEFT_SHIFT)) {
-					debugMode = true;
-					advancedDebugMode = true;
+				// Debug commands
+				// Activate debug and advanced debug modes
+				if (key == Keys.KEY_F1) {
+					debugMode = !debugMode; 
+					if (window.key(Keys.KEY_LEFT_SHIFT)) {
+						debugMode = true;
+						advancedDebugMode = true;
+					}
+					else advancedDebugMode = false;
+					return;
 				}
-				else advancedDebugMode = false;
-				return;
-			}
 
-			// Debug ceil creaures
-			if (key == Keys.KEY_F2) {
-				map.debugCeilCreatures();
-			}
+				// Debug ceil creaures
+				if (key == Keys.KEY_F2) {
+					map.debugCeilCreatures();
+				}
 
-			// Get FPS
-			if (key == Keys.KEY_F3) { Logger.info("Fps: " + gameloop.getFps()); return; }
+				// Get FPS
+				if (key == Keys.KEY_F3) { Logger.info("Fps: " + gameloop.getFps()); return; }
+				
+				// Clear inventoy
+				if (key == Keys.KEY_F4) { inventory.clear(); return; }
+				
+				// Add creature at player
+				if (key == Keys.KEY_F5) { map.addCreature(map.newCreature(map.getPlayer().getPos().x, map.getPlayer().getPos().y + 5.0f, "zombie")); return; }
+			}
+				
+			gui.keyPress(key, action);
 			
-			// Clear inventoy
-			if (key == Keys.KEY_F4) { inventory.clear(); return; }
-			
-			// Add creature at player
-			if (key == Keys.KEY_F5) { map.addCreature(map.newCreature(map.getPlayer().getPos().x, map.getPlayer().getPos().y + 5.0f, "zombie")); return; }
 		}
-			
-		gui.keyPress(key, action);
 	}
 
 	
 	// Mouse button press callback
 	@Override
 	public void buttonPress(int button, int action) {
-		map.getPlayer().buttonPress(button, action);
+		mainMenu.buttonPress(button, action);
+		if (!mainMenu.inMenu) {
+
+			map.getPlayer().buttonPress(button, action);
+			
+		}
 	}
 
 
@@ -462,6 +430,10 @@ public class Game extends Application {
 
 	public Window getWindow() {
 		return window;
+	}
+
+	public MainMenu getMainMenu() {
+		return mainMenu;
 	}
 
 	@Override

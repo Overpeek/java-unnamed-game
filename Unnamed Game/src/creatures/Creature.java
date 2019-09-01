@@ -157,55 +157,72 @@ public abstract class Creature {
 				Map.MapTile tile = Main.game.getMap().getTile(tilex, tiley);
 				if (tile == null) continue;
 				if (Database.getObject(tile.object).wall) {
-					boolean top = false, bottom = false;
-					boolean left = false, right = false;
-					float x_to_move = 0;
-					float y_to_move = 0;
-	
-					//LEFT COLLIDER
+					
 					if (AABB(
-						new vec2(getPos().x - PLAYER_WIDTH / 2.0f, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
-						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
+						new vec2(getPos().x - PLAYER_WIDTH / 2.0f, getPos().y - PLAYER_HEIGHT / 2.0f),
+						new vec2(PLAYER_WIDTH, PLAYER_HEIGHT),
 						new vec2(tilex, tiley),
 						new vec2(1.0f, 1.0f)
 					)) {
-						left = true;
-						x_to_move = ((float)tilex + 1.0f + (PLAYER_WIDTH / 2.0f)) - getPos().x;
+						vec2 tile_to_player = new vec2(tilex + 0.5f - getPos().x, tiley + 0.5f - getPos().y);
+						tile_to_player.mostSignificant().normalize().mul(PLAYER_WIDTH / 2.0f + 0.5f, PLAYER_HEIGHT / 2.0f + 0.5f);
+
+						if (tile_to_player.x == 0) {
+							getPos().y = tiley + 0.5f - tile_to_player.y;
+						} else { // tile_to_player.y == 0
+							getPos().x = tilex + 0.5f - tile_to_player.x;
+						}
 					}
 					
-					//RIGHT COLLIDER
-					if (AABB(
-						new vec2(getPos().x, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
-						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
-						new vec2(tilex, tiley),
-						new vec2(1.0f, 1.0f)
-					)) {
-						right = true;
-						x_to_move = ((float)tilex - (PLAYER_WIDTH / 2.0f)) - getPos().x;
-					}
-					//TOP COLLIDER
-					if (AABB(
-						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y - PLAYER_HEIGHT / 2.0f),
-						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
-						new vec2(tilex, tiley),
-						new vec2(1.0f, 1.0f)
-					)) {
-						top = true;
-						y_to_move = ((float)tiley + 1.0f + (PLAYER_HEIGHT / 2.0f)) - getPos().y;
-					}
-					//BOTTOM COLLIDER
-					if (AABB(
-						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y),
-						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
-						new vec2(tilex, tiley),
-						new vec2(1.0f, 1.0f)
-					)) {
-						bottom = true;
-						y_to_move = ((float)tiley - PLAYER_HEIGHT / 2.0f) - getPos().y;
-					}
-	
-					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mul(1.0f, 0.0f); }
-					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mul(0.0f, 1.0f); }
+//					boolean top = false, bottom = false;
+//					boolean left = false, right = false;
+//					float x_to_move = 0;
+//					float y_to_move = 0;
+//	
+//					//LEFT COLLIDER
+//					if (AABB(
+//						new vec2(getPos().x - PLAYER_WIDTH / 2.0f, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
+//						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
+//						new vec2(tilex, tiley),
+//						new vec2(1.0f, 1.0f)
+//					)) {
+//						left = true;
+//						x_to_move = ((float)tilex + 1.0f + (PLAYER_WIDTH / 2.0f)) - getPos().x;
+//					}
+//					
+//					//RIGHT COLLIDER
+//					if (AABB(
+//						new vec2(getPos().x, getPos().y - PLAYER_HEIGHT / 2.0f + 0.3f),
+//						new vec2(PLAYER_WIDTH / 2.0f, PLAYER_HEIGHT - 0.6f),
+//						new vec2(tilex, tiley),
+//						new vec2(1.0f, 1.0f)
+//					)) {
+//						right = true;
+//						x_to_move = ((float)tilex - (PLAYER_WIDTH / 2.0f)) - getPos().x;
+//					}
+//					//TOP COLLIDER
+//					if (AABB(
+//						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y - PLAYER_HEIGHT / 2.0f),
+//						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
+//						new vec2(tilex, tiley),
+//						new vec2(1.0f, 1.0f)
+//					)) {
+//						top = true;
+//						y_to_move = ((float)tiley + 1.0f + (PLAYER_HEIGHT / 2.0f)) - getPos().y;
+//					}
+//					//BOTTOM COLLIDER
+//					if (AABB(
+//						new vec2(getPos().x - PLAYER_WIDTH / 2.0f + 0.3f, getPos().y),
+//						new vec2(PLAYER_WIDTH - 0.6f, PLAYER_HEIGHT / 2.0f),
+//						new vec2(tilex, tiley),
+//						new vec2(1.0f, 1.0f)
+//					)) {
+//						bottom = true;
+//						y_to_move = ((float)tiley - PLAYER_HEIGHT / 2.0f) - getPos().y;
+//					}
+//	
+//					if (top != bottom) { getPos().add(0.0f, y_to_move); getVel().mul(1.0f, 0.0f); }
+//					if (left != right) { getPos().add(x_to_move, 0.0f);getVel().mul(0.0f, 1.0f); }
 				}
 			}
 		}

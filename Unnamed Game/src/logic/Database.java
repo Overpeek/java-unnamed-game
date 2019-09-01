@@ -573,21 +573,20 @@ public class Database {
 	}
 
 	// Save data
-	public static void writeData(byte[] data, String path) throws IOException {
-		DataIO.writeByte(SaveManager.getSaveLocation(path), data);
+	public static void writeBytes(byte[] data, String... path) {
+		SaveManager.saveData(ByteBuffer.wrap(data), path);
 	}
-
-	public static void writeDataBuffer(ByteBuffer data, String path) throws IOException {
-		DataIO.writeByteBuffer(SaveManager.getSaveLocation(path), data);
+	
+	public static void writeByteBuffer(ByteBuffer data, String... path) {
+		SaveManager.saveData(data, path);
 	}
 
 	// Load data
-	public static byte[] readData(String... path) throws IOException {
-		return DataIO.readByte(SaveManager.getSaveLocation(path));
+	public static byte[] readBytes(String... path) throws IOException {
+		return SaveManager.loadData(path).array();
 	}
-
-	public static ByteBuffer readDataBuffer(String... path) throws IOException {
-		return DataIO.readByteBuffer(SaveManager.getSaveLocation(path));
+	public static ByteBuffer readByteBuffer(String... path) throws IOException {
+		return SaveManager.loadData(path);
 	}
 
 	// --------------

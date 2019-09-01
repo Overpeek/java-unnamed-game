@@ -19,7 +19,7 @@ import world.Map.MapTile;
 public class Gui {
 
 	private static final int MAX_TEXT_LINES = 10;
-	private static final int GUI_FRAME_LOGGER_SIZE = 300;
+	private static final int GUI_FRAME_LOGGER_SIZE = 100;
 	private static final int GUI_UPDATE_LOGGER_SIZE = 60;
 	private static final float GUI_FRAME_LOGGER_BAR_WIDTH = 1.0f / GUI_FRAME_LOGGER_SIZE;
 	private static final float GUI_UPDATE_LOGGER_BAR_WIDTH = 1.0f / GUI_UPDATE_LOGGER_SIZE;
@@ -98,7 +98,7 @@ public class Gui {
 		pos_label = TextLabelTexture.bakeToTexture("POS: 0");
 		cpu_label = TextLabelTexture.bakeToTexture("Threads: " + Runtime.getRuntime().availableProcessors());
 		gpu_label = TextLabelTexture.bakeToTexture("GPU: " + Main.game.getWindow().getRenderer());
-		renderer_label = TextLabelTexture.bakeToTexture("Renderer: " + Main.game.getWindow().getGL());
+		renderer_label = TextLabelTexture.bakeToTexture("OpenGL: " + Main.game.getWindow().getGL());
 		ram_label = TextLabelTexture.bakeToTexture("Memory: null");
 
 		avg_frame_label = TextLabelTexture.bakeToTexture("0");
@@ -134,7 +134,7 @@ public class Gui {
 			// Top bar
 			String text = "F avg ms: " + (int) avg_frame;
 			avg_frame_label.rebake(text);
-			avg_frame_label.queueDraw(textPos, textSize);
+			avg_frame_label.submit(textPos, textSize);
 
 			// Actual logger
 			for (int i = 0; i < GUI_FRAME_LOGGER_SIZE; i++) {
@@ -154,7 +154,7 @@ public class Gui {
 					// Top bar
 			String text = "U avg ms: " + (int) avg_update;
 			avg_update_label.rebake(text);
-			avg_update_label.queueDraw(textPos, textSize);
+			avg_update_label.submit(textPos, textSize);
 
 			// Actual logger
 			for (int i = 0; i < GUI_UPDATE_LOGGER_SIZE; i++) {
@@ -212,12 +212,12 @@ public class Gui {
 			// Debug mode text
 			String text = "FPS: " + Main.game.getLoop().getFps();
 			fps_label.rebake(text);
-			fps_label.queueDraw(pos, size);
+			fps_label.submit(pos, size);
 
 			pos.add(0.0f, textScale);
 			text = "UPS: " + Main.game.getLoop().getUps();
 			ups_label.rebake(text);
-			ups_label.queueDraw(pos, size);
+			ups_label.submit(pos, size);
 		}
 		
 		// Advanced debug mode
@@ -226,23 +226,23 @@ public class Gui {
 			pos.add(0.0f, textScale);
 			String text = "Position X: " + Main.game.getPlayer().getPos().x + ", Y: " + Main.game.getPlayer().getPos().y;
 			pos_label.rebake(text);
-			pos_label.queueDraw(pos, size);
+			pos_label.submit(pos, size);
 
 			pos.add(0.0f, textScale);
-			renderer_label.queueDraw(pos, size);
+			renderer_label.submit(pos, size);
 
 			pos.add(0.0f, textScale);
-			gpu_label.queueDraw(pos, size);
+			gpu_label.submit(pos, size);
 
 			pos.add(0.0f, textScale);
 			float usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576.0f;
 			float maxMemory = Runtime.getRuntime().totalMemory() / 1048576.0f;
 			ram_label.rebake("Memory: " + usedMemory + "MB / " + maxMemory + "MB");
 			pos_label.rebake(text);
-			ram_label.queueDraw(pos, size);
+			ram_label.submit(pos, size);
 
 			pos.add(0.0f, textScale);
-			cpu_label.queueDraw(pos, size);
+			cpu_label.submit(pos, size);
 			
 			drawFrameLogger();
 		}
@@ -259,7 +259,7 @@ public class Gui {
 				// Text input line
 				normal_renderer.submit(new Quad(pos, new vec2(Main.game.getWindow().getAspect() * 2.0f, textScale), 0, COLOR_CHAT_INPUT_BG));
 				text_input_label.rebake(current_line);
-				text_input_label.queueDraw(pos, size);
+				text_input_label.submit(pos, size);
 			}
 
 			for (int i = 0; i < MAX_TEXT_LINES; i++) {
@@ -267,7 +267,7 @@ public class Gui {
 				vec2 size = new vec2(textScale);
 
 				text_chat_label[i].rebake(text_lines[i]);
-				text_chat_label[i].queueDraw(pos, size);
+				text_chat_label[i].submit(pos, size);
 			}
 		}
 	}
@@ -283,7 +283,7 @@ public class Gui {
 
 			vec2 buttonTextScale = new vec2(0.1f * Main.game.renderScale());
 
-			pause_indicator_label.queueDrawCentered(new vec2(0.003f, -0.003f - 0.75f), buttonTextScale);
+			pause_indicator_label.submitCentered(new vec2(0.003f, -0.003f - 0.75f), buttonTextScale);
 
 			for (int i = 0; i < 3; i++) {
 				float shade = 0.1f;
@@ -296,9 +296,9 @@ public class Gui {
 			}
 
 			buttonTextScale = new vec2(0.1f * Main.game.renderScale());
-			button_label_0.queueDrawCentered(new vec2(0.0f, -0.5f), buttonTextScale);
-			button_label_1.queueDrawCentered(new vec2(0.0f, -0.35f), buttonTextScale);
-			button_label_2.queueDrawCentered(new vec2(0.0f, -0.20f), buttonTextScale);
+			button_label_0.submitCentered(new vec2(0.0f, -0.5f), buttonTextScale);
+			button_label_1.submitCentered(new vec2(0.0f, -0.35f), buttonTextScale);
+			button_label_2.submitCentered(new vec2(0.0f, -0.20f), buttonTextScale);
 		}
 	}
 	
@@ -322,8 +322,6 @@ public class Gui {
 	public void draw() {
 		
 		
-		blur_renderer.clear();
-		normal_renderer.clear();
 		
 		// Projection
 		mat4 pr_matrix = new mat4().ortho(-Main.game.getWindow().getAspect(), Main.game.getWindow().getAspect(), 1.0f, -1.0f);
@@ -346,8 +344,12 @@ public class Gui {
 		
 		gui_shader.bind();
 		TextureLoader.getTexture().bind();
+		
 		blur_renderer.draw();
+		blur_renderer.clear();
+		
 		normal_renderer.draw();
+		normal_renderer.clear();
 	}
 
 	public void shiftChatUp() {
@@ -397,7 +399,7 @@ public class Gui {
 					return;
 				}
 				if (selectedButton == 2) {
-					Main.game.getLoop().stop();
+					Main.game.closeWorld(true);
 					return;
 				}
 				return;

@@ -1,138 +1,156 @@
 package logic;
 
-import graphics.GlyphTexture;
+import java.util.ArrayList;
+
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
-import graphics.primitives.VertexData;
-import utility.Application;
+import graphics.Texture;
+import graphics.Window;
+import graphics.primitives.Quad;
+import utility.Callback;
 import utility.Colors;
-import utility.GameLoop;
-import utility.Logger;
-import utility.Maths;
+import utility.Keys;
 import utility.mat4;
 import utility.vec2;
-import utility.vec3;
 import utility.vec4;
 
-public class MainMenu extends Application {
+public class MainMenu {
 	
-	static private GameLoop loop;
-	static private Renderer renderer;
-	static private Shader gui_shader;
-	static private Shader single_shader;
-	static private Shader post_shader;
-	static private TextLabelTexture label;
+	protected static class MenuButton {
+		private vec2 size;
+		private vec4 color;
+		
+		private vec2 posCurrent;
+		private vec2 posA;
+		private vec2 posB;
+		
+		private float t;
+		
+		private TextLabelTexture text;
+		private Callback callback;
+		
+		public void update(float x, float y, boolean pressed, float time) {
+			boolean hover_over = false;
+			if (y > posA.y && y < posA.y + size.y) hover_over  = true;
+			
+			
+			if (hover_over) {
+				if (pressed) callback.callback();
+				
+				t += time;
+			} else {
+				t -= time;
+			}
+			
+			if (t > 1.0f) {
+				t = 1.0f;
+			} else if (t < 0.0f) {
+				t = 0.0f;
+			}
+			
+			posCurrent = vec2.lerp(posA, posB, t);
+		}
+		
+		public void submit(Renderer renderer) {
+			renderer.submit(new Quad(posCurrent, size, 0, color));
+			text.submitCentered(posCurrent.addLocal(size.mulLocal(0.5f)), new vec2(size.y, size.y));
+		}
+		
+		public MenuButton(float x, float y, String text, Callback callback, vec2 size, vec4 color) {
+			final float move = 0.2f;
+			
+			this.callback = callback;
+			this.posA = new vec2(x, y);
+			this.posB = new vec2(x + move, y);
+			this.size = size;
+			this.posCurrent = posA;
+			this.color = color;
+			
+			this.text = TextLabelTexture.bakeToTexture(text);
+		}
+	}
+	
+	private Renderer renderer;
+	private Shader shader;
+	private Shader post_shader;
+	
+	private ArrayList<MenuButton> buttons;
+	private Window window;
+	
+	public boolean inMenu;
 	 
-	static private final float UPS = 5;
-	private float anglex = 0.0f;
-	private float angley = 0.0f;
-
-
-	public static void init(Renderer gui_renderer, Shader _gui_shader, Shader _post_shader, GlyphTexture glyphs) {
-		renderer = gui_renderer;
-		gui_shader = _gui_shader;
-		post_shader = _post_shader;
-		single_shader = Shader.singleTextureShader();
+	public MainMenu(Window window, Shader post_shader) {
+		this.window = window;
+		this.post_shader = post_shader;
+		inMenu = true;
+		buttons = new ArrayList<MenuButton>();
+		buttons.add(new MenuButton(0.0f, 0.0f, "New", new Callback() {
+			
+			@Override
+			public void callback() {
+				Main.game.loadWorld("IDK", true);
+				inMenu = false;
+			}
+		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
+		buttons.add(new MenuButton(0.0f, 0.25f, "Load", new Callback() {
+			
+			@Override
+			public void callback() {
+				Main.game.loadWorld("IDK", false);
+				inMenu = false;
+			}
+		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
+		buttons.add(new MenuButton(0.0f, 0.5f, "Quit", new Callback() {
+			
+			@Override
+			public void callback() {
+				Main.game.gameloop.stop();
+				inMenu = true;
+			}
+		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
 		
-		label = TextLabelTexture.bakeToTexture("$0M$1A$2I$3N $4M$5E$6N$7U");
+		shader = Shader.singleTextureShader();
+		renderer = new Renderer();
+		mat4 pr_matrix = new mat4().ortho(0.0f, 2 * window.getAspect(), 1.0f, -1.0f);
+		shader.setUniformMat4("pr_matrix", pr_matrix);
+		shader.setUniform1i("usetex", 0);
 	}
 
-	public MainMenu() {
-		Main.game.getWindow().setCurrentApp(this);
-		loop = new GameLoop((int) UPS, this);
-		loop.run();
-		Main.game.getWindow().setCurrentApp(Main.game);
-	}
-	
-
-	@Override
-	public void update() {
-		//
+	public void update(float UPS) {
+		for (MenuButton b : buttons) {
+			b.update(window.getCursorFast().x, window.getCursorFast().y, window.button(Keys.MOUSE_BUTTON_LEFT), 5.0f / UPS);		
+		}
 	}
 
-	@Override
 	public void render(float preupdate_scale) {
-		if (Main.game.getWindow().shouldClose()) loop.stop();
-		Main.game.getWindow().clear(0.2f, 0.2f, 0.2f, 1.0f);
 
-		//View angles
-		float mx = Main.game.getWindow().getCursor().x, my = Main.game.getWindow().getCursor().y;
-		anglex = -mx * 4.0f; angley = -my * 4.0f;
+		renderer.submit(new Quad(new vec2(-1.0f, -1.0f), new vec2(2.0f, 2.0f), 0, Colors.WHITE));
+		post_shader.setUniform1i("unif_effect", 7);
+		renderer.draw();
+		renderer.clear();
 
-		//Set matrices
-		mat4 pr_matrix = new mat4().perspectiveDeg(90.0f, Main.game.getWindow().getAspect());
-		mat4 vw_matrix = new mat4()
-				.lookAt((float) Math.cos(anglex), angley, (float) Math.sin(anglex),
-				//.lookAt(-2.0f, 0.0f, -2.0f,
-			             0.0f, 0.0f, 0.0f,
-			             0.0f, -1.0f, 0.0f);
-		single_shader.setUniformMat4("pr_matrix", pr_matrix);
-		single_shader.setUniformMat4("vw_matrix", vw_matrix);
-
-		//Main menu text
-		single_shader.setUniform1i("usetex", 1);
-		label.queueDrawCentered(new vec2(0.0f, 0.0f), new vec2(0.5f));
+		for (MenuButton b : buttons) {
+			b.submit(renderer);
+		}
+		
+		Texture.unbind();
+		shader.setUniform1i("usetex", 0); 
+		renderer.draw();
+		renderer.clear();
+		
+		shader.setUniform1i("usetex", 1);
 		TextLabelTexture.drawQueue(false);
-
-		Main.game.getWindow().update();
-		Main.game.getWindow().input();
 	}
 
-
-
-	@Override
-	public void cleanup() {
-	}
-
-
-
-	@Override
-	public void init() {
-		
-	}
-
-
-
-	@Override
-	public void resize(int width, int height) {
-		loop.stop();
-	}
-
-
-
-	@Override
 	public void keyPress(int key, int action) {
-		loop.stop();
+		if(key == Keys.KEY_ESCAPE) {
+			inMenu = false;
+		}
 	}
 
-
-
-	@Override
 	public void buttonPress(int button, int action) {
-		loop.stop();
-	}
-
-
-
-	@Override
-	public void mousePos(float x, float y) {
-		// TODO Auto-generated method stub
 		
-	}
-
-
-
-	@Override
-	public void charCallback(char character) {
-		loop.stop();
-	}
-
-
-
-	@Override
-	public void scroll(float x_delta, float y_delta) {
-		loop.stop();
 	}
 
 }

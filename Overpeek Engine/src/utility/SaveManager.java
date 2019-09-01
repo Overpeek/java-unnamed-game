@@ -1,9 +1,13 @@
 package utility;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
 
 import org.lwjgl.system.Platform;
 
@@ -38,7 +42,7 @@ public class SaveManager {
 		
 	}
 	
-	static public void saveData(ByteBuffer data, String... path) throws IOException {
+	static public void saveData(ByteBuffer data, String... path) {
 		String locationString = getSaveLocation(path);
 		DataIO.writeByteBuffer(locationString, data);
 	}
@@ -47,5 +51,23 @@ public class SaveManager {
 		String locationString = getSaveLocation(path);
 		return DataIO.readByteBuffer(locationString);
 	}
+	
+	public static byte[] compress(byte[] input) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStream out = new DeflaterOutputStream(baos);
+        out.write(input);
+        out.close();
+        
+        return baos.toByteArray();
+    }
+
+    public static byte[] decompress(byte[] input) throws IOException {
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStream out = new InflaterOutputStream(baos);
+        out.write(input);
+        out.close();
+        
+        return baos.toByteArray();
+    }
 	
 }

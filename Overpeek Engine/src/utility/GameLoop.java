@@ -20,6 +20,11 @@ public class GameLoop implements Runnable {
 		fns = 0;
 	}
 	
+	// Get target ups
+	public int getTargetUPS() {
+		return ups_cap;
+	}
+	
 	//Get nanoseconds spent on last update
 	public int getUns() {
 		return uns;

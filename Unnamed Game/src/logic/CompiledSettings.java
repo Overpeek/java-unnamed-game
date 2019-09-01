@@ -9,7 +9,7 @@ public final class CompiledSettings {
 
 	public static final int UPDATES_PER_SECOND = 60;
 
-	public static final float DEBUG_ZOOM = 4.0f;
+	public static final float DEBUG_ZOOM = 1.0f;
 	public static final boolean DEBUG_MODE = false;
 	public static final boolean SHOW_DEBUG_MESSAGES = false;
 	public static final boolean DEBUG_DISABLE_SAVING = false;
@@ -29,7 +29,7 @@ public final class CompiledSettings {
 	public static final float PLAYER_WIDTH = 0.8f;
 	public static final float PLAYER_HEIGHT = 0.8f;
 
-	public static final int MAP_SIZE_CHUNKS = 2<<3; // chunks * chunks
+	public static final int MAP_SIZE_CHUNKS = 2<<4; // chunks * chunks
 	public static final int CHUNK_SIZE = 2<<3;
 	public static final int MAP_SIZE_TILES = MAP_SIZE_CHUNKS * CHUNK_SIZE; // chunks * chunks
 	public static final int MAP_MAX_CREATURES = 2048;
@@ -43,6 +43,7 @@ public final class CompiledSettings {
 	public static final float INVENTORY_SCALE = 0.2f;
 	
 
+	public static final int INITIAL_RANDOM_SEED = 1;
 	public static final float MAP_SCALE = 0.1f;
 	public static final float MAP_FREQ = 0.01f / MAP_SCALE;
 	public static final float MAP_BIOME_FREQ = 0.003f / MAP_SCALE;

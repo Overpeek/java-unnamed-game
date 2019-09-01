@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL13;
 import graphics.GlyphTexture.Glyph;
 import graphics.buffers.Framebuffer;
 import graphics.primitives.Quad;
+import graphics.primitives.Primitive.Primitives;
 import utility.Colors;
 import utility.mat4;
 import utility.vec2;
@@ -33,18 +34,18 @@ public class TextLabelTexture {
 	}
 	
 	private static class QueueData {
-		public vec2 pos;
-		public vec2 size;
-		public float aspect;
-		public Texture tex;
+		public TextLabelTexture label;
 		
-		public QueueData(vec2 pos, vec2 size, float aspect, Texture tex) {
-			this.pos = pos;
-			this.size = size;
-			this.tex = tex;
-			this.aspect = aspect;
+		public QueueData(TextLabelTexture label) {
+			this.label = label;
 		}
 	}
+	
+	private TextLabelTexture() {
+		label_draw = new Renderer(Primitives.Quad, 1);
+	}
+	
+	private Renderer label_draw;
 	
 	private static ArrayList<QueueData> drawQueue;
 	
@@ -57,7 +58,6 @@ public class TextLabelTexture {
 	private static Shader label_draw_shader;
 	private static Shader label_bake_shader;
 	private static Renderer label_bake;
-	private static Renderer label_draw;
 	private static GlyphTexture glyphs;
 	
 	
@@ -78,7 +78,6 @@ public class TextLabelTexture {
 		label_draw_shader = Shader.singleTextureShader();
 		label_bake_shader = Shader.multiTextureShader();
 		label_bake = new Renderer();
-		label_draw = new Renderer();
 		drawQueue = new ArrayList<QueueData>();
 		window = _window;
 	}
@@ -89,27 +88,25 @@ public class TextLabelTexture {
 	
 	public static void drawQueue(boolean useDefaultShader) {
 		if (useDefaultShader) label_draw_shader.bind();
+		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		for (QueueData qd : drawQueue) {
-			qd.size.x *= qd.aspect;
-
-			GL13.glActiveTexture(GL13.GL_TEXTURE0);
-			qd.tex.bind();
-			label_draw.clear();
-			label_draw.submit(new Quad(qd.pos, qd.size, 0, Colors.WHITE));
-			label_draw.draw();
+			qd.label.getFramebuffer().getTexture().bind();
+			qd.label.label_draw.draw();
 		}
 		drawQueue = new ArrayList<QueueData>();
 	}
 	
-	public void queueDraw(vec2 pos, vec2 size) {
-		drawQueue.add(new QueueData(pos.clone(), size.clone(), framebufferAspect, buffer.getTexture()));
+	public void submit(vec2 pos, vec2 size) {
+		label_draw.clear();
+		label_draw.submit(new Quad(pos, new vec2(size.x * framebufferAspect, size.y), 0, Colors.WHITE));
+		drawQueue.add(new QueueData(this));
 	}
 	
-	public void queueDrawCentered(vec2 _pos, vec2 size) {
+	public void submitCentered(vec2 _pos, vec2 size) {
 		vec2 pos = _pos.clone();
 		pos.x -= size.x * textAspect / 2.0f;
 		pos.y -= size.y / 2.0f;
-		queueDraw(pos, size);
+		submit(pos, size);
 	}
 	
 	public TextLabelTexture rebake(String text, GlyphTexture glyphs) {

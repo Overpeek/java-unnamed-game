@@ -1,6 +1,5 @@
 package logic;
 
-import utility.Logger;
 import world.Map;
 
 public class AsyncMapLoader implements Runnable {
@@ -44,6 +43,10 @@ public class AsyncMapLoader implements Runnable {
 			action = 0;
 			//Unknown
 		}
+	}
+	
+	public void finish() {
+		map.generateAllMeshes();
 	}
 	
 	
