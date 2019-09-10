@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.TextLabelTexture;
+import graphics.TextLabelTexture.alignment;
 import graphics.primitives.Quad;
 import utility.Colors;
-import utility.Console;
 import utility.Keys;
 import utility.Logger;
 import utility.Maths;
@@ -70,8 +70,6 @@ public class Gui {
 	private TextLabelTexture button_label_1;
 	private TextLabelTexture button_label_2;
 	
-	private Console consoleWindow;
-	
 	
 
 	public Gui(float maxHealth, float maxStamina, float healthGainRate, float staminaGainRate) {
@@ -116,8 +114,6 @@ public class Gui {
 			text_chat_label[i] = TextLabelTexture.bakeToTexture(text_lines[i]);
 		}
 		
-		consoleWindow = new Console(new vec2(0.0f, 0.0f), new vec2(0.5f, 0.5f));
-
 		gui_shader = Shader.multiTextureShader();
 		blur_renderer = new Renderer();
 		normal_renderer = new Renderer();
@@ -134,7 +130,7 @@ public class Gui {
 			// Top bar
 			String text = "F avg ms: " + (int) avg_frame;
 			avg_frame_label.rebake(text);
-			avg_frame_label.submit(textPos, textSize);
+			avg_frame_label.submit(textPos, textSize, alignment.TOP_LEFT);
 
 			// Actual logger
 			for (int i = 0; i < GUI_FRAME_LOGGER_SIZE; i++) {
@@ -154,7 +150,7 @@ public class Gui {
 					// Top bar
 			String text = "U avg ms: " + (int) avg_update;
 			avg_update_label.rebake(text);
-			avg_update_label.submit(textPos, textSize);
+			avg_update_label.submit(textPos, textSize, alignment.TOP_LEFT);
 
 			// Actual logger
 			for (int i = 0; i < GUI_UPDATE_LOGGER_SIZE; i++) {
@@ -212,12 +208,12 @@ public class Gui {
 			// Debug mode text
 			String text = "FPS: " + Main.game.getLoop().getFps();
 			fps_label.rebake(text);
-			fps_label.submit(pos, size);
+			fps_label.submit(pos, size, alignment.TOP_LEFT);
 
 			pos.add(0.0f, textScale);
 			text = "UPS: " + Main.game.getLoop().getUps();
 			ups_label.rebake(text);
-			ups_label.submit(pos, size);
+			ups_label.submit(pos, size, alignment.TOP_LEFT);
 		}
 		
 		// Advanced debug mode
@@ -226,23 +222,23 @@ public class Gui {
 			pos.add(0.0f, textScale);
 			String text = "Position X: " + Main.game.getPlayer().getPos().x + ", Y: " + Main.game.getPlayer().getPos().y;
 			pos_label.rebake(text);
-			pos_label.submit(pos, size);
+			pos_label.submit(pos, size, alignment.TOP_LEFT);
 
 			pos.add(0.0f, textScale);
-			renderer_label.submit(pos, size);
+			renderer_label.submit(pos, size, alignment.TOP_LEFT);
 
 			pos.add(0.0f, textScale);
-			gpu_label.submit(pos, size);
+			gpu_label.submit(pos, size, alignment.TOP_LEFT);
 
 			pos.add(0.0f, textScale);
 			float usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576.0f;
 			float maxMemory = Runtime.getRuntime().totalMemory() / 1048576.0f;
 			ram_label.rebake("Memory: " + usedMemory + "MB / " + maxMemory + "MB");
 			pos_label.rebake(text);
-			ram_label.submit(pos, size);
+			ram_label.submit(pos, size, alignment.TOP_LEFT);
 
 			pos.add(0.0f, textScale);
-			cpu_label.submit(pos, size);
+			cpu_label.submit(pos, size, alignment.TOP_LEFT);
 			
 			drawFrameLogger();
 		}
@@ -259,7 +255,7 @@ public class Gui {
 				// Text input line
 				normal_renderer.submit(new Quad(pos, new vec2(Main.game.getWindow().getAspect() * 2.0f, textScale), 0, COLOR_CHAT_INPUT_BG));
 				text_input_label.rebake(current_line);
-				text_input_label.submit(pos, size);
+				text_input_label.submit(pos, size, alignment.TOP_LEFT);
 			}
 
 			for (int i = 0; i < MAX_TEXT_LINES; i++) {
@@ -267,7 +263,7 @@ public class Gui {
 				vec2 size = new vec2(textScale);
 
 				text_chat_label[i].rebake(text_lines[i]);
-				text_chat_label[i].submit(pos, size);
+				text_chat_label[i].submit(pos, size, alignment.TOP_LEFT);
 			}
 		}
 	}
@@ -283,7 +279,7 @@ public class Gui {
 
 			vec2 buttonTextScale = new vec2(0.1f * Main.game.renderScale());
 
-			pause_indicator_label.submitCentered(new vec2(0.003f, -0.003f - 0.75f), buttonTextScale);
+			pause_indicator_label.submit(new vec2(0.003f, -0.003f - 0.75f), buttonTextScale, alignment.CENTER_CENTER);
 
 			for (int i = 0; i < 3; i++) {
 				float shade = 0.1f;
@@ -296,9 +292,9 @@ public class Gui {
 			}
 
 			buttonTextScale = new vec2(0.1f * Main.game.renderScale());
-			button_label_0.submitCentered(new vec2(0.0f, -0.5f), buttonTextScale);
-			button_label_1.submitCentered(new vec2(0.0f, -0.35f), buttonTextScale);
-			button_label_2.submitCentered(new vec2(0.0f, -0.20f), buttonTextScale);
+			button_label_0.submit(new vec2(0.0f, -0.5f), buttonTextScale, alignment.CENTER_CENTER);
+			button_label_1.submit(new vec2(0.0f, -0.35f), buttonTextScale, alignment.CENTER_CENTER);
+			button_label_2.submit(new vec2(0.0f, -0.20f), buttonTextScale, alignment.CENTER_CENTER);
 		}
 	}
 	
@@ -339,8 +335,6 @@ public class Gui {
 		
 		// Chat
 		drawChat();
-		
-		consoleWindow.draw();
 		
 		gui_shader.bind();
 		TextureLoader.getTexture().bind();
@@ -794,7 +788,7 @@ public class Gui {
 						} else if (argumentList[1].equals("respawn")) {
 							addChatLine("$0/$4respawn");
 							addChatLine("kill player to respawn");
-							addChatLine("$7example: /respawn");
+							addChatLine("$7example: respawn");
 						} else if (argumentList[1].equals("spawn")) {
 							addChatLine("$0/$4spawn $3[id] $6<x> <y> <item> <n>");
 							addChatLine("spawn creature(s) with $3[id]");

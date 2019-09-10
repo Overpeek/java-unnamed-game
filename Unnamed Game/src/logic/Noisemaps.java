@@ -1,5 +1,6 @@
 package logic;
 
+import settings.CompiledSettings;
 import utility.SimplexNoise_octave;
 
 public class Noisemaps {

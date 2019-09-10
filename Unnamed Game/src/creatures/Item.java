@@ -3,9 +3,11 @@ package creatures;
 
 import graphics.Renderer;
 import graphics.primitives.Quad;
-import logic.CompiledSettings;
 import logic.Database;
+import logic.Database.Creature_Data;
+import logic.Database.Item_Data;
 import logic.Main;
+import settings.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
 
@@ -18,14 +20,14 @@ public class Item extends Creature {
 
 	@Override
 	public void die() {
-		commonDie();
+		//commonDie();
 	}
 
 	@Override
 	public void draw(Renderer renderer, float preupdate_scale) {
 		vec2 pos = new vec2(
 				(getPos().x + getVel().x * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE, 
-				(getPos().x + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE);
+				(getPos().y + getVel().y * preupdate_scale / CompiledSettings.UPDATES_PER_SECOND - 0.5f) * CompiledSettings.TILE_SIZE);
 		vec2 size = new vec2(CompiledSettings.TILE_SIZE);
 		pos.mul(Main.game.renderScale());
 		size.mul(Main.game.renderScale());
@@ -47,6 +49,15 @@ public class Item extends Creature {
 	@Override
 	public void ai(float ups) {
 		//NO AI
+	}
+	
+	@Override
+	public Creature_Data getData() {
+		return Database.getCreature("item");
+	}
+	
+	public Item_Data getItemData() {
+		return Database.getItem(id);
 	}
 
 }

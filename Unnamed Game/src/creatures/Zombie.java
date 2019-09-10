@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import graphics.Renderer;
 import logic.Main;
 import logic.Pathfinder;
-import logic.CompiledSettings;
-import utility.Logger;
+import settings.CompiledSettings;
 import utility.Maths;
 import utility.vec2;
 

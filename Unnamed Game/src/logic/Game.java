@@ -1,16 +1,22 @@
 package logic;
 
+import java.awt.Font;
+
 import audio.Audio;
 import creatures.Player;
 import graphics.GlyphTexture;
 import graphics.Renderer;
 import graphics.Shader;
 import graphics.Shader.ShaderException;
+import graphics.TextLabelTexture.alignment;
 import graphics.TextLabelTexture;
 import graphics.Texture;
 import graphics.Window;
 import graphics.buffers.Framebuffer;
 import graphics.primitives.Quad;
+import guiwindows.GUIWindowManager;
+import settings.CompiledSettings;
+import settings.KeyBindings;
 import utility.Application;
 import utility.Colors;
 import utility.Debug.Timer;
@@ -63,6 +69,8 @@ public class Game extends Application {
 			Database.modUpdates();
 			
 		}
+
+		GUIWindowManager.update(window.getCursorFast().x, window.getCursorFast().y);
 	}
 
 	
@@ -100,6 +108,12 @@ public class Game extends Application {
 			gui_shader.setUniform1i("usetex", 1); 
 			TextLabelTexture.drawQueue(true);
 		}
+
+		// Windows
+		gui_shader.setUniform1i("usetex", 0);
+		GUIWindowManager.submit(window.getAspect());
+		gui_shader.setUniform1i("usetex", 1);
+		TextLabelTexture.drawQueue(false);
 		
 		window.update();
 		window.input();
@@ -139,7 +153,7 @@ public class Game extends Application {
 		// Description
 		if (text != null) {
 			loadDescription.rebake("$2" + text);
-			loadDescription.submit(new vec2(-0.8f, 0.7f), new vec2(0.1f));
+			loadDescription.submit(new vec2(-0.8f, 0.7f), new vec2(0.1f), alignment.TOP_LEFT);
 			TextLabelTexture.drawQueue(true);
 		}
 		
@@ -158,13 +172,13 @@ public class Game extends Application {
 		Logger.info("Creating window");
 		window = new Window(CompiledSettings.WINDOW_WIDTH, CompiledSettings.WINDOW_HEIGHT, CompiledSettings.WINDOW_DEFAULT_TITLE, this, Window.WINDOW_HIDDEN | Window.WINDOW_MULTISAMPLE_X8 | Window.WINDOW_RESIZEABLE | Window.WINDOW_DEBUGMODE);
 		window.setSwapInterval(0);
-		window.setIcon("/res/texture/icon.png");
+		window.setIcon("res/texture/icon.png");
 		window.setBackFaceCulling(false);
 		window.clearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		
 		// Critical Resources
 		Audio.init();
-		glyphs = GlyphTexture.loadFont("/res/font/arial.font", 64);
+		glyphs = GlyphTexture.loadFont(new Font("arial", Font.PLAIN, 128));
 		mat4 pr_matrix = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
 		gui_shader = Shader.multiTextureShader();
 		gui_shader.setUniformMat4("pr_matrix", pr_matrix);
@@ -172,7 +186,7 @@ public class Game extends Application {
 		TextLabelTexture.getDefaultShader().setUniformMat4("pr_matrix", pr_matrix);
 		loadDescription = TextLabelTexture.bakeToTexture("Loading");
 		gui_renderer = new Renderer();
-		splashScreen = Texture.loadTextureAtlas(256, 1, 1, 1, "/res/texture/splash.png");
+		splashScreen = Texture.loadTextureAtlas(256, 1, 1, 1, "res/texture/splash.png");
 		SaveManager.init(CompiledSettings.GAME_NAME);
 		
 		// Splash screen
@@ -196,7 +210,7 @@ public class Game extends Application {
 		// Rest of the shaders
 		Logger.info("Creating all the shaders");
 		try {
-			postprocess_shader = Shader.loadFromSources("/res/shader/postprocess.vert.glsl", "/res/shader/postprocess.frag.glsl", true);
+			postprocess_shader = Shader.loadFromSources("res/shader/postprocess.vert.glsl", "res/shader/postprocess.frag.glsl", true);
 		} catch (ShaderException e) {
 			e.printStackTrace();
 			Logger.error("Critical shader could not be loaded");
@@ -211,6 +225,7 @@ public class Game extends Application {
 			Database.getCreature("player").staminagain
 		);
 		ParticleManager.init();
+		GUIWindowManager.initialize();
 		
 		// Main menu
 		mainMenu = new MainMenu(window, postprocess_shader);
@@ -273,6 +288,8 @@ public class Game extends Application {
 	// Key press callback
 	@Override
 	public void keyPress(int key, int action) {
+		KeyBindings.key(key, action);
+		
 		mainMenu.keyPress(key, action);
 		if (!mainMenu.inMenu) {
 			
@@ -340,6 +357,9 @@ public class Game extends Application {
 	// Mouse button press callback
 	@Override
 	public void buttonPress(int button, int action) {
+		GUIWindowManager.input(window.getCursorFast().x, window.getCursorFast().y, button, action);
+		KeyBindings.button(button, action);
+		
 		mainMenu.buttonPress(button, action);
 		if (!mainMenu.inMenu) {
 
@@ -354,6 +374,8 @@ public class Game extends Application {
 	public void resize(int width, int height) {
 		if (width == 0) width = window.getWidth();
 		if (height == 0) height = window.getHeight();
+		
+		if (mainMenu != null) mainMenu.resize(width, height);
 		
 		float aspect = width / height;
 

@@ -22,6 +22,7 @@ import static org.lwjgl.system.MemoryStack.stackMallocInt;
 import static org.lwjgl.system.MemoryStack.stackPop;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -70,7 +71,7 @@ public class Audio {
 	}
 	  
 	//Only .ogg files
-	public static Audio loadAudio(String path) {
+	public static Audio loadAudio(String path) throws FileNotFoundException {
 		if (!initialized) init();
 		
 		Audio returned = new Audio();

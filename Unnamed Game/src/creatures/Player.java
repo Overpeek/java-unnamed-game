@@ -1,17 +1,17 @@
 package creatures;
 
 import java.io.IOException;
-
-import org.json.JSONObject;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 import graphics.Renderer;
-import logic.CompiledSettings;
 import logic.Database;
 import logic.Inventory;
 import logic.Main;
-import utility.DataIO;
+import settings.CompiledSettings;
 import utility.Keys;
 import utility.Logger;
+import utility.SaveManager;
 import utility.vec2;
 
 public class Player extends Creature {
@@ -20,8 +20,10 @@ public class Player extends Creature {
 	private vec2 spawn_location;
 	private boolean god;
 	private boolean clipmode;
-	private vec2 death_location;
-	private vec2 ghost_object_location;
+	@SuppressWarnings("unused")
+	private vec2 death_location = null;
+	@SuppressWarnings("unused")
+	private vec2 ghost_object_location = null;
 
 	
 
@@ -30,6 +32,7 @@ public class Player extends Creature {
 		inventory = new Inventory();
 		clipmode = true;
 		god = false;
+		setSpawnPoint(CompiledSettings.MAP_SIZE_TILES / 2, CompiledSettings.MAP_SIZE_TILES / 2);
 		return commonConstruct(CompiledSettings.MAP_SIZE_TILES / 2.0f, CompiledSettings.MAP_SIZE_TILES / 2.0f, "player");
 	}
 
@@ -76,6 +79,8 @@ public class Player extends Creature {
 		if (!Main.game.getGui().chatOpened()) { // no interacting when typing
 
 			if (button == Keys.MOUSE_BUTTON_LEFT && action == Keys.PRESS) {
+				
+				hit();
 
 				vec2 cursor = Main.game.getWindow().getCursorFast();
 				cursor.x /= CompiledSettings.TILE_SIZE;
@@ -89,7 +94,6 @@ public class Player extends Creature {
 				ghost_object_location = tile_on_map;
 				
 				Main.game.getMap().hit((int)tile_on_map.x, (int)tile_on_map.y, (int)getData().meleeDamage);
-				hit();
 			}
 			
 		}
@@ -125,34 +129,30 @@ public class Player extends Creature {
 	public void ai(float ups) {
 		//NO AI
 	}
+	
+	public void save(String... path) {
+		inventory.save(path);
 
-	public static void addToDatabase() {
-		Class<?> clazz = Player.class;
-		JSONObject data = DataIO.loadJSONObject("player.json");
-		Database.loadCreature(data, clazz);
+		ByteBuffer playerData = ByteBuffer.allocate(4 * Float.BYTES);
+		playerData.putFloat(getPos().x);
+		playerData.putFloat(getPos().y);
+		playerData.putFloat(getSpawnPoint().y);
+		playerData.putFloat(getSpawnPoint().y);
+		SaveManager.saveData(playerData, path);
 	}
 	
+	public void load(String... path) {
+		inventory.load(path);
 
-	
-	public boolean load() {
-		inventory.load();
-
-		float playerData[] = null;
+		FloatBuffer playerData = null;
 		try {
-			playerData = DataIO.readFloat(CompiledSettings.SAVE_PATH + "player.data");
+			playerData = SaveManager.loadData(path).asFloatBuffer();
 		} catch(IOException e) {
 			Logger.error(e.getMessage());
 		}
 		
-		
-		
-		if (playerData == null) {
-			setSpawnPoint((int) getPos().x, (int) getPos().y);
-			return false;
-		}
-		setPos(new vec2(playerData[0], playerData[1]));
-		setSpawnPoint((int) playerData[2], (int) playerData[3]);
-		return true;
+		setPos(new vec2(playerData.get(), playerData.get()));
+		setSpawnPoint((int) playerData.get(), (int) playerData.get());
 	}
 
 

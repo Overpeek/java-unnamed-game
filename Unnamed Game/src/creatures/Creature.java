@@ -4,13 +4,15 @@ import java.util.ArrayList;
 
 import graphics.Renderer;
 import graphics.primitives.Quad;
-import logic.CompiledSettings;
 import logic.Database;
 import logic.Database.Creature_Data;
 import logic.Main;
 import logic.Particle;
 import logic.ParticleManager;
+import settings.CompiledSettings;
 import utility.Colors;
+import utility.Logger;
+import utility.Maths;
 import utility.vec2;
 import utility.vec3;
 import world.Map;
@@ -89,8 +91,12 @@ public abstract class Creature {
 	protected void commonDie() {
 		//Drops
 		for (int i = 0; i < getData().drops.size(); i++) {
-			//TODO:
-			//Main.game.getMap().addCreature(getPos().x, getPos().y, getData().drops.get(i).item, true);
+			int dropCount = (int) Math.floor(Maths.random(getData().drops.get(i).min, getData().drops.get(i).max));
+
+			// Create drops with custom count
+			for (int j = 0; j < dropCount; j++) {
+				Main.game.getMap().addCreature(Main.game.getMap().itemDrop(getPos().x, getPos().y, getData().drops.get(i).item));
+			}
 		}
 
 		//Remove this
@@ -146,7 +152,7 @@ public abstract class Creature {
 	}
 		
 	protected void commonCollide(float ups) {
-		if (Database.getCreature(id).ghost) return;
+		if (getData().ghost) return;
 	
 		for (int _x = -1; _x < 2; _x++)
 		{
@@ -279,7 +285,7 @@ public abstract class Creature {
 		
 
 		//Creature hitting
-		ArrayList<Creature> in_radius_creatures = Main.game.getMap().findAllCreatures(hitx, hity, 1.0f);
+		ArrayList<Creature> in_radius_creatures = Main.game.getMap().findAllCreatures(hitx, hity, 2.0f);
 		for (int i = 0; i < in_radius_creatures.size(); i++)
 		{
 			if (in_radius_creatures.get(i).equals(this)) continue;
@@ -289,6 +295,7 @@ public abstract class Creature {
 					in_radius_creatures.get(i).getPos().y - getPos().y);
 			directionVector.normalizeLocal();
 		
+			Logger.debug(in_radius_creatures.get(i).getHealth() - getData().meleeDamage);
 			in_radius_creatures.get(i).getAcc().x += directionVector.x / 10.0f * (getData().knockback);
 			in_radius_creatures.get(i).getAcc().y += directionVector.y / 10.0f * (getData().knockback);
 			in_radius_creatures.get(i).setHealth(in_radius_creatures.get(i).getHealth() - getData().meleeDamage);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import graphics.Renderer;
 import graphics.primitives.Primitive.Primitives;
+import settings.CompiledSettings;
 import graphics.primitives.VertexData;
 import utility.Logger;
 import utility.vec2;

@@ -41,6 +41,23 @@ public class TextLabelTexture {
 		}
 	}
 	
+	public static enum alignment {
+		TOP_LEFT(0.0f, 0.0f), 		TOP_CENTER(0.5f, 0.0f), 	TOP_RIGHT(1.0f, 0.0f), 
+		CENTER_LEFT(0.0f, 0.5f), 	CENTER_CENTER(0.5f, 0.5f), 	CENTER_RIGHT(1.0f, 0.5f), 
+		BOTTOM_LEFT(0.0f, 1.0f), 	BOTTOM_CENTER(0.5f, 1.0f), 	BOTTOM_RIGHT(1.0f, 1.0f);
+		
+		vec2 a;
+		private alignment(float x, float y) {
+			a = new vec2(x, y);
+		}
+		
+		public vec2 getAlignment(vec2 framebuffer_size) {
+			return framebuffer_size.mulLocal(a);
+		}
+	}
+	
+	
+	
 	private TextLabelTexture() {
 		label_draw = new Renderer(Primitives.Quad, 1);
 	}
@@ -96,17 +113,26 @@ public class TextLabelTexture {
 		drawQueue = new ArrayList<QueueData>();
 	}
 	
-	public void submit(vec2 pos, vec2 size) {
-		label_draw.clear();
-		label_draw.submit(new Quad(pos, new vec2(size.x * framebufferAspect, size.y), 0, Colors.WHITE));
-		drawQueue.add(new QueueData(this));
-	}
+//	public void submitCentered(vec2 _pos, vec2 size) {
+//		vec2 pos = _pos.clone();
+//		pos.x -= size.x * textAspect / 2.0f;
+//		pos.y -= size.y / 2.0f;
+//		submit(pos, size);
+//	}
+//	
+//	public void submit(vec2 pos, vec2 size) {
+//		label_draw.clear();
+//		label_draw.submit(new Quad(pos, new vec2(size.x * framebufferAspect, size.y), 0, Colors.WHITE));
+//		drawQueue.add(new QueueData(this));
+//	}
 	
-	public void submitCentered(vec2 _pos, vec2 size) {
-		vec2 pos = _pos.clone();
-		pos.x -= size.x * textAspect / 2.0f;
-		pos.y -= size.y / 2.0f;
-		submit(pos, size);
+	public void submit(vec2 pos, vec2 size, alignment align) {
+		label_draw.clear();
+		vec2 framebuffer_size = new vec2(size.x * framebufferAspect, size.y);
+		vec2 text_size = new vec2(size.x * textAspect, size.y);
+		vec2 framebuffer_position = pos.subLocal(align.getAlignment(text_size));
+		label_draw.submit(new Quad(framebuffer_position, framebuffer_size, 0, Colors.WHITE));
+		drawQueue.add(new QueueData(this));
 	}
 	
 	public TextLabelTexture rebake(String text, GlyphTexture glyphs) {

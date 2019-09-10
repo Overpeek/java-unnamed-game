@@ -1,29 +1,30 @@
-package applications;
+package guiwindows;
 
+import applications.GUIWindow;
 import graphics.Renderer;
+import graphics.TextLabelTexture;
 import graphics.primitives.Primitive.Primitives;
 import utility.vec2;
 
-public class Console extends GUIWindow {
+public class Settings extends GUIWindow {
 
-	public Console(vec2 position, vec2 size) {
-		this.position = position;
-		this.size = size;
+	public Settings() {
+		this.position = new vec2(-0.5f, -0.5f);
+		this.size = new vec2(1.0f);
+		this.name = "Settings";
 
+		this.label = TextLabelTexture.bakeToTexture(name);
 		this.renderer = new Renderer(Primitives.Quad, 10);
-		redrawFrame();
 	}
-	
+
 	@Override
 	public void draw(float window_aspect) {
-		drawFrame(window_aspect);
+		if (!hidden) drawFrame(window_aspect);
 	}
 
 	@Override
 	public void cursor(float m_x, float m_y, int button, int m_action) {
 		buttons(m_x, m_y, button, m_action);
 	}
-	
-	
-	
+
 }

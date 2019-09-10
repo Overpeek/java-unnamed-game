@@ -3,7 +3,7 @@
    		{
         	"name": "Player",
         	"data_name": "player",
-            "texture": "/res/texture/creature/player.png",
+            "texture": "res/texture/creature/player.png",
             "walkspeed": 3.0,
             "friendly": true,
             "ghost": false,
@@ -41,7 +41,7 @@
         {
         	"name": "Zombie",
         	"data_name": "zombie",
-            "texture": "/res/texture/creature/player.png",
+            "texture": "res/texture/creature/player.png",
             "walkspeed": 2.0,
             "friendly": false,
             "ghost": false,

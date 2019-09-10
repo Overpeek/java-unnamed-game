@@ -16,7 +16,7 @@
         {
         	"name": "Grass",
         	"data_name": "grass",
-            "texture": "/res/texture/object/grass.png",
+            "texture": "res/texture/object/grass.png",
             "wall": false,
             "multitexture": false,
             "smooth": false,
@@ -31,7 +31,7 @@
         {
         	"name": "Spruce",
         	"data_name": "spruce",
-            "texture": "/res/texture/object/spruce.png",
+            "texture": "res/texture/object/spruce.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -44,7 +44,7 @@
         {
         	"name": "Birch",
         	"data_name": "birch",
-            "texture": "/res/texture/object/birch.png",
+            "texture": "res/texture/object/birch.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -57,7 +57,7 @@
         {
         	"name": "Wood wall",
         	"data_name": "woodenwall",
-            "texture": "/res/texture/object/wood_wall.png",
+            "texture": "res/texture/object/wood_wall.png",
             "wall": true,
             "destroyable": true,
             "color.r": 0.58,
@@ -70,7 +70,7 @@
         {
         	"name": "Stone wall",
         	"data_name": "stonewall",
-            "texture": "/res/texture/object/stone_wall.png",
+            "texture": "res/texture/object/stone_wall.png",
             "wall": true,
             "destroyable": true,
             "color.r": 0.5,
@@ -83,7 +83,7 @@
         {
         	"name": "Spawner",
         	"data_name": "spawner",
-            "texture": "/res/texture/object/spawner.png",
+            "texture": "res/texture/object/spawner.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,
@@ -96,7 +96,7 @@
         {
         	"name": "Mover",
         	"data_name": "mover",
-            "texture": "/res/texture/object/mover.png",
+            "texture": "res/texture/object/mover.png",
             "wall": false,
             "destroyable": true,
             "color.r": 1.0,

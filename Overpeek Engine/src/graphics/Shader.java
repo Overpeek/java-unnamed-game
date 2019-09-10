@@ -36,8 +36,8 @@ public class Shader {
 		@Override
 		public void printStackTrace() {
 			Logger.crit(shaderLog);
-			Logger.crit("Stack trace:");
-			super.printStackTrace();
+			//Logger.crit("Stack trace:");
+			//super.printStackTrace();
 		}
 		
 	}
@@ -190,7 +190,7 @@ public class Shader {
 	}
 	
 	/**
-	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * usePath - use String filepaths("res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
 	public static Shader loadFromSources(String vertex, String fragment, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();
@@ -229,7 +229,7 @@ public class Shader {
 	}
 
 	/**
-	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * usePath - use String filepaths("res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
 	public static Shader loadFromSources(String compute, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();
@@ -276,7 +276,7 @@ public class Shader {
 	}
 
 	/**
-	 * usePath - use String filepaths("/res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
+	 * usePath - use String filepaths("res/shader.glsl") instead of Strings containing sources("#version 330 core\n" + "etc")
 	 * */
 	public static Shader loadFromSources(String vertex, String fragment, String geometry, boolean usePath) throws ShaderException {
 		Shader shader = new Shader();

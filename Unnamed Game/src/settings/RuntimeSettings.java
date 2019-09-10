@@ -1,4 +1,4 @@
-package logic;
+package settings;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

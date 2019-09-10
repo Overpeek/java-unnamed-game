@@ -1,6 +1,9 @@
 package utility;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,7 +40,23 @@ public class DataIO {
 		return text.toString();
 	}
 	
-	public static ByteBuffer readResourceFile(String path) {
+	public static String readTextFile(File file) throws IOException {
+		//Load and compile
+		StringBuilder text = new StringBuilder();
+		FileInputStream fis = new FileInputStream(file);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+		String line;
+		
+		while((line = reader.readLine()) != null) {
+			text.append(line).append("\n");
+		}
+		
+		reader.close();
+		
+		return text.toString();
+	}
+	
+	public static ByteBuffer readResourceFile(String path) throws FileNotFoundException {
 		InputStream is = Loader.loadRes(path);
 		ArrayList<Integer> allBytes = new ArrayList<Integer>();
 		try {
@@ -130,7 +149,7 @@ public class DataIO {
 		return array;
 	}
 	
-	public static JSONObject loadJSONObject(String path) throws JSONException {
+	public static JSONObject loadJSONObject(String path) throws JSONException, FileNotFoundException {
 		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile(path)).toString();
 		return new JSONObject(source);
 	}

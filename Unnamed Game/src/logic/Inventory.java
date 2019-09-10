@@ -2,10 +2,9 @@ package logic;
 
 import graphics.Renderer;
 import graphics.primitives.Quad;
-import graphics.primitives.VertexData;
+import settings.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
-import utility.vec3;
 
 public class Inventory {
 
@@ -29,7 +28,7 @@ public class Inventory {
 		}
 	}
 	
-	public boolean load() {
+	public boolean load(String... path) {
 		/*
 		if (Settings.DEBUG_DISABLE_SAVING) {
 			long inventory_data_size;
@@ -51,7 +50,7 @@ public class Inventory {
 		return false;
 	}
 	
-	public void save() {
+	public void save(String... path) {
 		/*
 		char data[] = new char[(Settings.INVENTORY_WIDTH * (Settings.INVENTORY_HEIGHT + 1)) * 2];
 		for (int x = 0; x < Settings.INVENTORY_WIDTH; x++)

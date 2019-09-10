@@ -3,13 +3,13 @@
 		{
 			"name": "Skull",
         	"data_name": "skull",
-			"texture": "/res/texture/particle/skull.png",
+			"texture": "res/texture/particle/skull.png",
 			"life_time": 0.0
 		},
 		{
 			"name": "Swing",
         	"data_name": "swing",
-			"texture": "/res/texture/particle/swing.png",
+			"texture": "res/texture/particle/swing.png",
 			"life_time": 0.05
 		}
 	]

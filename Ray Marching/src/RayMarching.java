@@ -94,22 +94,22 @@ public class RayMarching extends Application {
 		renderer = new Renderer(Primitives.Quad, Type.Dynamic, Type.Static);
 		renderer.submit(new Quad(new vec2(-1.0f, -1.0f), new vec2(2.0f, 2.0f), 0, Colors.WHITE));
 		mat4 pr = new mat4().ortho(-1.0f, 1.0f, 1.0f, -1.0f);
-		raymarch_shader = Shader.loadFromSources("/res/vert.glsl", "/res/frag.glsl", true);
+		raymarch_shader = Shader.loadFromSources("res/vert.glsl", "res/frag.glsl", true);
 		raymarch_shader.setUniformMat4("pr_matrix", pr);
 		raymarch_shader.unbind();
 		
-		normal_shader = Shader.loadFromSources("/res/texture-single.vert.glsl", "/res/texture-single.frag.glsl", true);
+		normal_shader = Shader.loadFromSources("res/texture-single.vert.glsl", "res/texture-single.frag.glsl", true);
 		normal_shader.setUniformMat4("pr_matrix", pr);
 		//GlyphTexture glyphs = GlyphTexture.loadFont(new Font("arial", Font.BOLD, 64));
 		//TextLabelTexture.initialize(window, glyphs);
 //		fps_text_label = TextLabelTexture.bakeToTexture("FPS: 0");
 		String sources[] = {
-			"/res/right.png",
-		    "/res/left.png",
-		    "/res/top.png",
-		    "/res/bottom.png",
-		    "/res/front.png",
-		    "/res/back.png"
+			"res/right.png",
+		    "res/left.png",
+		    "res/top.png",
+		    "res/bottom.png",
+		    "res/front.png",
+		    "res/back.png"
 		};
 		skybox = Texture.loadCubeMap(128, sources);
 	}

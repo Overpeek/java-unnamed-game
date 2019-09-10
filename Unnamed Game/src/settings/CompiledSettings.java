@@ -1,10 +1,11 @@
-package logic;
+package settings;
 
 public final class CompiledSettings {
 
 	public static final int VERSION_MAJOR = 0;
 	public static final int VERSION_MINOR = 4;
 	public static final int VERSION_BUG_FIX = 0;
+	public static final String GAME_BUILD = "3.9.19";
 	public static final String VERSION_STR = VERSION_MAJOR + "." + VERSION_MINOR + "." + VERSION_BUG_FIX;
 
 	public static final int UPDATES_PER_SECOND = 60;
@@ -20,6 +21,7 @@ public final class CompiledSettings {
 	public static final boolean ASPECT_FIXED = false;
 	public static final String GAME_NAME = "Unnamed Game";
 	public static final String WINDOW_DEFAULT_TITLE = GAME_NAME + " Pre-Alpha v" + VERSION_STR;
+	public static final String MENU_STR = GAME_NAME + " v" + VERSION_STR + " - build " + GAME_BUILD;
 
 	public static final int RENDER_DIST = (int) (11 * DEBUG_ZOOM);
 	public static final int MAP_WORK_DST = (int) (32 * DEBUG_ZOOM);

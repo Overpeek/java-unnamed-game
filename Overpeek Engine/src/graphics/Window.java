@@ -213,6 +213,8 @@ public class Window {
 		@Override
 		public void invoke(long window, int _width, int _height)
 	    {
+			viewport(_width, _height);
+			
 			if (active_Application != null) active_Application.resize(_width, _height);
 			
 			width = _width;
@@ -407,6 +409,10 @@ public class Window {
 	}
 	
 	public void viewport() {
+		GL30.glViewport(0, 0, width, height);
+	}
+	
+	public void viewport(int width, int height) {
 		GL30.glViewport(0, 0, width, height);
 	}
 	

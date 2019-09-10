@@ -1,6 +1,7 @@
 package logic;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -26,6 +27,7 @@ import logic.Database.Biome_Data.BiomeTileHeight_Data;
 import logic.Database.Biome_Data.BiomeTileHeight_Data.BiomeTileHeightObjects_Data;
 import logic.Database.Creature_Data.Drop;
 import logic.TextureLoader.MultitextureReturnData;
+import settings.CompiledSettings;
 import utility.DataIO;
 import utility.Logger;
 import utility.SaveManager;
@@ -103,107 +105,111 @@ public class Database {
 
 		// Load all vanilla items
 		// byte[] source = DataIO.readByte();
-		String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/items.json")).toString();
-		JSONObject obj = new JSONObject(source);
-		JSONArray arr = obj.getJSONArray("items");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadItem(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load item: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+		try {
+			String source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/items.json")).toString();JSONObject obj = new JSONObject(source);
+			JSONArray arr = obj.getJSONArray("items");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadItem(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load item: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
-		}
 
-		// Load all vanilla tiles
-		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/tiles.json")).toString();
-		obj = new JSONObject(source);
-		arr = obj.getJSONArray("tiles");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadTile(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load tile: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+			// Load all vanilla tiles
+			source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/tiles.json")).toString();
+			obj = new JSONObject(source);
+			arr = obj.getJSONArray("tiles");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadTile(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load tile: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
-		}
 
-		// Load all vanilla objects
-		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/objects.json")).toString();
-		obj = new JSONObject(source);
-		arr = obj.getJSONArray("objects");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadObject(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load object: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+			// Load all vanilla objects
+			source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/objects.json")).toString();
+			obj = new JSONObject(source);
+			arr = obj.getJSONArray("objects");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadObject(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load object: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
-		}
 
-		// Load all vanilla creatures
-		{
-			JSONArray all_creature_data = DataIO.loadJSONObject("/res/data/creatures.json").getJSONArray("creatures");;
-			
-			//Player
-			Class<?> clazz = Player.class;
-			JSONObject data = all_creature_data.getJSONObject(0);
-			Database.loadCreature(data, clazz);
-			
-			//Item
-			clazz = Item.class;
-			data = all_creature_data.getJSONObject(1);
-			Database.loadCreature(data, clazz);
-			
-			//Zombie
-			clazz = Zombie.class;
-			data = all_creature_data.getJSONObject(2);
-			Database.loadCreature(data, clazz);
-		}
-
-		// Load all vanilla biomes
-		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/biomes.json")).toString();
-		obj = new JSONObject(source);
-		arr = obj.getJSONArray("biomes");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadBiome(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load biome: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+			// Load all vanilla creatures
+			{
+				JSONArray all_creature_data = DataIO.loadJSONObject("res/data/creatures.json").getJSONArray("creatures");;
+				
+				//Player
+				Class<?> clazz = Player.class;
+				JSONObject data = all_creature_data.getJSONObject(0);
+				Database.loadCreature(data, clazz);
+				
+				//Item
+				clazz = Item.class;
+				data = all_creature_data.getJSONObject(1);
+				Database.loadCreature(data, clazz);
+				
+				//Zombie
+				clazz = Zombie.class;
+				data = all_creature_data.getJSONObject(2);
+				Database.loadCreature(data, clazz);
 			}
-		}
 
-		// Load all vanilla particles
-		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/particles.json")).toString();
-		obj = new JSONObject(source);
-		arr = obj.getJSONArray("particles");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadParticle(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load particle: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+			// Load all vanilla biomes
+			source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/biomes.json")).toString();
+			obj = new JSONObject(source);
+			arr = obj.getJSONArray("biomes");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadBiome(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load biome: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
-		}
 
-		// Load all vanilla sounds
-		source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("/res/data/sounds.json")).toString();
-		obj = new JSONObject(source);
-		arr = obj.getJSONArray("sounds");
-		for (int i = 0; i < arr.length(); i++) {
-			try {
-				loadSound(arr.getJSONObject(i));
-			} catch (Exception e) {
-				Logger.crit("Couldn't load sound: [" + i + "]");
-				e.printStackTrace();
-				System.exit(-1);
+			// Load all vanilla particles
+			source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/particles.json")).toString();
+			obj = new JSONObject(source);
+			arr = obj.getJSONArray("particles");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadParticle(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load particle: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
 			}
+
+			// Load all vanilla sounds
+			source = StandardCharsets.UTF_8.decode(DataIO.readResourceFile("res/data/sounds.json")).toString();
+			obj = new JSONObject(source);
+			arr = obj.getJSONArray("sounds");
+			for (int i = 0; i < arr.length(); i++) {
+				try {
+					loadSound(arr.getJSONObject(i));
+				} catch (Exception e) {
+					Logger.crit("Couldn't load sound: [" + i + "]");
+					e.printStackTrace();
+					System.exit(-1);
+				}
+			}
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+			Logger.error("Couldn't load .json");
 		}
 
 		// Load all modded stuff
@@ -554,7 +560,7 @@ public class Database {
 		particle_names.add(data.data_name);
 	}
 
-	public static void loadSound(JSONObject json) throws JSONException {
+	public static void loadSound(JSONObject json) throws JSONException, FileNotFoundException {
 		// Generic data
 		String name = json.getString("name");
 		String data_name = json.getString("data_name");

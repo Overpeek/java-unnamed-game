@@ -10,9 +10,9 @@ import creatures.Item;
 import creatures.Player;
 import graphics.Renderer;
 import graphics.Shader;
-import logic.CompiledSettings;
 import logic.Database;
 import logic.Database.Biome_Data;
+import settings.CompiledSettings;
 import logic.Main;
 import logic.Noisemaps;
 import logic.ParticleManager;
@@ -158,6 +158,11 @@ public class Map {
 		// Write data
 		Database.writeByteBuffer(tile_data, "saves", name, "world-data", "tiles.ung");
 		Database.writeByteBuffer(creature_data, "saves", name, "world-data", "creatures.ung");
+		
+		
+		// Other saving
+		// Player
+		player.save("saves", name, "world-data");
 		
 		Logger.info("World saved");
 	}
@@ -334,21 +339,18 @@ public class Map {
 	public void hit(int x, int y, int dmg) {
 		
 		MapTile tile = getTile(x, y);
+		if (tile.object == 0) return;
+		
 		tile.objectHealth -= dmg;
 		if (tile.objectHealth <= 0) {
+			
+			// Drop
+			addCreature(itemDrop(x, y, Database.getItem(Database.getObject(tile.object).dropsAs).data_name));
+			
+			// Change to air
 			tile.object = 0;
 			
-			//Loot tables
-			ArrayList<Database.Creature_Data.Drop> drops = Database.getCreature(Database.getObject(tile.object).dropsAs).drops;
-			for (int i = 0; i < drops.size(); i++) {
-				int dropCount = (int) Math.floor(Maths.random(drops.get(i).min, drops.get(i).max));
-
-				// Create drops with custom count
-				for (int j = 0; j < dropCount; j++) {
-					itemDrop(x, y, drops.get(i).item);
-				}
-			}
-			
+			// Updates
 			updateCloseTiles(x, y);
 		}
 		

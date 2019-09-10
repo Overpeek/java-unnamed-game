@@ -179,7 +179,7 @@ void main()
 //		position.x += simplex(vec3(unif_t * 0.0001f, -100.0f, 0.0f)) * 50.0f;
 //		position.y += simplex(vec3(unif_t * 0.0001f,  100.0f, 0.0f)) * 50.0f;
 
-		float height = simplex(vec3(position * 120.0f, unif_t * 0.002f));
+		float height = simplex(vec3(position * 120.0f, unif_t * 0.001f));
 		if (height > 0.85f) {
 			float color_randomizer = (simplex(vec3(position * 80.0f, 234.534f)) + 1.0f) / 2.0f;
 			float color_randomizer2 = (simplex(vec3(position * 80.0f, -894.54f)) + 1.0f) / 2.0f;

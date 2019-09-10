@@ -1,7 +1,5 @@
 package logic;
 
-import utility.Logger;
-
 public class AsyncResLoader extends Thread {
 
 	@Override

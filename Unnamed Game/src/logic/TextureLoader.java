@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import javax.imageio.ImageIO;
 
 import graphics.Texture;
+import utility.Loader;
 import utility.Logger;
 
 public class TextureLoader {
@@ -41,7 +42,7 @@ public class TextureLoader {
 		//Logger.out("Max supported texture count: " + GL30.GL_MAX_ARRAY_TEXTURE_LAYERS);
 		
 		//Load empty
-		load("/res/texture/empty.png"); //Going to get index 0
+		load("res/texture/empty.png"); //Going to get index 0
 	}
 
 	static public int load(String path) {
@@ -49,7 +50,7 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			InputStream is = Main.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -85,7 +86,7 @@ public class TextureLoader {
 		//Texture loading
 		BufferedImage img = null;
 		try {
-			InputStream is = Main.class.getResourceAsStream(path);
+			InputStream is = Loader.loadRes(path);
 			img = ImageIO.read(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

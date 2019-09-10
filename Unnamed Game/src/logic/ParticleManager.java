@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import graphics.Renderer;
 import graphics.primitives.Quad;
+import settings.CompiledSettings;
 import utility.Colors;
 import utility.vec2;
 

@@ -13,7 +13,7 @@
         {
 	        "name": "Stone",
         	"data_name": "stone",
-	        "texture": "/res/texture/item/stone.png",
+	        "texture": "res/texture/item/stone.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -23,7 +23,7 @@
         {
 	        "name": "Plant fiber",
         	"data_name": "fiber",
-	        "texture": "/res/texture/item/plant_fiber.png",
+	        "texture": "res/texture/item/plant_fiber.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -33,7 +33,7 @@
         {
 	        "name": "Log",
         	"data_name": "log",
-	        "texture": "/res/texture/item/log.png",
+	        "texture": "res/texture/item/log.png",
 	        "stack": 99,
 	        "melee": 0.0,
 	        "knock": 0.0,
@@ -43,7 +43,7 @@
         {
 	        "name": "Sword",
         	"data_name": "sword",
-	        "texture": "/res/texture/item/tool.sword.png",
+	        "texture": "res/texture/item/tool.sword.png",
 	        "stack": 1,
 	        "melee": 4.0,
 	        "knock": 4.0,
@@ -53,7 +53,7 @@
         {
 	        "name": "Pickaxe",
         	"data_name": "pickaxe",
-	        "texture": "/res/texture/item/tool.pickaxe.png",
+	        "texture": "res/texture/item/tool.pickaxe.png",
 	        "stack": 1,
 	        "melee": 2.0,
 	        "knock": 4.0,
