@@ -17,6 +17,7 @@ import graphics.primitives.Quad;
 import guiwindows.GUIWindowManager;
 import settings.CompiledSettings;
 import settings.KeyBindings;
+import stages.MainMenu;
 import utility.Application;
 import utility.Colors;
 import utility.Debug.Timer;
@@ -111,7 +112,7 @@ public class Game extends Application {
 
 		// Windows
 		gui_shader.setUniform1i("usetex", 0);
-		GUIWindowManager.submit(window.getAspect());
+		GUIWindowManager.submit();
 		gui_shader.setUniform1i("usetex", 1);
 		TextLabelTexture.drawQueue(false);
 		
@@ -125,41 +126,6 @@ public class Game extends Application {
 	public void cleanup() {
 		Audio.clean();
 		Database.modCleanup();
-	}
-	
-	private TextLabelTexture loadDescription;
-	private void drawLoadingScreen(Renderer renderer, float state, String text) {
-		window.setSwapInterval(2); //  No need to run loading screen with full power lol
-		vec2 pos = new vec2(-0.5f, -0.5f);
-		vec2 size = new vec2(1.0f, 1.0f);
-		window.clear(1.0f, 1.0f, 1.0f, 1.0f);
-		
-		// Back texture
-		gui_shader.setUniform1i("usetex", 1);
-		splashScreen.bind();
-		renderer.clear();
-		renderer.submit(new Quad(pos, size, 0, Colors.WHITE));
-		renderer.draw();
-		
-		// Loading bar
-		gui_shader.setUniform1i("usetex", 0);
-		renderer.clear();
-		pos = new vec2(-0.8f, 0.8f);
-		renderer.submit(new Quad(pos, new vec2(1.6f, 0.1f), 0, Colors.BLACK));
-		pos = new vec2(-0.79f, 0.81f);
-		renderer.submit(new Quad(pos, new vec2(state * 1.58f, 0.08f), 0, Colors.RED));
-		renderer.draw();
-		
-		// Description
-		if (text != null) {
-			loadDescription.rebake("$2" + text);
-			loadDescription.submit(new vec2(-0.8f, 0.7f), new vec2(0.1f), alignment.TOP_LEFT);
-			TextLabelTexture.drawQueue(true);
-		}
-		
-		window.update();
-		window.input();
-		window.setSwapInterval(0);
 	}
 
 	
@@ -183,10 +149,8 @@ public class Game extends Application {
 		gui_shader = Shader.multiTextureShader();
 		gui_shader.setUniformMat4("pr_matrix", pr_matrix);
 		TextLabelTexture.initialize(window, glyphs);
-		TextLabelTexture.getDefaultShader().setUniformMat4("pr_matrix", pr_matrix);
 		loadDescription = TextLabelTexture.bakeToTexture("Loading");
 		gui_renderer = new Renderer();
-		splashScreen = Texture.loadTextureAtlas(256, 1, 1, 1, "res/texture/splash.png");
 		SaveManager.init(CompiledSettings.GAME_NAME);
 		
 		// Splash screen
@@ -372,21 +336,19 @@ public class Game extends Application {
 	// Window resize callbacks
 	@Override
 	public void resize(int width, int height) {
-		if (width == 0) width = window.getWidth();
-		if (height == 0) height = window.getHeight();
+		if (height == 0) height = 1; // no div by zero
+		float aspect = (float)width / (float)height;
 		
-		if (mainMenu != null) mainMenu.resize(width, height);
-		
-		float aspect = width / height;
+		// Main menu
+		if (mainMenu != null) mainMenu.resize(width, height);		
 
-
+		// Framebuffers
 		if (postprocess_fb1 != null) postprocess_fb1.delete();
 		postprocess_fb1 = new Framebuffer(window.getWidth(), window.getHeight());
 		if (postprocess_fb2 != null) postprocess_fb2.delete();
 		postprocess_fb2 = new Framebuffer(window.getWidth(), window.getHeight());
 		postprocess_fb2.unbind();
 		
-		window.viewport();
 		
 		// Matrices
 		if (gui_shader != null) {
@@ -401,9 +363,8 @@ public class Game extends Application {
 			postprocess_shader.setUniform1i("unif_effect", 0);
 			postprocess_shader.setUniform1i("usetex", 1);
 		}
-		//projection = new mat4().ortho(-1.0f, 1.0f, -1.0f, 1.0f);
 		
-		// Other
+		GUIWindowManager.resize(aspect);
 	}
 
 

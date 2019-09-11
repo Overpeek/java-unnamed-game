@@ -1,24 +1,24 @@
 package guiwindows;
 
 import applications.GUIWindow;
-import graphics.Shader;
 import graphics.TextLabelTexture;
+import logic.ShaderManager;
 
 public class GUIWindowManager {
 	
 	public static GUIWindow settings;
-	public static Shader shader;
+	private static float aspect;
 	
 	
 	public static void initialize() {
 		settings = new Settings();
-		shader = Shader.singleTextureShader();
 	}
 	
-	public static void submit(float window_aspect) {
-		shader.setUniform1i("usetex", 0);
-		settings.draw(window_aspect);
-		shader.setUniform1i("usetex", 1);
+	public static void submit() {
+		ShaderManager.single_texture_shader.setUniform1i("usetex", 0);
+		settings.clampPosition(aspect);
+		settings.draw();
+		ShaderManager.single_texture_shader.setUniform1i("usetex", 1);
 		TextLabelTexture.drawQueue(false);
 	}
 	
@@ -32,6 +32,11 @@ public class GUIWindowManager {
 	
 	public static boolean opened() {
 		return !settings.hidden;
+	}
+	
+	public static void resize(int width, int height) {
+		if (height == 0) height = 1;
+		aspect = (float)width / (float)height;
 	}
 
 }

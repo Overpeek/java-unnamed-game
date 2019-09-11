@@ -9,14 +9,13 @@ import creatures.Creature;
 import creatures.Item;
 import creatures.Player;
 import graphics.Renderer;
-import graphics.Shader;
 import logic.Database;
 import logic.Database.Biome_Data;
-import settings.CompiledSettings;
-import logic.Main;
 import logic.Noisemaps;
 import logic.ParticleManager;
+import logic.ShaderManager;
 import logic.TextureLoader;
+import settings.CompiledSettings;
 import utility.Logger;
 import utility.Maths;
 import utility.SaveManager;
@@ -59,7 +58,6 @@ public class Map {
 	private Noisemaps noisemaps;
 	private String name;
 	
-	private Shader world_shader;
 	private Renderer world_renderer;
 	
 	private ArrayList<Creature> creatures;
@@ -76,9 +74,7 @@ public class Map {
 		name = "null";
 
 		if (game) {
-			if (world_shader == null) world_shader = Shader.multiTextureShader();
-			if (world_renderer == null) world_renderer = new Renderer();
-			
+			world_renderer = new Renderer();
 			player = (Player) new Player().construct(0, 0, null);
 		}
 	}
@@ -379,13 +375,11 @@ public class Map {
 		
 		vec3 camera_pos = new vec3(player.getPos().mulLocal(-CompiledSettings.TILE_SIZE), -1.0f);
 		mat4 vw_matrix = new mat4().move(camera_pos);
-		mat4 pr_matrix = new mat4().ortho(-Main.game.getWindow().getAspect(), Main.game.getWindow().getAspect(), 1.0f, -1.0f);
-		world_shader.setUniformMat4("vw_matrix", vw_matrix);
-		world_shader.setUniformMat4("pr_matrix", pr_matrix);
+		ShaderManager.world_multi_texture_shader.setUniformMat4("vw_matrix", vw_matrix);
 		
 		//All visible chunks
 		for (RenderChunk[] chunks2 : chunks) { for (RenderChunk chunk : chunks2) {
-			chunk.drawChunkMesh();
+			chunk.drawChunkMesh(player.getPos().x, player.getPos().y);
 		}}
 		
 		//All visible creatures
@@ -427,7 +421,7 @@ public class Map {
 		
 		for (int x = 0; x < CompiledSettings.MAP_SIZE_CHUNKS; x++) {
 			for (int y = 0; y < CompiledSettings.MAP_SIZE_CHUNKS; y++) {
-				chunks[x][y] = RenderChunk.generateChunkMesh(x * CompiledSettings.CHUNK_SIZE, y * CompiledSettings.CHUNK_SIZE);
+				chunks[x][y] = new RenderChunk(this, x * CompiledSettings.CHUNK_SIZE, y * CompiledSettings.CHUNK_SIZE);
 			}
 		}
 		

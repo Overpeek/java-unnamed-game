@@ -1,27 +1,28 @@
-package logic;
+package stages;
 
 import java.util.ArrayList;
 
 import graphics.Renderer;
-import graphics.Shader;
 import graphics.TextLabelTexture;
 import graphics.TextLabelTexture.alignment;
 import graphics.Texture;
 import graphics.Window;
 import graphics.primitives.Quad;
 import guiwindows.GUIWindowManager;
+import logic.Main;
+import logic.ShaderManager;
 import settings.CompiledSettings;
 import settings.KeyBindings;
 import settings.KeyBindings.KeyBind;
+import stages.GameStateManager.GameStates;
 import utility.Callback;
 import utility.Colors;
 import utility.Keys;
 import utility.Logger;
-import utility.mat4;
 import utility.vec2;
 import utility.vec4;
 
-public class MainMenu {
+public class MainMenu extends State {
 	
 	protected static class MenuButton {
 		private vec2 size;
@@ -78,19 +79,18 @@ public class MainMenu {
 	}
 	
 	private Renderer renderer;
-	private Shader left_shader;
-	private Shader center_shader;
-	private Shader post_shader;
+	private Texture name_splash;
 	
 	private ArrayList<MenuButton> buttons;
 	private Window window;
 	private TextLabelTexture version_label;
 	
 	public boolean inMenu;
-	 
-	public MainMenu(Window window, Shader post_shader) {
+
+	
+	
+	public MainMenu(Window window) {
 		this.window = window;
-		this.post_shader = post_shader;
 		inMenu = true;
 		
 		// Buttons
@@ -99,7 +99,9 @@ public class MainMenu {
 			
 			@Override
 			public void callback() {
-				Main.game.loadWorld("IDK", true);
+				GameStateManager.setState(GameStates.LOADING);
+				((Loader)GameStates.LOADING.state).createMap("IDK", CompiledSettings.INITIAL_RANDOM_SEED, GameStates.WORLD);
+				GameStateManager.init();
 				inMenu = false;
 			}
 		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
@@ -107,7 +109,9 @@ public class MainMenu {
 			
 			@Override
 			public void callback() {
-				Main.game.loadWorld("IDK", false);
+				GameStateManager.setState(GameStates.LOADING);
+				((Loader)GameStates.LOADING.state).loadMap("IDK", GameStates.WORLD);
+				GameStateManager.init();
 				inMenu = false;
 			}
 		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
@@ -123,7 +127,7 @@ public class MainMenu {
 			
 			@Override
 			public void callback() {
-				Main.game.gameloop.stop();
+				Main.stop();
 				inMenu = true;
 			}
 		}, new vec2(0.8f, 0.2f), new vec4(0.03f, 0.03f, 0.03f, 1.0f)));
@@ -148,44 +152,33 @@ public class MainMenu {
 		kb.setPrimary(Keys.KEY_F1, -1, -1, -1);
 		KeyBindings.addNewBindable(kb);
 		
+		// textures
+		name_splash = Texture.loadTextureSingle("res/texture/UNMND.png");
+		
 		renderer = new Renderer();
 		version_label = TextLabelTexture.bakeToTexture(CompiledSettings.MENU_STR);
-		resize(window.getWidth(), window.getHeight());
-	}
-	
-	public void resize(int width, int height) {
-		if (left_shader == null) {
-			left_shader = Shader.singleTextureShader();
-		}
-		mat4 pr_matrix = new mat4().ortho(0.0f, 2 * window.getAspect(), 1.0f, -1.0f);
-		left_shader.setUniformMat4("pr_matrix", pr_matrix);
-		left_shader.setUniform1i("usetex", 0);
-		
-		
-		if (center_shader == null) {
-			center_shader = Shader.singleTextureShader();
-		}
-		pr_matrix = new mat4().ortho(-window.getAspect(), window.getAspect(), 1.0f, -1.0f);
-		center_shader.setUniformMat4("pr_matrix", pr_matrix);
-		center_shader.setUniform1i("usetex", 0);
 	}
 
-	public void update(float UPS) {
+	@Override
+	public void update() {
 		if (GUIWindowManager.opened()) {
 			for (MenuButton b : buttons) {
-				b.update(0.0f, 0.0f, false, 5.0f / UPS);		
+				b.update(0.0f, 0.0f, false, 5.0f / CompiledSettings.UPDATES_PER_SECOND);		
 			}
 		} else {
 			for (MenuButton b : buttons) {
-				b.update(window.getCursorFast().x, window.getCursorFast().y, window.button(Keys.MOUSE_BUTTON_LEFT), 5.0f / UPS);		
+				b.update(window.getCursorFast().x, window.getCursorFast().y, window.button(Keys.MOUSE_BUTTON_LEFT), 5.0f / CompiledSettings.UPDATES_PER_SECOND);		
 			}
 		}
 	}
 
+	@Override
 	public void render(float preupdate_scale) {
+		renderer.clear();
 
+		// Space background
 		renderer.submit(new Quad(new vec2(-1.0f, -1.0f), new vec2(2.0f, 2.0f), 0, Colors.WHITE));
-		post_shader.setUniform1i("unif_effect", 7);
+		ShaderManager.post_processing_shader.setUniform1i("unif_effect", 7);
 		renderer.draw();
 		renderer.clear();
 
@@ -194,25 +187,74 @@ public class MainMenu {
 		}
 		
 		Texture.unbind();
-		left_shader.setUniform1i("usetex", 0); 
+		ShaderManager.left_align_single_texture_shader.setUniform1i("usetex", 0); 
 		renderer.draw();
 		renderer.clear();
 		
 		// Version label
-		version_label.submit(new vec2(window.getAspect() * 2.0f, 1.0f), new vec2(0.1f, 0.1f), alignment.BOTTOM_RIGHT);
+		version_label.submit(new vec2(window.getAspect() * 2.0f, 1.0f), new vec2(0.05f, 0.05f), alignment.BOTTOM_RIGHT);
+		
+		// Game name texture
+		final float scale = 1.25f;
+		name_splash.bind();
+		ShaderManager.single_texture_shader.bind();
+		ShaderManager.single_texture_shader.setUniform1i("usetex", 1);
+		renderer.submit(new Quad(new vec2(-scale * 0.5f, -0.7f), new vec2(scale, scale * 0.25f), 0, Colors.WHITE));
+		renderer.draw();
+		renderer.clear();
 		
 		// Text
-		left_shader.setUniform1i("usetex", 1);
+		ShaderManager.left_align_single_texture_shader.setUniform1i("usetex", 1);
 		TextLabelTexture.drawQueue(false);
+		
+		GUIWindowManager.submit();
 	}
 
+	@Override
+	public void cleanup() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public void keyPress(int key, int action) {
 		if(key == Keys.KEY_ESCAPE) {
 			inMenu = false;
 		}
 	}
 
+	@Override
 	public void buttonPress(int button, int action) {
+		GUIWindowManager.input(window.getCursorFast().x, window.getCursorFast().y, button, action);
+	}
+
+	@Override
+	public void mousePos(float x, float y) {
+		GUIWindowManager.update(x, y);
+	}
+
+	@Override
+	public void scroll(float x_delta, float y_delta) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void charCallback(char character) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

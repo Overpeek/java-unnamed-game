@@ -2,7 +2,7 @@ package logic;
 
 import world.Map;
 
-public class AsyncMapLoader implements Runnable {
+public class AsyncMapLoader extends AsyncLoader {
 	
 	private Map map = null;
 	private int action = -1;
@@ -10,23 +10,27 @@ public class AsyncMapLoader implements Runnable {
 	private String name = null;
 	private int state = 0;
 	
-	public void loadMap(Map map, String mapName) {
-		this.name = mapName;
-		this.action = 0;
-		this.state = 0;
-		this.map = map;
-	}
-	
-	public void createMap(Map map, String mapName, int seed) {
-		this.name = mapName;
-		this.action = 1;
-		this.state = 0;
-		this.seed = seed;
-		this.map = map;	
-	}
+
 	
 	public Map getLoadedMap() {
 		return map;
+	}
+	
+	
+	
+	public AsyncMapLoader(String name) { // Load map
+		this.name = name;
+		this.action = 0;
+		this.state = 0;
+		this.map = new Map(true);
+	}
+	
+	public AsyncMapLoader(String name, int seed) { // Generate map
+		this.name = name;
+		this.action = 1;
+		this.state = 0;
+		this.seed = seed;
+		this.map = new Map(true);	
 	}
 
 	@Override
@@ -44,13 +48,15 @@ public class AsyncMapLoader implements Runnable {
 			//Unknown
 		}
 	}
-	
+
+	@Override
 	public void finish() {
 		map.generateAllMeshes();
 	}
 	
 	
 	//Returns float between 0.0f-1.0f and -1 if failed
+	@Override
 	public float queryLoadState() {
 		if (map == null) return 0.0f;
 		if (state == -1) return -1;
@@ -58,5 +64,10 @@ public class AsyncMapLoader implements Runnable {
 		float tiles = map.tileState();
 		return tiles;
 	}
+
+
+
+	@Override
+	public void init() {}
 
 }

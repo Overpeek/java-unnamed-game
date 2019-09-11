@@ -18,8 +18,8 @@ public class Settings extends GUIWindow {
 	}
 
 	@Override
-	public void draw(float window_aspect) {
-		if (!hidden) drawFrame(window_aspect);
+	public void draw() {
+		if (!hidden) drawFrame();
 	}
 
 	@Override
