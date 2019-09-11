@@ -1,0 +1,6 @@
+var variable
+variable = 0.0
+variable += 1.0
+print variable
+if variable < 20.0
+	goto 3

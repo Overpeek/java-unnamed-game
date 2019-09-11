@@ -3,7 +3,6 @@ import java.awt.image.BufferedImage;
 
 import utility.Debug;
 import utility.SaveManager;
-import world.Map;
 import world.Map.MapTile;
 
 public class Main {
